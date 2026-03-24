@@ -643,14 +643,17 @@ function loadPackages() {
       if (store.packages && store.packages.length) return store.packages;
     }
   } catch(e) {}
-  // fallback defaults
+  // fallback defaults — kept in sync with photodesk.html packages
   return [
     { id:'P001', name:'חבילה בסיסית', price:800, duration:90,
-      services:['צילום סיגנצ\'ר','תוכנית קומה'], color:'var(--blue)' },
+      services:['צילום סיגנצ\'ר','תוכנית קומה'],
+      addons:['מסירה באותו יום','הום סטיינינג וירטואלי'], color:'var(--blue)' },
     { id:'P002', name:'חבילה פרמיום', price:1200, duration:180,
-      services:['וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'], color:'var(--purple)' },
+      services:['וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'],
+      addons:['מסירה באותו יום','הום סטיינינג וירטואלי'], color:'var(--purple)' },
     { id:'P003', name:'חבילה אינסופית', price:2000, duration:240,
-      services:['צילום סיגנצ\'ר','וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'], color:'var(--accent)' },
+      services:['צילום סיגנצ\'ר','וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'],
+      addons:['מסירה באותו יום'], color:'var(--accent)' },
   ];
 }
 
@@ -728,11 +731,17 @@ function lookupClient() {
   if (match) {
     foundClientId = match.id;
     resultEl.className = 'lookup-result found';
-    resultEl.innerHTML = `✓ נמצא: <strong>${match.first} ${match.last}</strong> — ${match.company || match.email}`;
+    const safeLabel = document.createElement('span');
+    safeLabel.textContent = `✓ נמצא: ${match.first} ${match.last} — ${match.company || match.email}`;
+    resultEl.innerHTML = '';
+    resultEl.appendChild(safeLabel);
   } else {
     foundClientId = null;
+    // Auto-switch to new client
+    switchToNew();
     resultEl.className = 'lookup-result not-found';
-    resultEl.innerHTML = `לא נמצא לקוח עם פרטים אלו. <a href="#" onclick="switchToNew()" style="color:var(--accent);text-decoration:none;">מלא פרטים חדשים ←</a>`;
+    resultEl.style.display = 'block';
+    resultEl.textContent = 'לא נמצא לקוח — עברנו למילוי פרטים חדשים';
   }
 }
 
@@ -757,50 +766,81 @@ function submitBooking(e) {
 
   const isExisting = document.getElementById('type-existing').checked;
 
-  // Validate
+  // ── Visual validation helpers ──────────────────
+  function markError(id, show) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('error', show);
+  }
+  function scrollToFirst(ids) {
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el && el.classList.contains('error')) {
+        el.scrollIntoView({ behavior:'smooth', block:'center' });
+        el.focus();
+        return;
+      }
+    }
+  }
+
+  let hasErrors = false;
+
+  // Package required
   if (!selectedPackageId) {
-    alert('נא לבחור חבילה');
-    document.getElementById('packages-grid').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
+    document.getElementById('packages-grid').style.outline = '2px solid var(--red)';
+    document.getElementById('packages-grid').style.borderRadius = '8px';
+    setTimeout(() => { document.getElementById('packages-grid').style.outline = ''; }, 2500);
     return;
   }
 
+  // Property required fields
   const address = document.getElementById('prop-address').value.trim();
-  const city = document.getElementById('prop-city').value.trim();
-  if (!address || !city) {
-    alert('נא למלא כתובת ועיר');
-    return;
-  }
+  const city    = document.getElementById('prop-city').value.trim();
+  markError('prop-address', !address);
+  markError('prop-city',    !city);
+  if (!address || !city) hasErrors = true;
 
   // Client data
   let clientData = null;
   if (isExisting) {
     if (!foundClientId) {
-      alert('נא לחפש ולאמת לקוח קיים, או עבור ללקוח חדש');
-      return;
+      document.getElementById('lookup-input').classList.add('error');
+      hasErrors = true;
+    } else {
+      clientData = { id: foundClientId, isExisting: true };
     }
-    clientData = { id: foundClientId, isExisting: true };
   } else {
     const first = document.getElementById('cust-first').value.trim();
     const last  = document.getElementById('cust-last').value.trim();
     const phone = document.getElementById('cust-phone').value.trim();
+    markError('cust-first', !first);
+    markError('cust-last',  !last);
+    markError('cust-phone', !phone);
     if (!first || !last || !phone) {
-      alert('נא למלא שם ומספר טלפון');
-      return;
+      hasErrors = true;
+    } else {
+      clientData = {
+        id: 'C' + Date.now(),
+        isExisting: false,
+        first, last, phone,
+        email:   document.getElementById('cust-email').value.trim(),
+        company: document.getElementById('cust-company').value.trim().replace(/\s+/g,' '),
+        listings: 0
+      };
     }
-    clientData = {
-      id: 'C' + Date.now(),
-      isExisting: false,
-      first, last, phone,
-      email:   document.getElementById('cust-email').value.trim(),
-      company: document.getElementById('cust-company').value.trim(),
-      listings: 0
-    };
   }
 
-  // Find package name
-  const pkg = packages.find(p => p.id === selectedPackageId);
+  if (hasErrors) {
+    scrollToFirst(['prop-address','prop-city','cust-first','cust-last','cust-phone','lookup-input']);
+    return;
+  }
 
-  // Build booking object
+  // Find package
+  const pkg = packages.find(p => p.id === selectedPackageId);
+  if (!pkg) { alert('חבילה לא נמצאה, נסה שנית'); return; }
+
+  // Build booking object — numeric fields converted properly
   const booking = {
     id: 'B' + Date.now(),
     createdAt: new Date().toISOString(),
@@ -809,14 +849,14 @@ function submitBooking(e) {
       address,
       city,
       neighborhood: document.getElementById('prop-neighborhood').value.trim(),
-      rooms:  document.getElementById('prop-rooms').value,
-      baths:  document.getElementById('prop-baths').value,
-      floor:  document.getElementById('prop-floor').value,
-      area:   document.getElementById('prop-area').value,
-      year:   document.getElementById('prop-year').value,
+      rooms:  +document.getElementById('prop-rooms').value  || 0,
+      baths:  +document.getElementById('prop-baths').value  || 0,
+      floor:  +document.getElementById('prop-floor').value  || 0,
+      area:   +document.getElementById('prop-area').value   || 0,
+      year:   +document.getElementById('prop-year').value   || 0,
       notes:  document.getElementById('prop-notes').value.trim(),
     },
-    package: { id: selectedPackageId, name: pkg ? pkg.name : '' },
+    package: { id: selectedPackageId, name: pkg.name },
     shootDate:    document.getElementById('shoot-date').value,
     flexibility:  document.getElementById('shoot-flexibility').value,
     status: 'pending'
@@ -829,6 +869,8 @@ function submitBooking(e) {
     localStorage.setItem('photoDesk_pending', JSON.stringify(existing));
   } catch(err) {
     console.error('Failed to save booking', err);
+    alert('שגיאה בשמירת ההזמנה. נסה שנית.');
+    return;
   }
 
   // Show success

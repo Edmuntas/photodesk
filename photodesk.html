@@ -1587,7 +1587,7 @@ function renderListings() {
           <div class="thumb-img">🏠</div>
           <div>
             <div class="thumb-address">${l.address}</div>
-            <div class="thumb-sub">${l.city}${l.state ? ' · ' + l.state : ''} · ${l.beds} חד' · ${l.photos} תמונות</div>
+            <div class="thumb-sub">${l.city}${l.state ? ' · ' + l.state : ''} · ${l.beds} חד' · ${l.photos||0} תמונות</div>
           </div>
         </div>
       </td>
@@ -1647,10 +1647,11 @@ function openListing(id) {
   custSel.innerHTML = '<option value="">— לא משויך —</option>' +
     store.customers.map(c => `<option value="${c.id}" ${l.customer===c.id?'selected':''}>${c.first} ${c.last}</option>`).join('');
 
-  document.getElementById('photos-count').textContent = `${l.photos} תמונות בנכס זה`;
-  document.getElementById('photos-grid').innerHTML = Array.from({length: Math.min(l.photos, 9)}, () =>
+  const photoCount = l.photos || 0;
+  document.getElementById('photos-count').textContent = `${photoCount} תמונות בנכס זה`;
+  document.getElementById('photos-grid').innerHTML = Array.from({length: Math.min(photoCount, 9)}, () =>
     `<div class="photo-cell"><span>🖼️</span></div>`
-  ).join('') + (l.photos < 9 ? `<div class="photo-cell">➕</div>` : '');
+  ).join('') + (photoCount < 9 ? `<div class="photo-cell">➕</div>` : '');
 
   document.getElementById('videos-list').innerHTML = l.videos
     ? l.videos.map(v => `<div style="padding:10px;background:var(--surface2);border-radius:6px;margin-bottom:8px;font-size:13px;">🎬 ${v}</div>`).join('')
@@ -1664,6 +1665,7 @@ function openListing(id) {
 function closePanel() {
   document.getElementById('listing-panel').classList.remove('open');
   document.getElementById('panel-overlay').classList.remove('open');
+  currentListing = null;
 }
 
 function switchTab(tab) {
@@ -1697,10 +1699,11 @@ function saveListing() {
   currentListing.customer = document.getElementById('panel-customer').value;
   renderListings();
   saveStore();
-  const btn = event.target;
+  const btn = event.target.closest('button') || event.target;
+  const origText = btn.textContent;
   btn.textContent = '✓ נשמר';
   btn.style.background = 'var(--green)';
-  setTimeout(() => { btn.textContent = 'שמור שינויים'; btn.style.background = ''; }, 1500);
+  setTimeout(() => { btn.textContent = origText; btn.style.background = ''; }, 1500);
 }
 
 function deliverListing() {
@@ -1726,6 +1729,11 @@ function createListing() {
   const id = 'L' + Date.now();
   const pkgRaw = document.getElementById('new-package').value;
   const pkg = pkgRaw.split('—')[0].trim();
+  const pkgExists = store.packages.some(p => p.name === pkg);
+  if (!pkgExists && store.packages.length) {
+    // fallback to first package if selection is stale
+    var pkg = store.packages[0].name;
+  }
   store.listings.unshift({
     id, address: addr,
     city: document.getElementById('new-city').value,
@@ -1760,7 +1768,7 @@ function renderCustomers() {
     const total  = custListings.length;
     return `
     <div class="customer-card" onclick="openCustomer('${c.id}')">
-      <div class="cust-avatar">${c.first[0]}${c.last[0]}</div>
+      <div class="cust-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
       <div style="flex:1; min-width:0;">
         <div class="cust-name">${c.first} ${c.last}</div>
         <div class="cust-email">${c.phone}${c.email ? ' · ' + c.email : ''}</div>
@@ -1819,7 +1827,7 @@ function renderServices() {
       </div>
       <div style="font-size:11px;color:var(--text-muted)">⏱ ${s.duration} דק'</div>
       <div class="service-price">₪${s.price.toLocaleString('he-IL')}</div>
-      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;">ערוך</button>
+      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="editService('${s.id}')">ערוך</button>
     </div>
   `).join('');
   document.getElementById('addons-list').innerHTML = store.addons.map(a => `
@@ -1830,9 +1838,41 @@ function renderServices() {
       </div>
       <div></div>
       <div class="service-price">₪${a.price.toLocaleString('he-IL')}</div>
-      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;">ערוך</button>
+      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="editAddon('${a.id}')">ערוך</button>
     </div>
   `).join('');
+}
+
+function editService(id) {
+  const s = store.services.find(x => x.id === id);
+  if (!s) return;
+  const name     = prompt('שם שירות:', s.name);
+  if (name === null) return;
+  const price    = prompt('מחיר (₪):', s.price);
+  if (price === null) return;
+  const duration = prompt('משך (דקות):', s.duration);
+  if (duration === null) return;
+  s.name     = name.trim() || s.name;
+  s.price    = +price    || s.price;
+  s.duration = +duration || s.duration;
+  saveStore();
+  renderServices();
+}
+
+function editAddon(id) {
+  const a = store.addons.find(x => x.id === id);
+  if (!a) return;
+  const name  = prompt('שם תוספת:', a.name);
+  if (name === null) return;
+  const price = prompt('מחיר (₪):', a.price);
+  if (price === null) return;
+  const desc  = prompt('תיאור:', a.desc);
+  if (desc === null) return;
+  a.name  = name.trim() || a.name;
+  a.price = +price || a.price;
+  a.desc  = desc.trim() || a.desc;
+  saveStore();
+  renderServices();
 }
 
 // ══════════════════════════════════════════════════
@@ -1881,9 +1921,18 @@ function renderCalendar() {
   for (let i = firstDay - 1; i >= 0; i--) {
     html += `<div class="cal-cell other-month">${daysInPrev - i}</div>`;
   }
+  // Build set of days that have a shoot this month
+  const shootDays = new Set(
+    store.listings
+      .filter(l => l.shootDate)
+      .map(l => new Date(l.shootDate))
+      .filter(d => d.getFullYear() === year && d.getMonth() === month)
+      .map(d => d.getDate())
+  );
+
   for (let d = 1; d <= daysInMonth; d++) {
     const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-    const hasShoot = [25, 27].includes(d) && month === 2 && year === 2026;
+    const hasShoot = shootDays.has(d);
     html += `<div class="cal-cell ${isToday?'today':''} ${hasShoot?'has-shoot':''}">${d}${hasShoot?'<div class="cal-dot"></div>':''}</div>`;
   }
   const total = firstDay + daysInMonth;
@@ -1923,7 +1972,7 @@ function openCustomer(id) {
   currentCustomer = c;
 
   // Avatar + header
-  document.getElementById('cp-avatar').textContent = c.first[0] + c.last[0];
+  document.getElementById('cp-avatar').textContent = (c.first||'?')[0] + ((c.last||'')[0]||'');
   document.getElementById('cp-name').textContent    = c.first + ' ' + c.last;
   document.getElementById('cp-company').textContent = [c.company, c.email].filter(Boolean).join(' · ');
 
@@ -1989,6 +2038,7 @@ function openCustomer(id) {
 function closeCustomerPanel() {
   document.getElementById('customer-panel').classList.remove('open');
   document.getElementById('panel-overlay').classList.remove('open');
+  currentCustomer = null;
 }
 
 function switchCustomerTab(tab) {
@@ -2026,10 +2076,11 @@ function saveCustomerInfo() {
   document.getElementById('cp-wa-btn').href = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + waMsg2;
   saveStore();
   renderCustomers();
-  const btn = event.target;
+  const btn = event.target.closest('button') || event.target;
+  const origText = btn.textContent;
   btn.textContent = '✓ נשמר';
   btn.style.background = 'var(--green)';
-  setTimeout(() => { btn.textContent = 'שמור שינויים'; btn.style.background = ''; }, 1500);
+  setTimeout(() => { btn.textContent = origText; btn.style.background = ''; }, 1500);
 }
 
 function deleteCustomer() {
