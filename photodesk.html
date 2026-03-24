@@ -1405,6 +1405,7 @@ function primaryAction() {
 
 function renderPage(page) {
   if (page === 'listings') renderListings();
+  else if (page === 'orders') renderOrders();
   else if (page === 'customers') renderCustomers();
   else if (page === 'packages') renderPackages();
   else if (page === 'services') renderServices();
@@ -1526,6 +1527,7 @@ function switchTab(tab) {
 function saveListing() {
   if (!currentListing) return;
   currentListing.address  = document.getElementById('panel-address').value;
+
   currentListing.city     = document.getElementById('panel-city').value;
   currentListing.state    = document.getElementById('panel-state').value;
   currentListing.zip      = document.getElementById('panel-zip').value;
@@ -1542,6 +1544,7 @@ function saveListing() {
   currentListing.shootDate = document.getElementById('panel-shoot-date').value;
   currentListing.customer = document.getElementById('panel-customer').value;
   renderListings();
+  saveStore();
   const btn = event.target;
   btn.textContent = '✓ נשמר';
   btn.style.background = 'var(--green)';
@@ -1553,6 +1556,7 @@ function deliverListing() {
   currentListing.status = 'נמסר';
   document.getElementById('panel-status-badge').innerHTML = `<span class="badge badge-delivered">נמסר</span>`;
   renderListings();
+  saveStore();
 }
 
 function deleteListing() {
@@ -1561,6 +1565,7 @@ function deleteListing() {
   store.listings = store.listings.filter(l => l.id !== currentListing.id);
   closePanel();
   renderListings();
+  saveStore();
 }
 
 function createListing() {
@@ -1584,6 +1589,7 @@ function createListing() {
   });
   closeModal('new-listing-modal');
   renderListings();
+  saveStore();
   ['new-address','new-city','new-state','new-beds','new-baths'].forEach(id => document.getElementById(id).value='');
 }
 
@@ -1617,6 +1623,7 @@ function createCustomer() {
   });
   closeModal('new-customer-modal');
   renderCustomers();
+  saveStore();
   ['cust-first','cust-last','cust-email','cust-phone','cust-company'].forEach(id => document.getElementById(id).value='');
 }
 
@@ -1762,9 +1769,7 @@ function loadStore() {
   } catch(e) {}
 }
 
-// Patch save into mutations
-const _origSave = saveListing;
-function saveListing() { _origSave && _origSave.apply(this, arguments); saveStore(); }
+
 
 // ══════════════════════════════════════════════════
 //  ORDERS — PENDING BOOKINGS
@@ -1918,13 +1923,6 @@ function updateOrdersBadge() {
     const b = document.getElementById('orders-badge');
     if (b) b.remove();
   }
-}
-
-// patch renderPage to include orders
-const _origRenderPage = renderPage;
-function renderPage(page) {
-  _origRenderPage(page);
-  if (page === 'orders') renderOrders();
 }
 
 // ══════════════════════════════════════════════════

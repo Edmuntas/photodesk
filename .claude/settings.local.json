@@ -4,7 +4,9 @@
       "Bash(git init:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"Initial commit: PhotoDesk — Hebrew/Israeli localization:*)",
-      "Bash(git commit -m \"Add booking form \\(booking.html\\) + orders integration:*)"
+      "Bash(git commit -m \"Add booking form \\(booking.html\\) + orders integration:*)",
+      "Bash(open:*)",
+      "Bash(git commit -m \"Fix orders page not rendering and missing customer creation:*)"
     ]
   }
 }
