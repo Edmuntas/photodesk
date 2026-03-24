@@ -363,6 +363,7 @@
   .badge-processing { background: rgba(96,165,250,0.12); color: var(--blue); }
   .badge-cancelled { background: rgba(248,113,113,0.12); color: var(--red); }
   .badge-scheduled { background: rgba(167,139,250,0.12); color: var(--purple); }
+  .badge-shot { background: rgba(240,160,80,0.12); color: var(--accent2); }
 
   /* ── DETAIL PANEL ───────────────── */
   .detail-panel {
@@ -759,6 +760,14 @@
   .booking-tag { font-size: 11px; background: var(--surface3); padding: 2px 8px; border-radius: 20px; color: var(--text-muted); }
   .booking-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
+  /* ── PIPELINE ────────────────────── */
+  .pipeline-section { margin-bottom: 20px; }
+  .pipeline-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-dim);
+    padding: 10px 18px 6px;
+  }
+
   /* ── SCROLLBAR ──────────────────── */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -899,9 +908,10 @@
             <select class="form-select" style="width:160px; padding:5px 10px;" onchange="filterByStatus(this.value)">
               <option value="">כל הסטטוסים</option>
               <option value="ממתין למסירה">ממתין למסירה</option>
-              <option value="נמסר">נמסר</option>
-              <option value="בעיבוד">בעיבוד</option>
               <option value="מתוכנן">מתוכנן</option>
+              <option value="צולם">צולם</option>
+              <option value="בעיבוד">בעיבוד</option>
+              <option value="נמסר">נמסר</option>
             </select>
           </div>
         </div>
@@ -922,20 +932,11 @@
 
     <!-- ════════════════ ORDERS PAGE ════════════════ -->
     <div class="page" id="page-orders">
-      <div class="table-wrap" style="margin-bottom:20px;">
-        <div class="table-header">
-          <span class="table-title">הזמנות ממתינות לאישור</span>
-          <span class="table-count" id="orders-count">0</span>
-          <a href="booking.html" target="_blank" class="btn btn-ghost" style="margin-right:auto; font-size:12px; text-decoration:none;">🔗 לינק להזמנה</a>
-        </div>
-        <div id="orders-list">
-          <div class="empty-state">
-            <div class="empty-icon">📋</div>
-            <div class="empty-title">אין הזמנות ממתינות</div>
-            <div class="empty-sub">שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן</div>
-          </div>
-        </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div style="font-size:13px; color:var(--text-muted);">כל ההזמנות הפעילות — נעלמות רק לאחר מסירה</div>
+        <a href="booking.html" target="_blank" class="btn btn-ghost" style="font-size:12px; text-decoration:none;">🔗 לינק להזמנה</a>
       </div>
+      <div id="orders-list"></div>
     </div>
 
     <!-- ════════════════ CALENDAR PAGE ════════════════ -->
@@ -1261,8 +1262,9 @@
     <div class="form-group">
       <label class="form-label">סטטוס</label>
       <select class="form-select" id="new-status">
-        <option>ממתין למסירה</option>
         <option>מתוכנן</option>
+        <option>ממתין למסירה</option>
+        <option>צולם</option>
         <option>בעיבוד</option>
         <option>נמסר</option>
       </select>
@@ -1451,11 +1453,13 @@ function renderListings() {
 
 function badgeClass(status) {
   const m = {
+    'ממתין לאישור':  'badge-pending',
     'ממתין למסירה': 'badge-pending',
-    'נמסר':         'badge-delivered',
-    'בעיבוד':       'badge-processing',
-    'מתוכנן':       'badge-scheduled',
-    'בוטל':         'badge-cancelled'
+    'נמסר':          'badge-delivered',
+    'בעיבוד':        'badge-processing',
+    'מתוכנן':        'badge-scheduled',
+    'צולם':          'badge-shot',
+    'בוטל':          'badge-cancelled'
   };
   return m[status] || 'badge-pending';
 }
@@ -1775,49 +1779,114 @@ function loadStore() {
 //  ORDERS — PENDING BOOKINGS
 // ══════════════════════════════════════════════════
 function renderOrders() {
-  const pending = loadPendingBookings();
-  const countEl = document.getElementById('orders-count');
-  const listEl  = document.getElementById('orders-list');
-  countEl.textContent = pending.length;
+  const pending  = loadPendingBookings();
+  const active   = store.listings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל');
+  const listEl   = document.getElementById('orders-list');
+  const total    = pending.length + active.length;
 
-  if (!pending.length) {
+  updateOrdersBadge();
+
+  if (!total) {
     listEl.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">📋</div>
-        <div class="empty-title">אין הזמנות ממתינות</div>
+        <div class="empty-title">אין הזמנות פעילות</div>
         <div class="empty-sub">שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן</div>
       </div>`;
     return;
   }
 
-  listEl.innerHTML = pending.map(b => {
-    const p = b.property;
-    const clientLabel = b.client.isExisting
-      ? (store.customers.find(c => c.id === b.client.id) || {first:'',last:''})
-      : b.client;
-    const name = clientLabel.first + ' ' + clientLabel.last;
-    const dateStr = b.createdAt ? new Date(b.createdAt).toLocaleDateString('he-IL') : '';
-    const shootStr = b.shootDate ? new Date(b.shootDate).toLocaleDateString('he-IL', {day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : 'לא צוין';
-    return `
-      <div class="booking-card">
-        <div>
-          <div style="font-weight:600; font-size:14px;">${p.address}, ${p.city}</div>
-          <div class="booking-meta">
-            <span class="booking-tag">👤 ${name}</span>
-            <span class="booking-tag">📦 ${b.package.name}</span>
-            <span class="booking-tag">📅 ${shootStr}</span>
-            ${p.rooms ? `<span class="booking-tag">${p.rooms} חד'</span>` : ''}
-            ${p.notes ? `<span class="booking-tag" title="${p.notes}">📝 יש הערות</span>` : ''}
-            <span style="font-size:11px; color:var(--text-dim);">נשלח ${dateStr}</span>
+  const STATUSES = ['ממתין לאישור', 'מתוכנן', 'צולם', 'בעיבוד', 'ממתין למסירה'];
+
+  let html = '';
+
+  // ── Section 1: pending approvals ──────────────
+  if (pending.length) {
+    html += `<div class="pipeline-section">
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">ממתין לאישור</span>
+          <span class="table-count">${pending.length}</span>
+        </div>`;
+    html += pending.map(b => {
+      const p = b.property;
+      const cl = b.client.isExisting
+        ? (store.customers.find(c => c.id === b.client.id) || {first:'?', last:''})
+        : b.client;
+      const name    = (cl.first || '') + ' ' + (cl.last || '');
+      const dateStr = b.createdAt ? new Date(b.createdAt).toLocaleDateString('he-IL') : '';
+      const shootStr = b.shootDate
+        ? new Date(b.shootDate).toLocaleDateString('he-IL', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})
+        : 'לא צוין';
+      return `
+        <div class="booking-card">
+          <div>
+            <div style="font-weight:600; font-size:14px;">${p.address}, ${p.city}</div>
+            <div class="booking-meta">
+              <span class="badge badge-pending">ממתין לאישור</span>
+              <span class="booking-tag">👤 ${name.trim()}</span>
+              <span class="booking-tag">📦 ${b.package.name}</span>
+              <span class="booking-tag">📅 ${shootStr}</span>
+              ${p.rooms ? `<span class="booking-tag">${p.rooms} חד'</span>` : ''}
+              ${p.notes ? `<span class="booking-tag" title="${p.notes}">📝 יש הערות</span>` : ''}
+              <span style="font-size:11px;color:var(--text-dim);">נשלח ${dateStr}</span>
+            </div>
           </div>
-        </div>
-        <div class="booking-actions">
-          <button class="btn btn-ghost" style="font-size:12px;" onclick="viewBooking('${b.id}')">פרטים</button>
-          <button class="btn btn-primary" style="font-size:12px;" onclick="approveBooking('${b.id}')">✓ אשר</button>
-          <button class="btn btn-danger" style="font-size:12px;" onclick="rejectBooking('${b.id}')">✕</button>
-        </div>
-      </div>`;
-  }).join('');
+          <div class="booking-actions">
+            <button class="btn btn-ghost" style="font-size:12px;" onclick="viewBooking('${b.id}')">פרטים</button>
+            <button class="btn btn-primary" style="font-size:12px;" onclick="approveBooking('${b.id}')">✓ אשר</button>
+            <button class="btn btn-danger" style="font-size:12px;" onclick="rejectBooking('${b.id}')">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+    html += `</div></div>`;
+  }
+
+  // ── Section 2: active listings by status ──────
+  STATUSES.forEach(status => {
+    const group = active.filter(l => l.status === status);
+    if (!group.length) return;
+
+    const nextStatus = { 'מתוכנן':'צולם', 'צולם':'בעיבוד', 'בעיבוד':'ממתין למסירה', 'ממתין למסירה':'נמסר' };
+    const nextLabel  = { 'מתוכנן':'סמן כצולם', 'צולם':'סמן כבעיבוד', 'בעיבוד':'סמן כממתין', 'ממתין למסירה':'סמן כנמסר' };
+
+    html += `<div class="pipeline-section">
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">${status}</span>
+          <span class="table-count">${group.length}</span>
+        </div>`;
+
+    html += group.map(l => {
+      const custName = l.customer
+        ? (store.customers.find(c => c.id === l.customer) || {first:'', last:''})
+        : null;
+      const custLabel = custName ? custName.first + ' ' + custName.last : '—';
+      const next = nextStatus[l.status];
+      const nextLbl = nextLabel[l.status];
+      return `
+        <div class="booking-card" onclick="openListing('${l.id}')" style="cursor:pointer;">
+          <div>
+            <div style="font-weight:600; font-size:14px;">${l.address}, ${l.city}</div>
+            <div class="booking-meta">
+              <span class="badge ${badgeClass(l.status)}">${l.status}</span>
+              ${custLabel !== '—' ? `<span class="booking-tag">👤 ${custLabel}</span>` : ''}
+              <span class="booking-tag">📦 ${l.pkg}</span>
+              ${l.shootDate ? `<span class="booking-tag">📅 ${new Date(l.shootDate).toLocaleDateString('he-IL', {day:'numeric',month:'long'})}</span>` : ''}
+              ${l.beds ? `<span class="booking-tag">${l.beds} חד'</span>` : ''}
+              <span style="font-size:11px;color:var(--text-dim);">${l.created}</span>
+            </div>
+          </div>
+          ${next ? `<div class="booking-actions" onclick="event.stopPropagation()">
+            <button class="btn btn-primary" style="font-size:12px;" onclick="advanceStatus('${l.id}','${next}')">${nextLbl}</button>
+          </div>` : ''}
+        </div>`;
+    }).join('');
+
+    html += `</div></div>`;
+  });
+
+  listEl.innerHTML = html;
 }
 
 function loadPendingBookings() {
@@ -1907,21 +1976,32 @@ function viewBooking(id) {
   alert(`📋 פרטי הזמנה ${b.id}\n\nנכס: ${p.address}, ${p.city}${p.neighborhood ? ' (' + p.neighborhood + ')' : ''}\nחדרים: ${p.rooms || '—'} | שטח: ${p.area ? p.area + ' מ"ר' : '—'}\n\nלקוח: ${clientStr}\nחבילה: ${b.package.name}\nמועד: ${b.shootDate || 'לא צוין'}\n\nהערות:\n${p.notes || 'אין'}`);
 }
 
+function advanceStatus(listingId, newStatus) {
+  const l = store.listings.find(x => x.id === listingId);
+  if (!l) return;
+  l.status = newStatus;
+  saveStore();
+  renderOrders();
+  renderListings();
+}
+
 function updateOrdersBadge() {
-  const count = loadPendingBookings().length;
-  const badge = document.querySelector('.nav-item[onclick="navigate(\'orders\')"] .nav-badge');
-  if (count > 0) {
+  const pendingCount = loadPendingBookings().length;
+  const activeCount  = store.listings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
+  const total = pendingCount + activeCount;
+  const navItem = document.querySelector('.nav-item[onclick="navigate(\'orders\')"]');
+  if (!navItem) return;
+  let badge = document.getElementById('orders-badge');
+  if (total > 0) {
     if (!badge) {
-      const navItem = document.querySelector('.nav-item[onclick="navigate(\'orders\')"]');
-      const b = document.createElement('span');
-      b.className = 'nav-badge';
-      b.id = 'orders-badge';
-      navItem.appendChild(b);
+      badge = document.createElement('span');
+      badge.className = 'nav-badge';
+      badge.id = 'orders-badge';
+      navItem.appendChild(badge);
     }
-    document.getElementById('orders-badge') && (document.getElementById('orders-badge').textContent = count);
+    badge.textContent = total;
   } else {
-    const b = document.getElementById('orders-badge');
-    if (b) b.remove();
+    if (badge) badge.remove();
   }
 }
 
