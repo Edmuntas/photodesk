@@ -2022,7 +2022,8 @@ function saveCustomerInfo() {
   document.getElementById('cp-company').textContent = [currentCustomer.company, currentCustomer.email].filter(Boolean).join(' · ');
   document.getElementById('cp-call-btn').href = 'tel:' + currentCustomer.phone;
   const phone = currentCustomer.phone.replace(/[-\s]/g, '');
-  document.getElementById('cp-wa-btn').href = 'https://wa.me/972' + phone.replace(/^0/, '');
+  const waMsg2 = encodeURIComponent(`שלום ${currentCustomer.first}, אני צלם הנדל"ן דורון מ-Sisa Aero Photography 📷\nאשמח לעמוד לשירותך!`);
+  document.getElementById('cp-wa-btn').href = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + waMsg2;
   saveStore();
   renderCustomers();
   const btn = event.target;
