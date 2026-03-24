@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הזמנת צילום נדל"ן — Sisa Aero Photography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f11;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --surface3: #26262e;
+    --border: #2a2a34;
+    --text: #e8e8ec;
+    --text-muted: #6b6b7e;
+    --text-dim: #3e3e50;
+    --accent: #e8c547;
+    --accent2: #f0a050;
+    --accent-glow: rgba(232,197,71,0.15);
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --radius: 12px;
+    --radius-sm: 7px;
+    --font-display: 'Frank Ruhl Libre', serif;
+    --font-body: 'Heebo', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+    padding: 0 0 60px;
+  }
+
+  /* ── HEADER ─────────────────────── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-logo {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--accent);
+  }
+
+  .header-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+  }
+
+  .header-name {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* ── HERO ────────────────────────── */
+  .hero {
+    background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+    padding: 40px 24px 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--text);
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    max-width: 460px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── FORM CONTAINER ─────────────── */
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* ── SECTION CARD ───────────────── */
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .section-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+  }
+
+  .section-icon { font-size: 18px; }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .section-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .section-body { padding: 20px; }
+
+  /* ── RADIO TABS ─────────────────── */
+  .radio-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .radio-tab {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .radio-tab input {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+
+  .radio-tab-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--surface2);
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .radio-tab input:checked + .radio-tab-label {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .radio-tab-label:hover { color: var(--text); border-color: var(--border); background: var(--surface3); }
+  .radio-tab input:checked + .radio-tab-label:hover { color: var(--accent); }
+
+  /* ── EXISTING CLIENT LOOKUP ─────── */
+  .lookup-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .lookup-row .form-input { flex: 1; }
+
+  .lookup-result {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    display: none;
+  }
+
+  .lookup-result.found {
+    background: rgba(74,222,128,0.1);
+    border: 1px solid rgba(74,222,128,0.3);
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lookup-result.not-found {
+    background: rgba(248,113,113,0.1);
+    border: 1px solid rgba(248,113,113,0.3);
+    color: var(--red);
+    display: block;
+  }
+
+  /* ── FORM FIELDS ────────────────── */
+  .form-group { margin-bottom: 14px; }
+  .form-group:last-child { margin-bottom: 0; }
+
+  .form-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .required-star { color: var(--accent); margin-right: 2px; }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--font-body);
+    outline: none;
+    transition: border-color 0.15s;
+    direction: rtl;
+    text-align: right;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    background: var(--surface3);
+  }
+
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--text-dim); }
+
+  .form-select { cursor: pointer; }
+  .form-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── PACKAGES ────────────────────── */
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .pkg-option {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .pkg-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+
+  .pkg-card {
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 14px;
+    background: var(--surface2);
+    transition: all 0.15s;
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pkg-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--pkg-color, var(--accent));
+  }
+
+  .pkg-option input:checked + .pkg-card {
+    border-color: var(--pkg-color, var(--accent));
+    background: var(--surface3);
+  }
+
+  .pkg-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .pkg-card-check {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--pkg-color, var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    color: #111;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .pkg-option input:checked + .pkg-card .pkg-card-check { opacity: 1; }
+
+  .pkg-card-name { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .pkg-card-price { font-family: var(--font-display); font-size: 24px; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+  .pkg-card-price span { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); }
+  .pkg-card-duration { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+  .pkg-card-services { display: flex; flex-direction: column; gap: 3px; }
+  .pkg-service { font-size: 11px; color: var(--text-muted); }
+  .pkg-service::before { content: '✓ '; color: var(--green); }
+
+  /* ── DATE/TIME ───────────────────── */
+  input[type="datetime-local"] {
+    color-scheme: dark;
+  }
+
+  /* ── SUBMIT ──────────────────────── */
+  .submit-section {
+    text-align: center;
+  }
+
+  .btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 40px;
+    background: var(--accent);
+    color: #111;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-submit:hover { background: #f0d050; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .submit-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 12px;
+  }
+
+  /* ── SUCCESS SCREEN ──────────────── */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 24px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .success-screen.show { display: block; }
+
+  .success-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+  }
+
+  .success-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    margin-bottom: 12px;
+    color: var(--green);
+  }
+
+  .success-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .success-ref {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .success-ref strong { color: var(--accent); font-size: 16px; }
+
+  /* ── REQUIRED ERROR ──────────────── */
+  .form-input.error, .form-select.error { border-color: var(--red); }
+  .error-msg { font-size: 11px; color: var(--red); margin-top: 4px; display: none; }
+  .error-msg.show { display: block; }
+
+  /* ── HIDDEN ──────────────────────── */
+  .hidden { display: none !important; }
+
+  /* ── RESPONSIVE ──────────────────── */
+  @media (max-width: 600px) {
+    .packages-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .form-row-3 { grid-template-columns: 1fr 1fr; }
+    .hero-title { font-size: 24px; }
+    .radio-tabs { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">📷 PhotoDesk</div>
+  <div class="header-divider"></div>
+  <div class="header-name">Sisa Aero Photography</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-title">הזמנת צילום נדל"ן</div>
+  <div class="hero-sub">מלא את הפרטים ואחזור אליך לאישור מועד הצילום בהקדם</div>
+</div>
+
+<!-- SUCCESS SCREEN -->
+<div class="success-screen" id="success-screen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">ההזמנה נשלחה בהצלחה!</div>
+  <div class="success-sub">
+    קיבלנו את פרטי ההזמנה שלך.<br>
+    נחזור אליך בהקדם לאישור מועד הצילום.
+  </div>
+  <div class="success-ref">מספר הזמנה: <strong id="order-ref">—</strong></div>
+</div>
+
+<!-- FORM -->
+<form class="container" id="booking-form" onsubmit="submitBooking(event)">
+
+  <!-- ── SECTION 1: CLIENT ───────── -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">👤</span>
+      <div>
+        <div class="section-title">פרטי המתווך / לקוח</div>
+        <div class="section-subtitle">לקוח קיים או חדש?</div>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <!-- Radio: existing / new -->
+      <div class="radio-tabs">
+        <label class="radio-tab">
+          <input type="radio" name="client-type" value="existing" id="type-existing" onchange="toggleClientType('existing')">
+          <span class="radio-tab-label">👋 לקוח קיים</span>
+        </label>
+        <label class="radio-tab">
+          <input type="radio" name="client-type" value="new" id="type-new" onchange="toggleClientType('new')" checked>
+          <span class="radio-tab-label">✨ לקוח חדש</span>
+        </label>
+      </div>
+
+      <!-- Existing client lookup -->
+      <div id="existing-section" class="hidden">
+        <div class="form-group">
+          <label class="form-label">מייל או טלפון</label>
+          <div class="lookup-row">
+            <input class="form-input" id="lookup-input" placeholder="050-000-0000 או name@email.com" oninput="clearLookup()">
+            <button type="button" class="btn-submit" style="width:auto; padding:10px 20px; font-size:14px;" onclick="lookupClient()">חפש</button>
+          </div>
+          <div class="lookup-result" id="lookup-result"></div>
+        </div>
+      </div>
+
+      <!-- New client fields -->
+      <div id="new-section">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="required-star">*</span>שם פרטי</label>
+            <input class="form-input" id="cust-first" placeholder="דנה">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="required-star">*</span>שם משפחה</label>
+            <input class="form-input" id="cust-last" placeholder="כהן">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="required-star">*</span>טלפון</label>
+            <input class="form-input" type="tel" id="cust-phone" placeholder="050-000-0000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">אימייל</label>
+            <input class="form-input" type="email" id="cust-email" placeholder="dana@remax.co.il">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">חברה / סוכנות</label>
+          <input class="form-input" id="cust-company" placeholder="רי/מקס ישראל">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: PROPERTY ────── -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">🏠</span>
+      <div>
+        <div class="section-title">פרטי הנכס</div>
+        <div class="section-subtitle">כתובת ומאפיינים</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="form-group">
+        <label class="form-label"><span class="required-star">*</span>כתובת הנכס</label>
+        <input class="form-input" id="prop-address" placeholder="רחוב הרצל 10, דירה 4">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label"><span class="required-star">*</span>עיר</label>
+          <input class="form-input" id="prop-city" placeholder="תל אביב">
+        </div>
+        <div class="form-group">
+          <label class="form-label">שכונה / אזור</label>
+          <input class="form-input" id="prop-neighborhood" placeholder="פלורנטין">
+        </div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">חדרים</label>
+          <input class="form-input" type="number" id="prop-rooms" placeholder="3" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">חד' אמבטיה</label>
+          <input class="form-input" type="number" id="prop-baths" placeholder="1" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">קומה</label>
+          <input class="form-input" type="number" id="prop-floor" placeholder="2" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">שטח בנוי (מ"ר)</label>
+          <input class="form-input" type="number" id="prop-area" placeholder="85">
+        </div>
+        <div class="form-group">
+          <label class="form-label">שנת בנייה</label>
+          <input class="form-input" type="number" id="prop-year" placeholder="2010">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">הערות לצלם</label>
+        <textarea class="form-textarea" id="prop-notes" placeholder="קודי כניסה, חניה, דגשים מיוחדים, מה חשוב להדגיש בנכס..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: PACKAGE ──────── -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">📦</span>
+      <div>
+        <div class="section-title">בחר חבילה</div>
+        <div class="section-subtitle">בחר את החבילה המתאימה לנכס</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="packages-grid" id="packages-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: SCHEDULE ──────── -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">📅</span>
+      <div>
+        <div class="section-title">תאריך וזמן מועדף</div>
+        <div class="section-subtitle">נאשר בהתאם לזמינות</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">תאריך ושעה מועדפים</label>
+          <input class="form-input" type="datetime-local" id="shoot-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">גמישות בתאריך</label>
+          <select class="form-select" id="shoot-flexibility">
+            <option value="exact">תאריך קבוע</option>
+            <option value="flexible-week">גמיש — תוך שבוע</option>
+            <option value="flexible-2weeks">גמיש — תוך שבועיים</option>
+            <option value="asap">מוקדם ככל האפשר</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SUBMIT ──────────────────── -->
+  <div class="submit-section">
+    <button type="submit" class="btn-submit" id="submit-btn">
+      שלח הזמנה ←
+    </button>
+    <div class="submit-note">על ידי שליחת הטופס אתה מסכים לתנאי השירות. לא תחויב עד לאישור ההזמנה.</div>
+  </div>
+
+</form>
+
+<script>
+// ══════════════════════════════════════════════════
+//  PACKAGES DATA (synced with main app via localStorage)
+// ══════════════════════════════════════════════════
+const packages = loadPackages();
+
+function loadPackages() {
+  try {
+    const saved = localStorage.getItem('photoDesk_store');
+    if (saved) {
+      const store = JSON.parse(saved);
+      if (store.packages && store.packages.length) return store.packages;
+    }
+  } catch(e) {}
+  // fallback defaults
+  return [
+    { id:'P001', name:'חבילה בסיסית', price:800, duration:90,
+      services:['צילום סיגנצ\'ר','תוכנית קומה'], color:'var(--blue)' },
+    { id:'P002', name:'חבילה פרמיום', price:1200, duration:180,
+      services:['וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'], color:'var(--purple)' },
+    { id:'P003', name:'חבילה אינסופית', price:2000, duration:240,
+      services:['צילום סיגנצ\'ר','וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'], color:'var(--accent)' },
+  ];
+}
+
+let selectedPackageId = null;
+let foundClientId = null;
+
+// ══════════════════════════════════════════════════
+//  RENDER PACKAGES
+// ══════════════════════════════════════════════════
+function renderPackages() {
+  const grid = document.getElementById('packages-grid');
+  grid.innerHTML = packages.map(p => `
+    <label class="pkg-option">
+      <input type="radio" name="package" value="${p.id}" onchange="selectPackage('${p.id}')">
+      <div class="pkg-card" style="--pkg-color:${p.color}">
+        <div class="pkg-card-check">✓</div>
+        <div class="pkg-card-name">${p.name}</div>
+        <div class="pkg-card-price">₪${p.price.toLocaleString('he-IL')}<span>/צילום</span></div>
+        <div class="pkg-card-duration">⏱ ${formatDuration(p.duration)}</div>
+        <div class="pkg-card-services">
+          ${p.services.map(s => `<div class="pkg-service">${s}</div>`).join('')}
+        </div>
+      </div>
+    </label>
+  `).join('');
+}
+
+function formatDuration(min) {
+  if (min < 60) return min + ' דק\'';
+  const h = Math.floor(min/60);
+  const m = min % 60;
+  return h + ' שעות' + (m ? ' ' + m + ' דק\'' : '');
+}
+
+function selectPackage(id) {
+  selectedPackageId = id;
+}
+
+// ══════════════════════════════════════════════════
+//  CLIENT TYPE TOGGLE
+// ══════════════════════════════════════════════════
+function toggleClientType(type) {
+  const existingSec = document.getElementById('existing-section');
+  const newSec = document.getElementById('new-section');
+  if (type === 'existing') {
+    existingSec.classList.remove('hidden');
+    newSec.classList.add('hidden');
+    foundClientId = null;
+  } else {
+    existingSec.classList.add('hidden');
+    newSec.classList.remove('hidden');
+    foundClientId = null;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  EXISTING CLIENT LOOKUP
+// ══════════════════════════════════════════════════
+function lookupClient() {
+  const query = document.getElementById('lookup-input').value.trim().toLowerCase();
+  const resultEl = document.getElementById('lookup-result');
+  if (!query) return;
+
+  let customers = [];
+  try {
+    const saved = localStorage.getItem('photoDesk_store');
+    if (saved) customers = JSON.parse(saved).customers || [];
+  } catch(e) {}
+
+  const match = customers.find(c =>
+    c.email.toLowerCase() === query ||
+    c.phone.replace(/[-\s]/g,'') === query.replace(/[-\s]/g,'')
+  );
+
+  if (match) {
+    foundClientId = match.id;
+    resultEl.className = 'lookup-result found';
+    resultEl.innerHTML = `✓ נמצא: <strong>${match.first} ${match.last}</strong> — ${match.company || match.email}`;
+  } else {
+    foundClientId = null;
+    resultEl.className = 'lookup-result not-found';
+    resultEl.innerHTML = `לא נמצא לקוח עם פרטים אלו. <a href="#" onclick="switchToNew()" style="color:var(--accent);text-decoration:none;">מלא פרטים חדשים ←</a>`;
+  }
+}
+
+function clearLookup() {
+  foundClientId = null;
+  const resultEl = document.getElementById('lookup-result');
+  resultEl.className = 'lookup-result';
+  resultEl.innerHTML = '';
+}
+
+function switchToNew() {
+  document.getElementById('type-new').checked = true;
+  toggleClientType('new');
+  return false;
+}
+
+// ══════════════════════════════════════════════════
+//  SUBMIT
+// ══════════════════════════════════════════════════
+function submitBooking(e) {
+  e.preventDefault();
+
+  const isExisting = document.getElementById('type-existing').checked;
+
+  // Validate
+  if (!selectedPackageId) {
+    alert('נא לבחור חבילה');
+    document.getElementById('packages-grid').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
+  const address = document.getElementById('prop-address').value.trim();
+  const city = document.getElementById('prop-city').value.trim();
+  if (!address || !city) {
+    alert('נא למלא כתובת ועיר');
+    return;
+  }
+
+  // Client data
+  let clientData = null;
+  if (isExisting) {
+    if (!foundClientId) {
+      alert('נא לחפש ולאמת לקוח קיים, או עבור ללקוח חדש');
+      return;
+    }
+    clientData = { id: foundClientId, isExisting: true };
+  } else {
+    const first = document.getElementById('cust-first').value.trim();
+    const last  = document.getElementById('cust-last').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
+    if (!first || !last || !phone) {
+      alert('נא למלא שם ומספר טלפון');
+      return;
+    }
+    clientData = {
+      id: 'C' + Date.now(),
+      isExisting: false,
+      first, last, phone,
+      email:   document.getElementById('cust-email').value.trim(),
+      company: document.getElementById('cust-company').value.trim(),
+      listings: 0
+    };
+  }
+
+  // Find package name
+  const pkg = packages.find(p => p.id === selectedPackageId);
+
+  // Build booking object
+  const booking = {
+    id: 'B' + Date.now(),
+    createdAt: new Date().toISOString(),
+    client: clientData,
+    property: {
+      address,
+      city,
+      neighborhood: document.getElementById('prop-neighborhood').value.trim(),
+      rooms:  document.getElementById('prop-rooms').value,
+      baths:  document.getElementById('prop-baths').value,
+      floor:  document.getElementById('prop-floor').value,
+      area:   document.getElementById('prop-area').value,
+      year:   document.getElementById('prop-year').value,
+      notes:  document.getElementById('prop-notes').value.trim(),
+    },
+    package: { id: selectedPackageId, name: pkg ? pkg.name : '' },
+    shootDate:    document.getElementById('shoot-date').value,
+    flexibility:  document.getElementById('shoot-flexibility').value,
+    status: 'pending'
+  };
+
+  // Save to localStorage
+  try {
+    const existing = JSON.parse(localStorage.getItem('photoDesk_pending') || '[]');
+    existing.push(booking);
+    localStorage.setItem('photoDesk_pending', JSON.stringify(existing));
+  } catch(err) {
+    console.error('Failed to save booking', err);
+  }
+
+  // Show success
+  document.getElementById('booking-form').classList.add('hidden');
+  const success = document.getElementById('success-screen');
+  success.classList.add('show');
+  document.getElementById('order-ref').textContent = booking.id;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── INIT ──────────────────────────────────────────
+renderPackages();
+</script>
+</body>
+</html>

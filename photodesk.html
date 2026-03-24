@@ -744,6 +744,21 @@
   .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
   .toggle input:checked + .toggle-slider::before { transform: translateX(16px); background: #111; }
 
+  /* ── BOOKING CARD ───────────────── */
+  .booking-card {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .booking-card:last-child { border-bottom: none; }
+  .booking-card:hover { background: var(--surface2); }
+  .booking-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+  .booking-tag { font-size: 11px; background: var(--surface3); padding: 2px 8px; border-radius: 20px; color: var(--text-muted); }
+  .booking-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
   /* ── SCROLLBAR ──────────────────── */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -907,16 +922,17 @@
 
     <!-- ════════════════ ORDERS PAGE ════════════════ -->
     <div class="page" id="page-orders">
-      <div class="table-wrap">
+      <div class="table-wrap" style="margin-bottom:20px;">
         <div class="table-header">
-          <span class="table-title">הזמנות</span>
+          <span class="table-title">הזמנות ממתינות לאישור</span>
           <span class="table-count" id="orders-count">0</span>
+          <a href="booking.html" target="_blank" class="btn btn-ghost" style="margin-right:auto; font-size:12px; text-decoration:none;">🔗 לינק להזמנה</a>
         </div>
         <div id="orders-list">
           <div class="empty-state">
             <div class="empty-icon">📋</div>
-            <div class="empty-title">אין הזמנות עדיין</div>
-            <div class="empty-sub">צור הזמנה מנכס קיים או לחץ על הכפתור למעלה</div>
+            <div class="empty-title">אין הזמנות ממתינות</div>
+            <div class="empty-sub">שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן</div>
           </div>
         </div>
       </div>
@@ -1725,10 +1741,200 @@ function triggerUpload(type) {
 }
 
 // ══════════════════════════════════════════════════
+//  LOCALSTORAGE PERSISTENCE
+// ══════════════════════════════════════════════════
+function saveStore() {
+  try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
+}
+
+function loadStore() {
+  try {
+    const saved = localStorage.getItem('photoDesk_store');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.listings && parsed.listings.length)  store.listings  = parsed.listings;
+      if (parsed.customers && parsed.customers.length) store.customers = parsed.customers;
+      if (parsed.packages && parsed.packages.length)  store.packages  = parsed.packages;
+      if (parsed.services && parsed.services.length)  store.services  = parsed.services;
+      if (parsed.addons && parsed.addons.length)      store.addons    = parsed.addons;
+      if (parsed.schedule && parsed.schedule.length)  store.schedule  = parsed.schedule;
+    }
+  } catch(e) {}
+}
+
+// Patch save into mutations
+const _origSave = saveListing;
+function saveListing() { _origSave && _origSave.apply(this, arguments); saveStore(); }
+
+// ══════════════════════════════════════════════════
+//  ORDERS — PENDING BOOKINGS
+// ══════════════════════════════════════════════════
+function renderOrders() {
+  const pending = loadPendingBookings();
+  const countEl = document.getElementById('orders-count');
+  const listEl  = document.getElementById('orders-list');
+  countEl.textContent = pending.length;
+
+  if (!pending.length) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">אין הזמנות ממתינות</div>
+        <div class="empty-sub">שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן</div>
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = pending.map(b => {
+    const p = b.property;
+    const clientLabel = b.client.isExisting
+      ? (store.customers.find(c => c.id === b.client.id) || {first:'',last:''})
+      : b.client;
+    const name = clientLabel.first + ' ' + clientLabel.last;
+    const dateStr = b.createdAt ? new Date(b.createdAt).toLocaleDateString('he-IL') : '';
+    const shootStr = b.shootDate ? new Date(b.shootDate).toLocaleDateString('he-IL', {day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : 'לא צוין';
+    return `
+      <div class="booking-card">
+        <div>
+          <div style="font-weight:600; font-size:14px;">${p.address}, ${p.city}</div>
+          <div class="booking-meta">
+            <span class="booking-tag">👤 ${name}</span>
+            <span class="booking-tag">📦 ${b.package.name}</span>
+            <span class="booking-tag">📅 ${shootStr}</span>
+            ${p.rooms ? `<span class="booking-tag">${p.rooms} חד'</span>` : ''}
+            ${p.notes ? `<span class="booking-tag" title="${p.notes}">📝 יש הערות</span>` : ''}
+            <span style="font-size:11px; color:var(--text-dim);">נשלח ${dateStr}</span>
+          </div>
+        </div>
+        <div class="booking-actions">
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="viewBooking('${b.id}')">פרטים</button>
+          <button class="btn btn-primary" style="font-size:12px;" onclick="approveBooking('${b.id}')">✓ אשר</button>
+          <button class="btn btn-danger" style="font-size:12px;" onclick="rejectBooking('${b.id}')">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function loadPendingBookings() {
+  try { return JSON.parse(localStorage.getItem('photoDesk_pending') || '[]'); } catch(e) { return []; }
+}
+
+function savePendingBookings(list) {
+  try { localStorage.setItem('photoDesk_pending', JSON.stringify(list)); } catch(e) {}
+}
+
+function approveBooking(id) {
+  const pending = loadPendingBookings();
+  const b = pending.find(x => x.id === id);
+  if (!b) return;
+
+  // Add customer if new
+  let customerId = '';
+  if (b.client.isExisting) {
+    customerId = b.client.id;
+  } else {
+    const existingCust = store.customers.find(c =>
+      c.phone === b.client.phone || (b.client.email && c.email === b.client.email)
+    );
+    if (existingCust) {
+      customerId = existingCust.id;
+      existingCust.listings = (existingCust.listings || 0) + 1;
+    } else {
+      customerId = b.client.id;
+      store.customers.push({
+        id: customerId,
+        first: b.client.first,
+        last:  b.client.last,
+        email: b.client.email || '',
+        phone: b.client.phone || '',
+        company: b.client.company || '',
+        listings: 1
+      });
+    }
+  }
+
+  // Create listing
+  const p = b.property;
+  store.listings.unshift({
+    id: 'L' + Date.now(),
+    address: p.address,
+    city: p.city,
+    state: p.neighborhood || '',
+    zip: '',
+    beds: +p.rooms || 0,
+    baths: +p.baths || 0,
+    stories: +p.floor || 1,
+    area: +p.area || 0,
+    lot: 0,
+    year: +p.year || 0,
+    pkg: b.package.name,
+    status: 'מתוכנן',
+    customer: customerId,
+    mls: '',
+    created: new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'}),
+    photos: 0,
+    desc: '',
+    notes: p.notes || '',
+    agent: '',
+    shootDate: b.shootDate || ''
+  });
+
+  // Remove from pending
+  savePendingBookings(pending.filter(x => x.id !== id));
+  saveStore();
+  renderOrders();
+  updateOrdersBadge();
+}
+
+function rejectBooking(id) {
+  if (!confirm('למחוק הזמנה זו?')) return;
+  savePendingBookings(loadPendingBookings().filter(x => x.id !== id));
+  renderOrders();
+  updateOrdersBadge();
+}
+
+function viewBooking(id) {
+  const b = loadPendingBookings().find(x => x.id === id);
+  if (!b) return;
+  const p = b.property;
+  const c = b.client;
+  const clientStr = c.isExisting ? 'לקוח קיים' : `${c.first} ${c.last} · ${c.phone}${c.company ? ' · ' + c.company : ''}`;
+  alert(`📋 פרטי הזמנה ${b.id}\n\nנכס: ${p.address}, ${p.city}${p.neighborhood ? ' (' + p.neighborhood + ')' : ''}\nחדרים: ${p.rooms || '—'} | שטח: ${p.area ? p.area + ' מ"ר' : '—'}\n\nלקוח: ${clientStr}\nחבילה: ${b.package.name}\nמועד: ${b.shootDate || 'לא צוין'}\n\nהערות:\n${p.notes || 'אין'}`);
+}
+
+function updateOrdersBadge() {
+  const count = loadPendingBookings().length;
+  const badge = document.querySelector('.nav-item[onclick="navigate(\'orders\')"] .nav-badge');
+  if (count > 0) {
+    if (!badge) {
+      const navItem = document.querySelector('.nav-item[onclick="navigate(\'orders\')"]');
+      const b = document.createElement('span');
+      b.className = 'nav-badge';
+      b.id = 'orders-badge';
+      navItem.appendChild(b);
+    }
+    document.getElementById('orders-badge') && (document.getElementById('orders-badge').textContent = count);
+  } else {
+    const b = document.getElementById('orders-badge');
+    if (b) b.remove();
+  }
+}
+
+// patch renderPage to include orders
+const _origRenderPage = renderPage;
+function renderPage(page) {
+  _origRenderPage(page);
+  if (page === 'orders') renderOrders();
+}
+
+// ══════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════
+loadStore();
+saveStore(); // expose packages to booking.html
 renderListings();
 renderCalendar();
+updateOrdersBadge();
 </script>
 </body>
 </html>
