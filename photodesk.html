@@ -1930,7 +1930,8 @@ function openCustomer(id) {
   // Quick action buttons
   const phone = c.phone.replace(/[-\s]/g, '');
   document.getElementById('cp-call-btn').href = 'tel:' + c.phone;
-  document.getElementById('cp-wa-btn').href   = 'https://wa.me/972' + phone.replace(/^0/, '');
+  const waMsg = encodeURIComponent(`שלום ${c.first}, אני צלם הנדל"ן דורון מ-Sisa Aero Photography 📷\nאשמח לעמוד לשירותך!`);
+  document.getElementById('cp-wa-btn').href   = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + waMsg;
 
   // Stats
   const custListings = store.listings.filter(l => l.customer === id);
