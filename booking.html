@@ -873,6 +873,41 @@ function submitBooking(e) {
     return;
   }
 
+  // Send email notification via Formsubmit.co (fire-and-forget)
+  try {
+    const clientName = clientData.isExisting
+      ? (clientData.first + ' ' + (clientData.last || '')).trim()
+      : (clientData.first + ' ' + clientData.last).trim();
+    const emailBody = [
+      '📸 הזמנה חדשה התקבלה ב-PhotoDesk',
+      '',
+      '🆔 מספר הזמנה: ' + booking.id,
+      '👤 לקוח: ' + clientName + (clientData.company ? ' / ' + clientData.company : ''),
+      '📞 טלפון: ' + (clientData.phone || '—'),
+      '📦 חבילה: ' + booking.package.name,
+      '🏠 כתובת: ' + booking.property.address + ', ' + booking.property.city,
+      '📐 שטח: ' + (booking.property.area || '—') + ' מ"ר | חדרים: ' + (booking.property.rooms || '—'),
+      '📅 תאריך מועדף: ' + (booking.shootDate || 'גמיש'),
+      '📝 הערות: ' + (booking.property.notes || '—'),
+    ].join('\n');
+
+    fetch('https://formsubmit.co/ajax/edmontdoron@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: '📸 הזמנה חדשה – ' + clientName + ' | ' + booking.property.city,
+        _template: 'box',
+        message: emailBody,
+        booking_id: booking.id,
+        client: clientName,
+        phone: clientData.phone || '',
+        package: booking.package.name,
+        address: booking.property.address + ', ' + booking.property.city,
+        shoot_date: booking.shootDate || 'גמיש',
+      })
+    }).catch(() => {}); // silent fail — booking is already saved
+  } catch(_) {}
+
   // Show success
   document.getElementById('booking-form').classList.add('hidden');
   const success = document.getElementById('success-screen');
