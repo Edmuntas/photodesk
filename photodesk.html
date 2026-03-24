@@ -706,6 +706,58 @@
   .cust-email { font-size: 12px; color: var(--text-muted); }
   .cust-listings { margin-right: auto; font-size: 12px; color: var(--text-muted); }
 
+  /* ── CUSTOMER PANEL ──────────────── */
+  .cust-panel-hero {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--surface2) 0%, var(--surface) 100%);
+  }
+  .cust-panel-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 20px; color: #fff;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+  }
+  .cust-panel-name { font-family: var(--font-display); font-size: 20px; line-height: 1.2; margin-bottom: 2px; }
+  .cust-panel-company { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+  .cust-quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cust-quick-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: var(--radius-sm);
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface3);
+    color: var(--text-muted); transition: all 0.15s;
+    font-family: var(--font-body); text-decoration: none;
+  }
+  .cust-quick-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+  .cust-stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .cust-stat {
+    padding: 14px 16px;
+    border-left: 1px solid var(--border);
+    text-align: center;
+  }
+  .cust-stat:last-child { border-left: none; }
+  .cust-stat-value { font-family: var(--font-display); font-size: 22px; color: var(--text); line-height: 1; margin-bottom: 4px; }
+  .cust-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+  .cust-listing-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .cust-listing-row:last-child { border-bottom: none; }
+  .cust-listing-row:hover .cust-listing-addr { color: var(--accent); }
+  .cust-listing-addr { font-size: 13px; font-weight: 500; flex: 1; }
+  .cust-listing-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
   /* ── SECTION DIVIDER ────────────── */
   .section-title {
     font-size: 11px;
@@ -1062,7 +1114,7 @@
 </div><!-- /main -->
 
 <!-- PANEL OVERLAY -->
-<div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel(); closeCustomerPanel();"></div>
 
 <!-- LISTING DETAIL PANEL -->
 <div class="detail-panel" id="listing-panel">
@@ -1213,6 +1265,102 @@
       </div>
       <button class="btn btn-primary" onclick="saveListing()">שמור הערות</button>
     </div>
+  </div>
+</div>
+
+<!-- CUSTOMER PANEL -->
+<div class="detail-panel" id="customer-panel">
+  <!-- Hero -->
+  <div class="cust-panel-hero">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div class="cust-panel-avatar" id="cp-avatar"></div>
+      <div class="panel-close" onclick="closeCustomerPanel()" style="margin-right:0;">✕</div>
+    </div>
+    <div class="cust-panel-name" id="cp-name"></div>
+    <div class="cust-panel-company" id="cp-company"></div>
+    <div class="cust-quick-actions">
+      <a class="cust-quick-btn" id="cp-call-btn" href="#">📞 חייג</a>
+      <a class="cust-quick-btn" id="cp-wa-btn" href="#" target="_blank">💬 WhatsApp</a>
+      <button class="cust-quick-btn" onclick="sendBookingLink()">🔗 שלח לינק הזמנה</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="cust-stats-row">
+    <div class="cust-stat">
+      <div class="cust-stat-value" id="cp-stat-total">0</div>
+      <div class="cust-stat-label">צילומים</div>
+    </div>
+    <div class="cust-stat">
+      <div class="cust-stat-value" id="cp-stat-revenue">₪0</div>
+      <div class="cust-stat-label">הכנסה</div>
+    </div>
+    <div class="cust-stat">
+      <div class="cust-stat-value" id="cp-stat-last">—</div>
+      <div class="cust-stat-label">צילום אחרון</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="panel-tabs">
+    <div class="panel-tab active" onclick="switchCustomerTab('active')">פעיל</div>
+    <div class="panel-tab" onclick="switchCustomerTab('history')">היסטוריה</div>
+    <div class="panel-tab" onclick="switchCustomerTab('notes')">הערות</div>
+    <div class="panel-tab" onclick="switchCustomerTab('edit')">פרטים</div>
+  </div>
+
+  <div class="panel-content">
+
+    <!-- Active -->
+    <div class="panel-tab-content active" id="cp-tab-active">
+      <div id="cp-active-list"></div>
+    </div>
+
+    <!-- History -->
+    <div class="panel-tab-content" id="cp-tab-history">
+      <div id="cp-history-list"></div>
+    </div>
+
+    <!-- Notes -->
+    <div class="panel-tab-content" id="cp-tab-notes">
+      <div class="form-group" style="margin-top:4px;">
+        <label class="form-label">הערות פרטיות</label>
+        <textarea class="form-textarea" id="cp-notes" style="min-height:160px;"
+          placeholder="אופי הלקוח, העדפות, דגשים חשובים, היסטוריה מיוחדת..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveCustomerNotes()">שמור הערות</button>
+    </div>
+
+    <!-- Edit -->
+    <div class="panel-tab-content" id="cp-tab-edit">
+      <div class="form-row" style="margin-top:4px;">
+        <div class="form-group">
+          <label class="form-label">שם פרטי</label>
+          <input class="form-input" id="cp-first" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">שם משפחה</label>
+          <input class="form-input" id="cp-last" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">טלפון</label>
+        <input class="form-input" type="tel" id="cp-phone" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">אימייל</label>
+        <input class="form-input" type="email" id="cp-email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">חברה / סוכנות</label>
+        <input class="form-input" id="cp-company-input" />
+      </div>
+      <div style="display:flex; gap:10px; margin-top:4px;">
+        <button class="btn btn-primary" onclick="saveCustomerInfo()">שמור שינויים</button>
+        <button class="btn btn-danger" onclick="deleteCustomer()">מחק לקוח</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1601,17 +1749,30 @@ function createListing() {
 //  CUSTOMERS
 // ══════════════════════════════════════════════════
 function renderCustomers() {
-  document.getElementById('customers-list').innerHTML = store.customers.map(c => `
-    <div class="customer-card">
+  if (!store.customers.length) {
+    document.getElementById('customers-list').innerHTML =
+      '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">אין לקוחות עדיין</div><div class="empty-sub">הוסף את הלקוח הראשון שלך למעלה</div></div>';
+    return;
+  }
+  document.getElementById('customers-list').innerHTML = store.customers.map(c => {
+    const custListings = store.listings.filter(l => l.customer === c.id);
+    const active = custListings.filter(l => l.status !== 'נמסר').length;
+    const total  = custListings.length;
+    return `
+    <div class="customer-card" onclick="openCustomer('${c.id}')">
       <div class="cust-avatar">${c.first[0]}${c.last[0]}</div>
-      <div>
+      <div style="flex:1; min-width:0;">
         <div class="cust-name">${c.first} ${c.last}</div>
-        <div class="cust-email">${c.email} · ${c.phone}</div>
-        <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${c.company}</div>
+        <div class="cust-email">${c.phone}${c.email ? ' · ' + c.email : ''}</div>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${c.company || ''}</div>
       </div>
-      <div class="cust-listings">${c.listings} נכס${c.listings !== 1 ? 'ים' : ''}</div>
-    </div>
-  `).join('') || '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">אין לקוחות עדיין</div><div class="empty-sub">הוסף את הלקוח הראשון שלך למעלה</div></div>';
+      <div style="text-align:center; flex-shrink:0;">
+        <div style="font-family:var(--font-display); font-size:18px;">${total}</div>
+        <div style="font-size:10px; color:var(--text-muted);">צילומים</div>
+        ${active ? `<div style="font-size:10px; color:var(--accent); margin-top:2px;">${active} פעיל</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function createCustomer() {
@@ -1749,6 +1910,152 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function triggerUpload(type) {
   const label = type === 'photos' ? 'תמונות' : type === 'videos' ? 'סרטונים' : 'תוכניות קומה';
   alert(`העלאת ${label} — בגרסת הדסקטופ המלאה, פעולה זו תפתח חלון בחירת קבצים.`);
+}
+
+// ══════════════════════════════════════════════════
+//  CUSTOMER PANEL
+// ══════════════════════════════════════════════════
+let currentCustomer = null;
+
+function openCustomer(id) {
+  const c = store.customers.find(x => x.id === id);
+  if (!c) return;
+  currentCustomer = c;
+
+  // Avatar + header
+  document.getElementById('cp-avatar').textContent = c.first[0] + c.last[0];
+  document.getElementById('cp-name').textContent    = c.first + ' ' + c.last;
+  document.getElementById('cp-company').textContent = [c.company, c.email].filter(Boolean).join(' · ');
+
+  // Quick action buttons
+  const phone = c.phone.replace(/[-\s]/g, '');
+  document.getElementById('cp-call-btn').href = 'tel:' + c.phone;
+  document.getElementById('cp-wa-btn').href   = 'https://wa.me/972' + phone.replace(/^0/, '');
+
+  // Stats
+  const custListings = store.listings.filter(l => l.customer === id);
+  const pkgPriceMap  = Object.fromEntries(store.packages.map(p => [p.name, p.price]));
+  const revenue      = custListings
+    .filter(l => l.status === 'נמסר')
+    .reduce((sum, l) => sum + (pkgPriceMap[l.pkg] || 0), 0);
+  const lastListing  = [...custListings].sort((a, b) => b.id.localeCompare(a.id))[0];
+
+  document.getElementById('cp-stat-total').textContent   = custListings.length;
+  document.getElementById('cp-stat-revenue').textContent = revenue ? '₪' + revenue.toLocaleString('he-IL') : '₪0';
+  document.getElementById('cp-stat-last').textContent    = lastListing ? lastListing.created.split(' ').slice(0,2).join(' ') : '—';
+
+  // Active listings tab
+  const active = custListings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל');
+  document.getElementById('cp-active-list').innerHTML = active.length
+    ? active.map(l => `
+        <div class="cust-listing-row" onclick="openListingFromCustomer('${l.id}')">
+          <div style="flex:1;">
+            <div class="cust-listing-addr">${l.address}</div>
+            <div class="cust-listing-meta">${l.city} · ${l.pkg}</div>
+          </div>
+          <span class="badge ${badgeClass(l.status)}">${l.status}</span>
+        </div>`).join('')
+    : '<div style="color:var(--text-muted); font-size:13px; padding:20px 0; text-align:center;">אין נכסים פעילים</div>';
+
+  // History tab
+  const delivered = custListings.filter(l => l.status === 'נמסר');
+  document.getElementById('cp-history-list').innerHTML = delivered.length
+    ? delivered.map(l => `
+        <div class="cust-listing-row" onclick="openListingFromCustomer('${l.id}')">
+          <div style="flex:1;">
+            <div class="cust-listing-addr">${l.address}</div>
+            <div class="cust-listing-meta">${l.city} · ${l.pkg} · ${l.created}</div>
+          </div>
+          <span style="font-size:13px; font-weight:600; color:var(--accent);">
+            ${pkgPriceMap[l.pkg] ? '₪' + pkgPriceMap[l.pkg].toLocaleString('he-IL') : ''}
+          </span>
+        </div>`).join('')
+    : '<div style="color:var(--text-muted); font-size:13px; padding:20px 0; text-align:center;">אין היסטוריה עדיין</div>';
+
+  // Notes + edit fields
+  document.getElementById('cp-notes').value          = c.notes || '';
+  document.getElementById('cp-first').value          = c.first;
+  document.getElementById('cp-last').value           = c.last;
+  document.getElementById('cp-phone').value          = c.phone;
+  document.getElementById('cp-email').value          = c.email || '';
+  document.getElementById('cp-company-input').value  = c.company || '';
+
+  switchCustomerTab('active');
+  document.getElementById('customer-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('open');
+}
+
+function closeCustomerPanel() {
+  document.getElementById('customer-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('open');
+}
+
+function switchCustomerTab(tab) {
+  const tabs = ['active', 'history', 'notes', 'edit'];
+  document.querySelectorAll('#customer-panel .panel-tab').forEach((t, i) => {
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('#customer-panel .panel-tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('cp-tab-' + tab).classList.add('active');
+}
+
+function saveCustomerNotes() {
+  if (!currentCustomer) return;
+  currentCustomer.notes = document.getElementById('cp-notes').value;
+  saveStore();
+  const btn = event.target;
+  btn.textContent = '✓ נשמר';
+  btn.style.background = 'var(--green)';
+  setTimeout(() => { btn.textContent = 'שמור הערות'; btn.style.background = ''; }, 1500);
+}
+
+function saveCustomerInfo() {
+  if (!currentCustomer) return;
+  currentCustomer.first   = document.getElementById('cp-first').value.trim();
+  currentCustomer.last    = document.getElementById('cp-last').value.trim();
+  currentCustomer.phone   = document.getElementById('cp-phone').value.trim();
+  currentCustomer.email   = document.getElementById('cp-email').value.trim();
+  currentCustomer.company = document.getElementById('cp-company-input').value.trim();
+  // Refresh header
+  document.getElementById('cp-name').textContent    = currentCustomer.first + ' ' + currentCustomer.last;
+  document.getElementById('cp-company').textContent = [currentCustomer.company, currentCustomer.email].filter(Boolean).join(' · ');
+  document.getElementById('cp-call-btn').href = 'tel:' + currentCustomer.phone;
+  const phone = currentCustomer.phone.replace(/[-\s]/g, '');
+  document.getElementById('cp-wa-btn').href = 'https://wa.me/972' + phone.replace(/^0/, '');
+  saveStore();
+  renderCustomers();
+  const btn = event.target;
+  btn.textContent = '✓ נשמר';
+  btn.style.background = 'var(--green)';
+  setTimeout(() => { btn.textContent = 'שמור שינויים'; btn.style.background = ''; }, 1500);
+}
+
+function deleteCustomer() {
+  if (!currentCustomer) return;
+  if (!confirm('למחוק לקוח זה? נכסים משויכים לא יימחקו.')) return;
+  store.customers = store.customers.filter(c => c.id !== currentCustomer.id);
+  // Unlink listings
+  store.listings.forEach(l => { if (l.customer === currentCustomer.id) l.customer = ''; });
+  saveStore();
+  closeCustomerPanel();
+  renderCustomers();
+}
+
+function openListingFromCustomer(id) {
+  closeCustomerPanel();
+  setTimeout(() => openListing(id), 200);
+}
+
+function sendBookingLink() {
+  if (!currentCustomer) return;
+  const link = window.location.href.replace('photodesk.html', 'booking.html');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(link).then(() => {
+      alert('הלינק הועתק ללוח!\n' + link);
+    });
+  } else {
+    alert('לינק ההזמנה:\n' + link);
+  }
 }
 
 // ══════════════════════════════════════════════════
