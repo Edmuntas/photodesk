@@ -424,6 +424,21 @@
     .radio-tabs { grid-template-columns: 1fr 1fr; }
   }
 </style>
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCUrX8Lo8qS30q2E5dMSu8S96GE-RKuRmQ",
+  authDomain: "photodesk-45381.firebaseapp.com",
+  projectId: "photodesk-45381",
+  storageBucket: "photodesk-45381.firebasestorage.app",
+  messagingSenderId: "445351440545",
+  appId: "1:445351440545:web:14895fba95a5c9001c00e0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
 </head>
 <body>
 
@@ -761,7 +776,7 @@ function switchToNew() {
 // ══════════════════════════════════════════════════
 //  SUBMIT
 // ══════════════════════════════════════════════════
-function submitBooking(e) {
+async function submitBooking(e) {
   e.preventDefault();
 
   const isExisting = document.getElementById('type-existing').checked;
@@ -862,16 +877,21 @@ function submitBooking(e) {
     status: 'pending'
   };
 
-  // Save to localStorage
+  // Save to Firestore (primary — syncs to photographer in real time)
+  try {
+    await db.collection('bookings').doc(booking.id).set(booking);
+  } catch(err) {
+    console.error('Firestore save failed', err);
+    alert('שגיאה בשמירת ההזמנה. בדוק חיבור אינטרנט ונסה שנית.');
+    return;
+  }
+
+  // Save to localStorage (local fallback)
   try {
     const existing = JSON.parse(localStorage.getItem('photoDesk_pending') || '[]');
     existing.push(booking);
     localStorage.setItem('photoDesk_pending', JSON.stringify(existing));
-  } catch(err) {
-    console.error('Failed to save booking', err);
-    alert('שגיאה בשמירת ההזמנה. נסה שנית.');
-    return;
-  }
+  } catch(err) { /* silent */ }
 
   // Send email notification via Formsubmit.co (fire-and-forget)
   try {

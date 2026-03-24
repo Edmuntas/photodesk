@@ -849,6 +849,21 @@
   .shoot-address { font-weight: 600; font-size: 13px; }
   .shoot-pkg { font-size: 12px; color: var(--text-muted); }
 </style>
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCUrX8Lo8qS30q2E5dMSu8S96GE-RKuRmQ",
+  authDomain: "photodesk-45381.firebaseapp.com",
+  projectId: "photodesk-45381",
+  storageBucket: "photodesk-45381.firebasestorage.app",
+  messagingSenderId: "445351440545",
+  appId: "1:445351440545:web:14895fba95a5c9001c00e0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
 </head>
 <body>
 
@@ -2116,20 +2131,32 @@ function sendBookingLink() {
 // ══════════════════════════════════════════════════
 function saveStore() {
   try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
+  db.collection('store').doc('data').set(store).catch(() => {});
 }
 
-function loadStore() {
+function _applyParsed(parsed) {
+  if (parsed.listings  && parsed.listings.length)  store.listings  = parsed.listings;
+  if (parsed.customers && parsed.customers.length) store.customers = parsed.customers;
+  if (parsed.packages  && parsed.packages.length)  store.packages  = parsed.packages;
+  if (parsed.services  && parsed.services.length)  store.services  = parsed.services;
+  if (parsed.addons    && parsed.addons.length)     store.addons    = parsed.addons;
+  if (parsed.schedule  && parsed.schedule.length)   store.schedule  = parsed.schedule;
+}
+
+async function loadStore() {
+  // Try Firestore first
+  try {
+    const snap = await db.collection('store').doc('data').get();
+    if (snap.exists) {
+      _applyParsed(snap.data());
+      try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
+      return;
+    }
+  } catch(e) { console.warn('Firestore unavailable, using localStorage', e); }
+  // Fallback to localStorage
   try {
     const saved = localStorage.getItem('photoDesk_store');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.listings && parsed.listings.length)  store.listings  = parsed.listings;
-      if (parsed.customers && parsed.customers.length) store.customers = parsed.customers;
-      if (parsed.packages && parsed.packages.length)  store.packages  = parsed.packages;
-      if (parsed.services && parsed.services.length)  store.services  = parsed.services;
-      if (parsed.addons && parsed.addons.length)      store.addons    = parsed.addons;
-      if (parsed.schedule && parsed.schedule.length)  store.schedule  = parsed.schedule;
-    }
+    if (saved) _applyParsed(JSON.parse(saved));
   } catch(e) {}
 }
 
@@ -2250,10 +2277,12 @@ function renderOrders() {
 }
 
 function loadPendingBookings() {
-  try { return JSON.parse(localStorage.getItem('photoDesk_pending') || '[]'); } catch(e) { return []; }
+  return window._pendingBookings ||
+    (() => { try { return JSON.parse(localStorage.getItem('photoDesk_pending') || '[]'); } catch(e) { return []; } })();
 }
 
 function savePendingBookings(list) {
+  window._pendingBookings = list;
   try { localStorage.setItem('photoDesk_pending', JSON.stringify(list)); } catch(e) {}
 }
 
@@ -2315,6 +2344,7 @@ function approveBooking(id) {
 
   // Remove from pending
   savePendingBookings(pending.filter(x => x.id !== id));
+  db.collection('bookings').doc(id).delete().catch(() => {});
   saveStore();
   renderOrders();
   updateOrdersBadge();
@@ -2323,6 +2353,7 @@ function approveBooking(id) {
 function rejectBooking(id) {
   if (!confirm('למחוק הזמנה זו?')) return;
   savePendingBookings(loadPendingBookings().filter(x => x.id !== id));
+  db.collection('bookings').doc(id).delete().catch(() => {});
   renderOrders();
   updateOrdersBadge();
 }
@@ -2368,11 +2399,21 @@ function updateOrdersBadge() {
 // ══════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════
-loadStore();
-saveStore(); // expose packages to booking.html
-renderListings();
-renderCalendar();
-updateOrdersBadge();
+(async () => {
+  await loadStore();
+  saveStore(); // push local data to Firestore on first run
+  renderListings();
+  renderCalendar();
+  updateOrdersBadge();
+
+  // Real-time listener: new bookings from agents appear instantly
+  db.collection('bookings').where('status', '==', 'pending')
+    .onSnapshot(snapshot => {
+      window._pendingBookings = snapshot.docs.map(d => d.data());
+      if (currentPage === 'orders') renderOrders();
+      updateOrdersBadge();
+    }, err => console.warn('Firestore listener error:', err));
+})();
 </script>
 </body>
 </html>
