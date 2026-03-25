@@ -1745,11 +1745,10 @@ function createListing() {
   if (!addr) { alert('נא להזין כתובת'); return; }
   const id = 'L' + Date.now();
   const pkgRaw = document.getElementById('new-package').value;
-  const pkg = pkgRaw.split('—')[0].trim();
+  let pkg = pkgRaw.split('—')[0].trim();
   const pkgExists = store.packages.some(p => p.name === pkg);
   if (!pkgExists && store.packages.length) {
-    // fallback to first package if selection is stale
-    var pkg = store.packages[0].name;
+    pkg = store.packages[0].name;
   }
   store.listings.unshift({
     id, address: addr,
