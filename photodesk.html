@@ -374,9 +374,22 @@
   .company-stat-lbl { font-size:10px; color:var(--text-muted); margin-top:1px; }
   .company-add-card { background:transparent; border:2px dashed var(--border); display:flex; align-items:center; justify-content:center; min-height:150px; color:var(--text-muted); transition:border-color .2s; }
   .company-add-card:hover { border-color:var(--blue); color:var(--blue); }
-  .agents-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
   .agents-back { display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--text-muted); padding:6px 10px; border-radius:8px; transition:background .15s; user-select:none; }
   .agents-back:hover { background:var(--surface-2); color:var(--text); }
+  /* view toggle */
+  .view-toggle { display:flex; background:var(--surface-2); border-radius:8px; padding:3px; gap:2px; }
+  .view-btn { background:none; border:none; cursor:pointer; padding:5px 10px; border-radius:6px; color:var(--text-muted); font-size:15px; transition:background .15s, color .15s; }
+  .view-btn.active { background:var(--surface-1); color:var(--text); }
+  /* search in customers */
+  .cust-search { background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:13px; color:var(--text); outline:none; width:200px; }
+  .cust-search:focus { border-color:var(--blue); }
+  /* row views */
+  .company-row { display:flex; align-items:center; gap:14px; padding:12px 16px; background:var(--surface-1); border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:border-color .15s; margin-bottom:6px; }
+  .company-row:hover { border-color:var(--blue); }
+  .company-row-icon { width:36px; height:36px; border-radius:9px; background:linear-gradient(135deg,var(--blue),var(--purple)); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0; }
+  .cust-row { display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--surface-1); border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:border-color .15s; margin-bottom:6px; }
+  .cust-row:hover { border-color:var(--blue); }
+  .cust-row-avatar { width:34px; height:34px; border-radius:50%; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
   .pay-badge { font-size:11px; padding:3px 9px; border-radius:6px; cursor:pointer; font-weight:600; user-select:none; }
   .pay-unpaid  { background:rgba(248,113,113,0.12); color:#ef4444; }
   .pay-deposit { background:rgba(251,191,36,0.12);  color:#fbbf24; }
@@ -1597,6 +1610,8 @@ let currentPage = 'listings';
 let filterStatus = '';
 let searchQuery = '';
 let currentCompanyView = null; // null = companies list, string = companyId for agents view
+let customersViewMode  = 'cards'; // 'cards' | 'rows'
+let customersSearch    = '';
 let calDate = new Date();
 
 // ══════════════════════════════════════════════════
@@ -1889,104 +1904,154 @@ function renderCustomers() {
   }
 }
 
-function renderCompaniesView() {
-  // toolbar
-  document.getElementById('customers-toolbar').innerHTML = `
-    <button class="btn btn-primary" onclick="addCompany()">+ לשכה חדשה</button>`;
+function _coStats(co) {
+  const agents = store.customers.filter(c => c.companyId === co.id);
+  const revenue = agents.reduce((sum, a) =>
+    sum + store.listings.filter(l => l.customer === a.id && l.paymentStatus === 'paid')
+                        .reduce((s, l) => s + (l.paymentAmount || 0), 0), 0);
+  const active = agents.reduce((sum, a) =>
+    sum + store.listings.filter(l => l.customer === a.id && l.status !== 'נמסר' && l.status !== 'בוטל').length, 0);
+  return { agents, revenue, active };
+}
 
-  if (!store.companies.length) {
+function _viewToggleHTML() {
+  return `<div class="view-toggle">
+    <button class="view-btn ${customersViewMode==='cards'?'active':''}" onclick="setCustomersView('cards')" title="כרטיסיות">⊞</button>
+    <button class="view-btn ${customersViewMode==='rows'?'active':''}"  onclick="setCustomersView('rows')"  title="שורות">☰</button>
+  </div>`;
+}
+
+function setCustomersView(mode) {
+  customersViewMode = mode;
+  renderCustomers();
+}
+
+function renderCompaniesView() {
+  document.getElementById('customers-toolbar').innerHTML = `
+    <input class="cust-search" placeholder="חיפוש לשכה..." value="${customersSearch}"
+      oninput="customersSearch=this.value; renderCompaniesView()">
+    ${_viewToggleHTML()}
+    <button class="btn btn-primary" style="margin-right:auto;" onclick="addCompany()">+ לשכה חדשה</button>`;
+
+  const q = customersSearch.trim().toLowerCase();
+  const filtered = store.companies.filter(co =>
+    !q || co.name.toLowerCase().includes(q) || (co.city||'').toLowerCase().includes(q));
+
+  if (!filtered.length) {
     document.getElementById('customers-list').innerHTML =
-      '<div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">אין לשכות עדיין</div><div class="empty-sub">הוסף את הלשכה הראשונה</div></div>';
+      '<div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">לא נמצאו לשכות</div></div>';
     return;
   }
 
-  const cards = store.companies.map(co => {
-    const agents = store.customers.filter(c => c.companyId === co.id);
-    const revenue = agents.reduce((sum, a) => {
-      return sum + store.listings
-        .filter(l => l.customer === a.id && l.paymentStatus === 'paid')
-        .reduce((s, l) => s + (l.paymentAmount || 0), 0);
-    }, 0);
-    const activeCount = agents.reduce((sum, a) =>
-      sum + store.listings.filter(l => l.customer === a.id && l.status !== 'נמסר' && l.status !== 'בוטל').length, 0);
-    const initial = (co.name||'?')[0].toUpperCase();
-    return `
-      <div class="company-card" onclick="openCompany('${co.id}')">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div class="company-icon">${initial}</div>
+  if (customersViewMode === 'cards') {
+    const cards = filtered.map(co => {
+      const { agents, revenue, active } = _coStats(co);
+      return `
+        <div class="company-card" onclick="openCompany('${co.id}')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="company-icon">${(co.name||'?')[0].toUpperCase()}</div>
+            <div style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+              <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="editCompany('${co.id}')">ערוך</button>
+              <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#ef4444;" onclick="deleteCompany('${co.id}')">מחק</button>
+            </div>
+          </div>
+          <div class="company-name">${co.name}</div>
+          ${co.city ? `<div class="company-city">📍 ${co.city}</div>` : ''}
+          <div class="company-stats">
+            <div class="company-stat"><div class="company-stat-val">${agents.length}</div><div class="company-stat-lbl">סוכנים</div></div>
+            <div class="company-stat"><div class="company-stat-val" style="color:var(--accent)">₪${revenue>=1000?(revenue/1000).toFixed(0)+'K':revenue}</div><div class="company-stat-lbl">הכנסות</div></div>
+            <div class="company-stat"><div class="company-stat-val" style="color:${active?'var(--blue)':'var(--text-muted)'}">${active}</div><div class="company-stat-lbl">פעיל</div></div>
+          </div>
+        </div>`;
+    }).join('');
+    const addCard = `<div class="company-card company-add-card" onclick="addCompany()"><div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">＋</div><div style="font-size:13px;">הוסף לשכה</div></div></div>`;
+    document.getElementById('customers-list').innerHTML = `<div class="company-grid">${cards}${addCard}</div>`;
+  } else {
+    document.getElementById('customers-list').innerHTML = filtered.map(co => {
+      const { agents, revenue, active } = _coStats(co);
+      return `
+        <div class="company-row" onclick="openCompany('${co.id}')">
+          <div class="company-row-icon">${(co.name||'?')[0].toUpperCase()}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:14px;">${co.name}</div>
+            ${co.city ? `<div style="font-size:12px;color:var(--text-muted);">📍 ${co.city}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:20px;align-items:center;font-size:13px;">
+            <span><b>${agents.length}</b> סוכנים</span>
+            <span style="color:var(--accent);"><b>₪${revenue>=1000?(revenue/1000).toFixed(0)+'K':revenue}</b></span>
+            ${active ? `<span style="color:var(--blue);"><b>${active}</b> פעיל</span>` : ''}
+          </div>
           <div style="display:flex;gap:4px;" onclick="event.stopPropagation()">
             <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="editCompany('${co.id}')">ערוך</button>
             <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#ef4444;" onclick="deleteCompany('${co.id}')">מחק</button>
           </div>
-        </div>
-        <div class="company-name">${co.name}</div>
-        ${co.city ? `<div class="company-city">📍 ${co.city}</div>` : ''}
-        <div class="company-stats">
-          <div class="company-stat">
-            <div class="company-stat-val">${agents.length}</div>
-            <div class="company-stat-lbl">סוכנים</div>
-          </div>
-          <div class="company-stat">
-            <div class="company-stat-val" style="color:var(--accent)">₪${(revenue/1000).toFixed(0)}K</div>
-            <div class="company-stat-lbl">הכנסות</div>
-          </div>
-          <div class="company-stat">
-            <div class="company-stat-val" style="color:${activeCount?'var(--blue)':'var(--text-muted)'}">${activeCount}</div>
-            <div class="company-stat-lbl">פעיל</div>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-
-  const addCard = `
-    <div class="company-card company-add-card" onclick="addCompany()">
-      <div style="text-align:center;">
-        <div style="font-size:32px;margin-bottom:8px;">＋</div>
-        <div style="font-size:13px;">הוסף לשכה</div>
-      </div>
-    </div>`;
-
-  document.getElementById('customers-list').innerHTML = `<div class="company-grid">${cards}${addCard}</div>`;
+        </div>`;
+    }).join('');
+  }
 }
 
 function renderAgentsView(companyId) {
   const co = store.companies.find(x => x.id === companyId);
   if (!co) { currentCompanyView = null; renderCompaniesView(); return; }
 
-  const agents = store.customers.filter(c => c.companyId === companyId);
-
-  // toolbar
   document.getElementById('customers-toolbar').innerHTML = `
     <div class="agents-back" onclick="backToCompanies()">← לשכות</div>
-    <div style="font-weight:700;font-size:16px;flex:1;">${co.name}</div>
-    <button class="btn btn-primary" onclick="addAgentToCompany('${companyId}')">+ הוסף סוכן</button>`;
+    <div style="font-weight:700;font-size:16px;">${co.name}</div>
+    <input class="cust-search" placeholder="חיפוש סוכן..." value="${customersSearch}"
+      oninput="customersSearch=this.value; renderAgentsView('${companyId}')">
+    ${_viewToggleHTML()}
+    <button class="btn btn-primary" style="margin-right:auto;" onclick="addAgentToCompany('${companyId}')">+ הוסף סוכן</button>`;
+
+  const q = customersSearch.trim().toLowerCase();
+  const agents = store.customers.filter(c => c.companyId === companyId &&
+    (!q || (c.first+' '+c.last).toLowerCase().includes(q) || (c.phone||'').includes(q) || (c.email||'').toLowerCase().includes(q)));
 
   if (!agents.length) {
     document.getElementById('customers-list').innerHTML =
-      '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">אין סוכנים בלשכה זו</div><div class="empty-sub">הוסף את הסוכן הראשון</div></div>';
+      '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">אין סוכנים</div></div>';
     return;
   }
 
-  document.getElementById('customers-list').innerHTML = agents.map(c => {
-    const custListings = store.listings.filter(l => l.customer === c.id);
-    const active = custListings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
-    const total  = custListings.length;
-    const revenue = custListings.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
-    return `
-    <div class="customer-card" onclick="openCustomer('${c.id}')">
-      <div class="cust-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
-      <div style="flex:1; min-width:0;">
-        <div class="cust-name">${c.first} ${c.last}</div>
-        <div class="cust-email">${c.phone||''}${c.email ? ' · '+c.email : ''}</div>
-        ${revenue ? `<div style="font-size:11px;color:var(--green);margin-top:2px;">₪${revenue.toLocaleString('he-IL')} הכנסות</div>` : ''}
-      </div>
-      <div style="text-align:center;flex-shrink:0;">
-        <div style="font-family:var(--font-display);font-size:18px;">${total}</div>
-        <div style="font-size:10px;color:var(--text-muted);">צילומים</div>
-        ${active ? `<div style="font-size:10px;color:var(--accent);margin-top:2px;">${active} פעיל</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+  if (customersViewMode === 'cards') {
+    document.getElementById('customers-list').innerHTML = agents.map(c => {
+      const ls = store.listings.filter(l => l.customer === c.id);
+      const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
+      const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
+      return `
+      <div class="customer-card" onclick="openCustomer('${c.id}')">
+        <div class="cust-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="cust-name">${c.first} ${c.last}</div>
+          <div class="cust-email">${c.phone||''}${c.email?' · '+c.email:''}</div>
+          ${revenue?`<div style="font-size:11px;color:var(--green);margin-top:2px;">₪${revenue.toLocaleString('he-IL')} הכנסות</div>`:''}
+        </div>
+        <div style="text-align:center;flex-shrink:0;">
+          <div style="font-family:var(--font-display);font-size:18px;">${ls.length}</div>
+          <div style="font-size:10px;color:var(--text-muted);">צילומים</div>
+          ${active?`<div style="font-size:10px;color:var(--accent);margin-top:2px;">${active} פעיל</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('customers-list').innerHTML = agents.map(c => {
+      const ls = store.listings.filter(l => l.customer === c.id);
+      const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
+      const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
+      return `
+      <div class="cust-row" onclick="openCustomer('${c.id}')">
+        <div class="cust-row-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:14px;">${c.first} ${c.last}</div>
+          <div style="font-size:12px;color:var(--text-muted);">${c.phone||''}${c.email?' · '+c.email:''}</div>
+        </div>
+        <div style="display:flex;gap:20px;align-items:center;font-size:13px;">
+          <span><b>${ls.length}</b> צילומים</span>
+          ${revenue?`<span style="color:var(--green);">₪${revenue.toLocaleString('he-IL')}</span>`:''}
+          ${active?`<span style="color:var(--accent);">${active} פעיל</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
 function openCompany(id) {
