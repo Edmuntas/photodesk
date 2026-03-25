@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>ייבוא נתונים היסטוריים — PhotoDesk</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+  body { font-family: sans-serif; direction: rtl; max-width: 600px; margin: 40px auto; padding: 20px; background: #0f172a; color: #e2e8f0; }
+  h1 { color: #60a5fa; }
+  .log { background: #1e293b; border-radius: 8px; padding: 16px; margin-top: 16px; font-size: 13px; line-height: 2; }
+  .ok  { color: #4ade80; }
+  .err { color: #f87171; }
+  .info { color: #94a3b8; }
+  button { background: #3b82f6; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 16px; }
+  button:disabled { opacity: .5; cursor: default; }
+</style>
+</head>
+<body>
+<h1>📥 ייבוא נתונים היסטוריים</h1>
+<p>ייבוא 22 עבודות ו-14 לקוחות מנובמבר 2025 — מרץ 2026 ל-Firestore.</p>
+<button id="btn" onclick="runImport()">התחל ייבוא</button>
+<div class="log" id="log"></div>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCUrX8Lo8qS30q2E5dMSu8S96GE-RKuRmQ",
+  authDomain: "photodesk-45381.firebaseapp.com",
+  projectId: "photodesk-45381",
+  storageBucket: "photodesk-45381.firebasestorage.app",
+  messagingSenderId: "445351440545",
+  appId: "1:445351440545:web:14895fba95a5c9001c00e0"
+});
+const db = firebase.firestore();
+
+function log(msg, cls='info') {
+  document.getElementById('log').innerHTML += `<div class="${cls}">${msg}</div>`;
+}
+
+const CUSTOMERS = [
+  { id:'CH001', first:'אילנה',  last:'',          phone:'', email:'', company:'MIP זכרון יעקב',       listings:2 },
+  { id:'CH002', first:'ציפי',   last:'',          phone:'', email:'', company:'MIP',                  listings:2 },
+  { id:'CH003', first:'מיכאל', last:'ביננבאום',   phone:'', email:'', company:'רי/מקס זכרון',          listings:1 },
+  { id:'CH004', first:'ענת',    last:'',          phone:'', email:'', company:'MIP',                  listings:1 },
+  { id:'CH005', first:'קטי',    last:'',          phone:'', email:'', company:'MIP',                  listings:1 },
+  { id:'CH006', first:'רונית',  last:'',          phone:'', email:'', company:'רי/מקס אור עקיבא',      listings:3 },
+  { id:'CH007', first:'שגיא',   last:'חי',        phone:'', email:'', company:'פרטי',                  listings:1 },
+  { id:'CH008', first:'רועי',   last:'ברקמייר',   phone:'', email:'', company:'פרטי',                  listings:1 },
+  { id:'CH009', first:'דניאל',  last:'טוקרב',     phone:'', email:'', company:'',                     listings:2 },
+  { id:'CH010', first:'ביסמוט', last:'',          phone:'', email:'', company:'',                     listings:1 },
+  { id:'CH011', first:'צחי',    last:'מימון',     phone:'', email:'', company:'פרטי',                  listings:1 },
+  { id:'CH012', first:'שירה',   last:'',          phone:'', email:'', company:'MIP',                  listings:1 },
+  { id:'CH013', first:'רונית',  last:'יריב',      phone:'', email:'', company:'',                     listings:2 },
+  { id:'CH014', first:'נגע',    last:'איתן',      phone:'', email:'', company:'רי/מקס זכרון',          listings:0 },
+];
+
+const L = (id, address, city, state, area, lot, beds, pkg, status, customer, created, shootDate, payAmt, notes, dPhoto, dVideo, dFloor) => ({
+  id, address, city, state: state||'', zip:'', beds: beds||0, baths:0, stories:0,
+  area: area||0, lot: lot||0, year:0, pkg, status, customer: customer||'',
+  mls:'', created, photos:0, desc:'', notes: notes||'', agent:'', shootDate: shootDate||'',
+  paymentStatus: payAmt > 0 ? 'paid' : (status==='בוטל' ? 'unpaid' : 'unpaid'),
+  paymentAmount: payAmt||0,
+  deliveredPhotos: dPhoto||false, deliveredVideo: dVideo||false, deliveredFloorplan: dFloor||false
+});
+
+const LISTINGS = [
+  // נובמבר 2025
+  L('LH001','משאול הגן','זכרון יעקב','',0,0,0,'צילומי רחפן','נמסר','','12 נובמבר, 2025','2025-11-12',472,'ליד מלון אלמה',true,true,false),
+  L('LH002','הגורן 13','זכרון יעקב','',0,0,0,'קומפלקט koola','נמסר','CH001','16 נובמבר, 2025','2025-11-16',1038,'',true,true,false),
+  L('LH003','מאייש 3','זכרון יעקב','',0,0,0,'קומפלקט matter','נמסר','CH002','19 נובמבר, 2025','2025-11-19',1510,'',true,true,true),
+  L('LH004','חוגלה 3','זכרון יעקב','',0,0,0,'בסיסי kuula','נמסר','CH003','30 נובמבר, 2025','2025-11-30',1038,'',true,false,false),
+
+  // דצמבר 2025
+  L('LH005','אלונים 8','זכרון יעקב','',160,250,0,'קומפלקט matter','נמסר','CH004','3 דצמבר, 2025','2025-12-03',1510,'',true,true,true),
+
+  // ינואר 2026
+  L('LH006','הרצל 18','זכרון יעקב','',220,500,0,'קומפלקט matter','נמסר','CH005','14 ינואר, 2026','2026-01-14',1510,'',true,true,true),
+
+  // פברואר 2026
+  L('LH007','הרדוף 103','קיסריה','',90,0,0,'חבילה בסיסית','נמסר','CH006','5 פברואר, 2026','2026-02-05',413,'קוטג\'',true,true,false),
+  L('LH008','הגורן 13','זכרון יעקב','',160,250,0,'חבילה בסיסית','נמסר','CH007','6 פברואר, 2026','2026-02-06',450,'קוטג\'',true,false,false),
+  L('LH009','השומר 13','פתח תקווה','',0,0,4,'חבילה בסיסית','נמסר','CH008','12 פברואר, 2026','2026-02-12',413,'קיבל במתנה סיור וירטואלי',true,false,false),
+  L('LH010','הכבירים 20','חיפה','',0,0,4,'חבילה בסיסית','נמסר','CH009','15 פברואר, 2026','2026-02-15',472,'קיבל כבונוס סרטונים',true,true,false),
+  L('LH011','זכרון יעקב 3','זכרון יעקב','',0,0,4,'Matterport','נמסר','CH002','20 פברואר, 2026','2026-02-20',1298,'',false,false,false),
+  L('LH012','לבונה 14','אור עקיבא','',0,0,3,'חבילה בסיסית','נמסר','CH006','18 פברואר, 2026','2026-02-18',413,'סרטונים בונוס',true,true,false),
+  L('LH013','השיקמים 1','אור עקיבא','',0,0,4,'חבילה בסיסית','נמסר','CH006','26 פברואר, 2026','2026-02-26',413,'',true,false,false),
+  L('LH014','דרור 4','זכרון יעקב','',0,0,0,'קומפלקט','נמסר','CH010','27 פברואר, 2026','2026-02-27',0,'דופלקס מחולק — 20% מעמלת המכירה',true,true,false),
+
+  // מרץ 2026
+  L('LH015','התקומה 2','זכרון יעקב','נווה שרת',0,0,0,'חבילה בסיסית','בוטל','CH014','מרץ 2026','',0,'בוטל',false,false,false),
+  L('LH016','דופלקס חלומות','זכרון יעקב','',0,0,0,'חבילה בסיסית','בוטל','CH014','מרץ 2026','',0,'בוטל — 20% הנחה אם שתי דירות ביחד',false,false,false),
+  L('LH017','השיקמים 3','אור עקיבא','',0,0,4,'חבילה בסיסית','נמסר','CH011','19 מרץ, 2026','2026-03-19',413,'סיור koola',true,false,false),
+  L('LH018','המייסדים 62','זכרון יעקב','מסחרי',0,0,0,'סיור koola','נמסר','CH009','12 מרץ, 2026','2026-03-12',472,'נכס מסחרי',true,false,false),
+  L('LH019','גאולים 48','זכרון יעקב','',0,0,0,'חבילה פרמיום','נמסר','CH012','16 מרץ, 2026','2026-03-16',885,'עריכה מורחבת',true,false,false),
+  L('LH020','החרמון 3','אור עקיבא','',0,0,0,'חבילה בסיסית','נמסר','CH013','19 מרץ, 2026','2026-03-19',413,'koola מתנה',true,false,false),
+  L('LH021','קוטג\'','זכרון יעקב','',0,0,0,'חבילה בסיסית','נמסר','','מרץ 2026','',0,'koola מתנה — תאריך לא ידוע',true,false,false),
+  L('LH022','דירה','זכרון יעקב','',0,0,0,'חבילה בסיסית','ממתין למסירה','CH013','מרץ 2026','',413,'koola מתנה',false,false,false),
+];
+
+async function runImport() {
+  const btn = document.getElementById('btn');
+  btn.disabled = true;
+  log('מתחיל ייבוא...', 'info');
+
+  // Load existing store from Firestore
+  let store = { listings:[], customers:[], packages:[], services:[], addons:[], schedule:[], settings:{} };
+  try {
+    const snap = await db.collection('store').doc('data').get();
+    if (snap.exists) {
+      const d = snap.data();
+      store = { ...store, ...d };
+      log(`✔ נטען store קיים: ${store.listings.length} נכסים, ${store.customers.length} לקוחות`, 'ok');
+    }
+  } catch(e) {
+    log('⚠ לא ניתן לטעון store קיים: ' + e.message, 'err');
+  }
+
+  // Merge customers
+  let addedC = 0;
+  for (const c of CUSTOMERS) {
+    if (!store.customers.find(x => x.id === c.id)) {
+      store.customers.push(c);
+      addedC++;
+    }
+  }
+  log(`👤 לקוחות: ${addedC} חדשים נוספו (${CUSTOMERS.length - addedC} כבר קיימים)`, 'ok');
+
+  // Merge listings
+  let addedL = 0;
+  for (const l of LISTINGS) {
+    if (!store.listings.find(x => x.id === l.id)) {
+      store.listings.push(l);
+      addedL++;
+    }
+  }
+  log(`🏠 נכסים: ${addedL} חדשים נוספו (${LISTINGS.length - addedL} כבר קיימים)`, 'ok');
+
+  // Save to Firestore
+  try {
+    await db.collection('store').doc('data').set(store);
+    log('✅ נשמר ב-Firestore בהצלחה!', 'ok');
+    log(`סה"כ: ${store.listings.length} נכסים | ${store.customers.length} לקוחות`, 'ok');
+    log('עכשיו פתח את <a href="photodesk.html" style="color:#60a5fa;">photodesk.html</a> ותראה את כל הנתונים.', 'ok');
+  } catch(e) {
+    log('❌ שגיאה בשמירה: ' + e.message, 'err');
+  }
+
+  btn.textContent = '✓ הסתיים';
+}
+</script>
+</body>
+</html>
