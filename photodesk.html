@@ -360,6 +360,12 @@
 
   .badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; }
   .badge-delivered { background: rgba(74,222,128,0.12); color: var(--green); }
+  .pay-badge { font-size:11px; padding:3px 9px; border-radius:6px; cursor:pointer; font-weight:600; user-select:none; }
+  .pay-unpaid  { background:rgba(248,113,113,0.12); color:#ef4444; }
+  .pay-deposit { background:rgba(251,191,36,0.12);  color:#fbbf24; }
+  .pay-paid    { background:rgba(74,222,128,0.12);  color:var(--green); }
+  .deliver-icon { font-size:12px; cursor:pointer; user-select:none; transition:opacity .15s; }
+  .deliver-icon:hover { opacity:.7; }
   .badge-processing { background: rgba(96,165,250,0.12); color: var(--blue); }
   .badge-cancelled { background: rgba(248,113,113,0.12); color: var(--red); }
   .badge-scheduled { background: rgba(167,139,250,0.12); color: var(--purple); }
@@ -1227,6 +1233,27 @@
           <option value="">— לא משויך —</option>
         </select>
       </div>
+      <div class="section-title" style="margin-top:20px;">תשלום ומסירה</div>
+      <div class="form-group">
+        <label class="form-label">סטטוס תשלום</label>
+        <div style="display:flex; gap:16px; margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="radio" name="panel-payment" value="unpaid"  id="panel-pay-unpaid">  💸 לא שולם</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="radio" name="panel-payment" value="deposit" id="panel-pay-deposit"> 💰 מקדמה</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="radio" name="panel-payment" value="paid"    id="panel-pay-paid">    ✅ שולם</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">סכום שהתקבל (₪)</label>
+        <input class="form-input" type="number" id="panel-payment-amount" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">מה נמסר ללקוח</label>
+        <div style="display:flex; gap:20px; margin-top:6px; flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-deliveredphotos"> 📸 תמונות</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-deliveredvideo">  🎬 וידאו</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-deliveredfloorplan"> 📐 תוכנית קומה</label>
+        </div>
+      </div>
       <div style="display:flex; gap:10px; margin-top:8px;">
         <button class="btn btn-primary" onclick="saveListing()">שמור שינויים</button>
         <button class="btn btn-danger" onclick="deleteListing()">מחק נכס</button>
@@ -1492,18 +1519,18 @@ const db = firebase.firestore();
 // ══════════════════════════════════════════════════
 const store = {
   listings: [
-    { id:'L001', address:'רח\' דיזנגוף 50', city:'תל אביב', state:'הצפון הישן', zip:'6433208', beds:3, baths:1, stories:2, area:85, lot:0, year:1965, pkg:'חבילה אינסופית', status:'ממתין למסירה', customer:'', mls:'', created:'19 מרץ, 2026', photos:60, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L002', address:'שד\' רוטשילד 88', city:'תל אביב', state:'לב תל אביב', zip:'6522217', beds:4, baths:2, stories:3, area:130, lot:0, year:2008, pkg:'חבילה פרמיום', status:'ממתין למסירה', customer:'', mls:'', created:'19 מרץ, 2026', photos:45, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L003', address:'רח\' בן יהודה 32', city:'תל אביב', state:'מרכז', zip:'6329301', beds:2, baths:1, stories:1, area:65, lot:0, year:2015, pkg:'חבילה בסיסית', status:'ממתין למסירה', customer:'', mls:'', created:'19 מרץ, 2026', photos:32, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L004', address:'רח\' הנשיא 15', city:'ירושלים', state:'רחביה', zip:'9240617', beds:5, baths:2, stories:2, area:200, lot:400, year:1948, pkg:'חבילה אינסופית', status:'ממתין למסירה', customer:'', mls:'', created:'16 מרץ, 2026', photos:72, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L005', address:'שד\' הנשיאים 42', city:'הרצלייה', state:'הרצלייה פיתוח', zip:'4610201', beds:5, baths:3, stories:2, area:280, lot:600, year:2019, pkg:'חבילה פרמיום', status:'נמסר', customer:'', mls:'', created:'27 פברואר 2026', photos:48, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L006', address:'רח\' שאול המלך 12', city:'תל אביב', state:'קריית שאול', zip:'6492003', beds:3, baths:1, stories:4, area:95, lot:0, year:2012, pkg:'חבילה בסיסית', status:'נמסר', customer:'', mls:'', created:'26 פברואר 2026', photos:28, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L007', address:'רח\' ביאליק 7', city:'רמת גן', state:'מרכז', zip:'5252101', beds:4, baths:2, stories:2, area:140, lot:300, year:2005, pkg:'חבילה פרמיום', status:'ממתין למסירה', customer:'', mls:'', created:'22 פברואר 2026', photos:55, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L008', address:'רח\' בן גוריון 22', city:'חיפה', state:'הכרמל', zip:'3463601', beds:3, baths:1, stories:1, area:75, lot:0, year:1980, pkg:'חבילה בסיסית', status:'נמסר', customer:'', mls:'', created:'18 פברואר 2026', photos:22, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L009', address:'רח\' ז\'בוטינסקי 30', city:'פתח תקווה', state:'מרכז', zip:'4952201', beds:4, baths:2, stories:2, area:160, lot:200, year:2017, pkg:'חבילה פרמיום', status:'ממתין למסירה', customer:'', mls:'', created:'12 פברואר 2026', photos:40, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L010', address:'רח\' טרומפלדור 18', city:'ראשון לציון', state:'הישן', zip:'7521801', beds:5, baths:3, stories:2, area:220, lot:500, year:2021, pkg:'חבילה אינסופית', status:'נמסר', customer:'', mls:'', created:'5 פברואר 2026', photos:65, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L011', address:'רח\' אלנבי 58', city:'תל אביב', state:'פלורנטין', zip:'6513201', beds:2, baths:1, stories:3, area:60, lot:0, year:2018, pkg:'חבילה בסיסית', status:'ממתין למסירה', customer:'', mls:'', created:'29 ינואר 2026', photos:18, desc:'', notes:'', agent:'', shootDate:'' },
-    { id:'L012', address:'שד\' בן גוריון 10', city:'תל אביב', state:'הצפון הישן', zip:'6225001', beds:3, baths:2, stories:2, area:110, lot:0, year:2003, pkg:'חבילה פרמיום', status:'בעיבוד', customer:'', mls:'', created:'15 ינואר 2026', photos:38, desc:'', notes:'', agent:'', shootDate:'' },
+    { id:'L001', address:'רח\' דיזנגוף 50', city:'תל אביב', state:'הצפון הישן', zip:'6433208', beds:3, baths:1, stories:2, area:85, lot:0, year:1965, pkg:'חבילה אינסופית', status:'ממתין למסירה', customer:'', mls:'', created:'19 מרץ, 2026', photos:60, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L002', address:'שד\' רוטשילד 88', city:'תל אביב', state:'לב תל אביב', zip:'6522217', beds:4, baths:2, stories:3, area:130, lot:0, year:2008, pkg:'חבילה פרמיום', status:'ממתין למסירה', customer:'', mls:'', created:'19 מרץ, 2026', photos:45, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L003', address:'רח\' בן יהודה 32', city:'תל אביב', state:'מרכז', zip:'6329301', beds:2, baths:1, stories:1, area:65, lot:0, year:2015, pkg:'חבילה בסיסית', status:'ממתין למסירה', customer:'', mls:'', created:'19 מרץ, 2026', photos:32, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L004', address:'רח\' הנשיא 15', city:'ירושלים', state:'רחביה', zip:'9240617', beds:5, baths:2, stories:2, area:200, lot:400, year:1948, pkg:'חבילה אינסופית', status:'ממתין למסירה', customer:'', mls:'', created:'16 מרץ, 2026', photos:72, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L005', address:'שד\' הנשיאים 42', city:'הרצלייה', state:'הרצלייה פיתוח', zip:'4610201', beds:5, baths:3, stories:2, area:280, lot:600, year:2019, pkg:'חבילה פרמיום', status:'נמסר', customer:'', mls:'', created:'27 פברואר 2026', photos:48, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L006', address:'רח\' שאול המלך 12', city:'תל אביב', state:'קריית שאול', zip:'6492003', beds:3, baths:1, stories:4, area:95, lot:0, year:2012, pkg:'חבילה בסיסית', status:'נמסר', customer:'', mls:'', created:'26 פברואר 2026', photos:28, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L007', address:'רח\' ביאליק 7', city:'רמת גן', state:'מרכז', zip:'5252101', beds:4, baths:2, stories:2, area:140, lot:300, year:2005, pkg:'חבילה פרמיום', status:'ממתין למסירה', customer:'', mls:'', created:'22 פברואר 2026', photos:55, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L008', address:'רח\' בן גוריון 22', city:'חיפה', state:'הכרמל', zip:'3463601', beds:3, baths:1, stories:1, area:75, lot:0, year:1980, pkg:'חבילה בסיסית', status:'נמסר', customer:'', mls:'', created:'18 פברואר 2026', photos:22, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L009', address:'רח\' ז\'בוטינסקי 30', city:'פתח תקווה', state:'מרכז', zip:'4952201', beds:4, baths:2, stories:2, area:160, lot:200, year:2017, pkg:'חבילה פרמיום', status:'ממתין למסירה', customer:'', mls:'', created:'12 פברואר 2026', photos:40, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L010', address:'רח\' טרומפלדור 18', city:'ראשון לציון', state:'הישן', zip:'7521801', beds:5, baths:3, stories:2, area:220, lot:500, year:2021, pkg:'חבילה אינסופית', status:'נמסר', customer:'', mls:'', created:'5 פברואר 2026', photos:65, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L011', address:'רח\' אלנבי 58', city:'תל אביב', state:'פלורנטין', zip:'6513201', beds:2, baths:1, stories:3, area:60, lot:0, year:2018, pkg:'חבילה בסיסית', status:'ממתין למסירה', customer:'', mls:'', created:'29 ינואר 2026', photos:18, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
+    { id:'L012', address:'שד\' בן גוריון 10', city:'תל אביב', state:'הצפון הישן', zip:'6225001', beds:3, baths:2, stories:2, area:110, lot:0, year:2003, pkg:'חבילה פרמיום', status:'בעיבוד', customer:'', mls:'', created:'15 ינואר 2026', photos:38, desc:'', notes:'', agent:'', shootDate:'', paymentStatus:'unpaid', paymentAmount:0, deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false },
   ],
   customers: [
     { id:'C001', first:'דנה', last:'כהן', email:'dana.cohen@remax.co.il', phone:'050-555-0101', company:'רי/מקס ישראל', listings:4 },
@@ -1678,6 +1705,14 @@ function openListing(id) {
   document.getElementById('panel-agent').value = l.agent;
   document.getElementById('panel-shoot-date').value = l.shootDate;
 
+  const payStatus = l.paymentStatus || 'unpaid';
+  const payRadio = document.querySelector(`input[name="panel-payment"][value="${payStatus}"]`);
+  if (payRadio) payRadio.checked = true;
+  document.getElementById('panel-payment-amount').value = l.paymentAmount || 0;
+  document.getElementById('panel-deliveredphotos').checked    = !!l.deliveredPhotos;
+  document.getElementById('panel-deliveredvideo').checked     = !!l.deliveredVideo;
+  document.getElementById('panel-deliveredfloorplan').checked = !!l.deliveredFloorplan;
+
   const custSel = document.getElementById('panel-customer');
   custSel.innerHTML = '<option value="">— לא משויך —</option>' +
     store.customers.map(c => `<option value="${c.id}" ${l.customer===c.id?'selected':''}>${c.first} ${c.last}</option>`).join('');
@@ -1732,6 +1767,12 @@ function saveListing() {
   currentListing.agent    = document.getElementById('panel-agent').value;
   currentListing.shootDate = document.getElementById('panel-shoot-date').value;
   currentListing.customer = document.getElementById('panel-customer').value;
+  const payRadio = document.querySelector('input[name="panel-payment"]:checked');
+  currentListing.paymentStatus   = payRadio ? payRadio.value : 'unpaid';
+  currentListing.paymentAmount   = +document.getElementById('panel-payment-amount').value || 0;
+  currentListing.deliveredPhotos    = document.getElementById('panel-deliveredphotos').checked;
+  currentListing.deliveredVideo     = document.getElementById('panel-deliveredvideo').checked;
+  currentListing.deliveredFloorplan = document.getElementById('panel-deliveredfloorplan').checked;
   renderListings();
   saveStore();
   const btn = event.target.closest('button') || event.target;
@@ -2327,9 +2368,11 @@ function renderOrders() {
       const custLabel = custName ? custName.first + ' ' + custName.last : '—';
       const next = nextStatus[l.status];
       const nextLbl = nextLabel[l.status];
+      const payLbl = {'unpaid':'💸 לא שולם','deposit':'💰 מקדמה','paid':'✅ שולם'}[l.paymentStatus||'unpaid'];
+      const payClass = 'pay-' + (l.paymentStatus || 'unpaid');
       return `
         <div class="booking-card" onclick="openListing('${l.id}')" style="cursor:pointer;">
-          <div>
+          <div style="flex:1;min-width:0;">
             <div style="font-weight:600; font-size:14px;">${l.address}, ${l.city}</div>
             <div class="booking-meta">
               <span class="badge ${badgeClass(l.status)}">${l.status}</span>
@@ -2338,6 +2381,12 @@ function renderOrders() {
               ${l.shootDate ? `<span class="booking-tag">📅 ${new Date(l.shootDate).toLocaleDateString('he-IL', {day:'numeric',month:'long'})}</span>` : ''}
               ${l.beds ? `<span class="booking-tag">${l.beds} חד'</span>` : ''}
               <span style="font-size:11px;color:var(--text-dim);">${l.created}</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;" onclick="event.stopPropagation()">
+              <span class="pay-badge ${payClass}" onclick="cyclePayment('${l.id}')">${payLbl}</span>
+              <span class="deliver-icon" onclick="toggleDelivery('${l.id}','deliveredPhotos')" style="color:${l.deliveredPhotos?'var(--green)':'var(--text-dim)'}">📸 ${l.deliveredPhotos?'✓':'✗'}</span>
+              <span class="deliver-icon" onclick="toggleDelivery('${l.id}','deliveredVideo')"  style="color:${l.deliveredVideo?'var(--green)':'var(--text-dim)'}">🎬 ${l.deliveredVideo?'✓':'✗'}</span>
+              <span class="deliver-icon" onclick="toggleDelivery('${l.id}','deliveredFloorplan')" style="color:${l.deliveredFloorplan?'var(--green)':'var(--text-dim)'}">📐 ${l.deliveredFloorplan?'✓':'✗'}</span>
             </div>
           </div>
           ${next ? `<div class="booking-actions" onclick="event.stopPropagation()">
@@ -2441,6 +2490,23 @@ function viewBooking(id) {
   const c = b.client;
   const clientStr = c.isExisting ? 'לקוח קיים' : `${c.first} ${c.last} · ${c.phone}${c.company ? ' · ' + c.company : ''}`;
   alert(`📋 פרטי הזמנה ${b.id}\n\nנכס: ${p.address}, ${p.city}${p.neighborhood ? ' (' + p.neighborhood + ')' : ''}\nחדרים: ${p.rooms || '—'} | שטח: ${p.area ? p.area + ' מ"ר' : '—'}\n\nלקוח: ${clientStr}\nחבילה: ${b.package.name}\nמועד: ${b.shootDate || 'לא צוין'}\n\nהערות:\n${p.notes || 'אין'}`);
+}
+
+function cyclePayment(id) {
+  const l = store.listings.find(x => x.id === id);
+  if (!l) return;
+  const cycle = { unpaid: 'deposit', deposit: 'paid', paid: 'unpaid' };
+  l.paymentStatus = cycle[l.paymentStatus || 'unpaid'];
+  saveStore();
+  renderOrders();
+}
+
+function toggleDelivery(id, field) {
+  const l = store.listings.find(x => x.id === id);
+  if (!l) return;
+  l[field] = !l[field];
+  saveStore();
+  renderOrders();
 }
 
 function advanceStatus(listingId, newStatus) {
