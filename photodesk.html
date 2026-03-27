@@ -815,6 +815,41 @@
   .empty-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .empty-sub { font-size: 13px; }
 
+  /* ── PIPELINE STEPPER ───────────── */
+  .pipeline-step {
+    display: flex; align-items: center; gap: 0;
+    flex-shrink: 0;
+  }
+  .pipeline-dot {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; padding: 0 6px 10px;
+    transition: opacity 0.15s;
+  }
+  .pipeline-dot:hover { opacity: 0.8; }
+  .pipeline-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; border: 2px solid var(--border);
+    background: var(--surface2); color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .pipeline-dot.done .pipeline-icon { background: var(--green); border-color: var(--green); color: #fff; }
+  .pipeline-dot.active .pipeline-icon { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 3px rgba(249,115,22,0.15); }
+  .pipeline-label { font-size: 9px; color: var(--text-dim); text-align: center; white-space: nowrap; }
+  .pipeline-dot.done .pipeline-label,
+  .pipeline-dot.active .pipeline-label { color: var(--text-muted); }
+  .pipeline-line {
+    width: 24px; height: 2px; background: var(--border); flex-shrink: 0; margin-bottom: 18px;
+    transition: background 0.2s;
+  }
+  .pipeline-line.done { background: var(--green); }
+
+  /* ── INVOICE PRINT ──────────────── */
+  @media print {
+    body > *:not(#invoice-print-frame) { display: none !important; }
+    #invoice-print-frame { display: block !important; position: static !important; }
+  }
+
   /* ── KANBAN BOARD ───────────────── */
   .kanban-board {
     display: flex; gap: 12px; padding: 4px 2px 12px;
@@ -1521,10 +1556,12 @@
     </div>
     <div style="display:flex; gap:8px; margin-right:auto; align-items:center;">
       <span id="panel-status-badge"></span>
+      <button class="btn" style="font-size:12px; padding:5px 12px; background:var(--surface2); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="openInvoice(currentListing?.id)" title="צור חשבונית PDF">🧾 חשבונית</button>
       <button class="btn btn-primary" style="font-size:12px; padding:5px 12px;" onclick="deliverListing()">סמן כנמסר</button>
       <div class="panel-close" onclick="closePanel()">✕</div>
     </div>
   </div>
+  <div id="panel-pipeline" style="padding:12px 20px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:0; overflow-x:auto;"></div>
   <div class="panel-tabs">
     <div class="panel-tab active" onclick="switchTab('info')">פרטים</div>
     <div class="panel-tab" onclick="switchTab('photos')">תמונות</div>
@@ -2282,6 +2319,130 @@ function renderKanban(list) {
   board.innerHTML = `<div class="kanban-board">${cols.join('')}</div>`;
 }
 
+// ── INVOICE GENERATOR ────────────────────────────
+function openInvoice(id) {
+  const l = id ? store.listings.find(x => x.id === id) : currentListing;
+  if (!l) return;
+
+  const pkg = store.packages.find(p => p.id === l.pkgId || p.name === l.pkg);
+  const price = l.price || pkg?.price || 0;
+  const cust = store.customers.find(c => c.id === l.customerId || `${c.first} ${c.last}`.trim() === l.customer);
+  const settings = store.settings || {};
+  const bizName = settings.businessName || document.getElementById('logo-text')?.textContent || 'PhotoDesk';
+  const bizPhone = settings.phone || '';
+  const bizEmail = settings.email || '';
+  const now = new Date();
+  const invoiceNum = `INV-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
+  const dateStr = now.toLocaleDateString('he-IL', {day:'2-digit',month:'2-digit',year:'numeric'});
+
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<title>חשבונית ${invoiceNum}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Heebo', Arial, sans-serif; color: #111; background: #fff; direction: rtl; }
+  .page { max-width: 720px; margin: 0 auto; padding: 48px 40px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+  .logo-name { font-size: 24px; font-weight: 700; color: #F97316; }
+  .logo-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
+  .biz-info { text-align: left; font-size: 12px; color: #6B7280; line-height: 1.8; }
+  .inv-title { text-align: center; font-size: 28px; font-weight: 700; color: #F97316; margin-bottom: 6px; letter-spacing: -0.5px; }
+  .inv-num { text-align: center; font-size: 13px; color: #9CA3AF; margin-bottom: 36px; }
+  .meta-row { display: flex; gap: 40px; margin-bottom: 32px; }
+  .meta-box { flex: 1; background: #F9FAFB; border-radius: 10px; padding: 16px 20px; }
+  .meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: #9CA3AF; font-weight: 600; margin-bottom: 6px; }
+  .meta-val { font-size: 14px; font-weight: 600; color: #111; }
+  .meta-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  thead tr { background: #F97316; color: #fff; }
+  th { padding: 10px 14px; font-size: 12px; font-weight: 600; text-align: right; }
+  td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
+  tr:last-child td { border-bottom: none; }
+  .total-row { background: #FFF7ED; }
+  .total-label { font-weight: 700; color: #F97316; }
+  .total-price { font-size: 20px; font-weight: 700; color: #F97316; }
+  .footer { margin-top: 40px; text-align: center; font-size: 11px; color: #9CA3AF; border-top: 1px solid #F3F4F6; padding-top: 20px; }
+  .status-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #D1FAE5; color: #065F46; }
+  @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="logo-name">${bizName}</div>
+      <div class="logo-sub">צילום נדל"ן מקצועי</div>
+    </div>
+    <div class="biz-info">
+      ${bizPhone ? `📞 ${bizPhone}<br>` : ''}
+      ${bizEmail ? `✉️ ${bizEmail}<br>` : ''}
+      ${dateStr}
+    </div>
+  </div>
+
+  <div class="inv-title">חשבונית שירות</div>
+  <div class="inv-num">${invoiceNum}</div>
+
+  <div class="meta-row">
+    <div class="meta-box">
+      <div class="meta-label">לקוח</div>
+      <div class="meta-val">${cust ? `${cust.first} ${cust.last}` : (l.customer || '—')}</div>
+      <div class="meta-sub">${cust?.phone || ''}</div>
+    </div>
+    <div class="meta-box">
+      <div class="meta-label">נכס</div>
+      <div class="meta-val">${l.address}</div>
+      <div class="meta-sub">${l.city || ''}</div>
+    </div>
+    <div class="meta-box">
+      <div class="meta-label">סטטוס</div>
+      <div class="meta-val"><span class="status-pill">${l.status}</span></div>
+      <div class="meta-sub">${l.created || ''}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>שירות</th>
+        <th>פרטים</th>
+        <th>כמות</th>
+        <th>מחיר</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>${l.pkg || 'חבילת צילום'}</strong></td>
+        <td>${l.photos ? `${l.photos} תמונות` : ''} ${l.beds ? `· ${l.beds} חד'` : ''}</td>
+        <td>1</td>
+        <td>${price ? `₪${price.toLocaleString('he-IL')}` : '—'}</td>
+      </tr>
+      ${l.notes ? `<tr><td colspan="3" style="color:#6B7280;font-size:12px;">הערות: ${l.notes}</td><td></td></tr>` : ''}
+    </tbody>
+    <tfoot>
+      <tr class="total-row">
+        <td colspan="3" class="total-label">סה"כ לתשלום</td>
+        <td class="total-price">${price ? `₪${price.toLocaleString('he-IL')}` : '₪—'}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="footer">
+    ${bizName} · תודה על הזמנתך · ${dateStr}
+  </div>
+</div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=800,height=900');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 400);
+}
+
 // ── COMMAND PALETTE ───────────────────────────────
 let _cmdIdx = 0;
 
@@ -2411,6 +2572,36 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════════════════
 //  LISTING PANEL
 // ══════════════════════════════════════════════════
+const PIPELINE_STEPS = [
+  { key:'ממתין לאישור', icon:'⏳', label:'ממתין' },
+  { key:'מתוכנן',       icon:'📅', label:'מתוכנן' },
+  { key:'צולם',         icon:'📸', label:'צולם' },
+  { key:'בעיבוד',       icon:'✏️', label:'בעיבוד' },
+  { key:'ממתין למסירה', icon:'📦', label:'למסירה' },
+  { key:'נמסר',         icon:'✅', label:'נמסר' },
+];
+
+function renderPipeline(l) {
+  const el = document.getElementById('panel-pipeline');
+  if (!el) return;
+  const statusOrder = PIPELINE_STEPS.map(s => s.key);
+  const currentIdx = statusOrder.indexOf(l.status);
+
+  el.innerHTML = PIPELINE_STEPS.map((step, i) => {
+    const state = i < currentIdx ? 'done' : i === currentIdx ? 'active' : '';
+    const line = i < PIPELINE_STEPS.length - 1
+      ? `<div class="pipeline-line ${i < currentIdx ? 'done' : ''}"></div>` : '';
+    return `
+      <div class="pipeline-step">
+        <div class="pipeline-dot ${state}" onclick="setStatusInline('${l.id}','${step.key}',null)" title="${step.key}">
+          <div class="pipeline-icon">${state === 'done' ? '✓' : step.icon}</div>
+          <div class="pipeline-label">${step.label}</div>
+        </div>
+        ${line}
+      </div>`;
+  }).join('');
+}
+
 function openListing(id) {
   const l = store.listings.find(x => x.id === id);
   if (!l) return;
@@ -2458,6 +2649,7 @@ function openListing(id) {
     ? l.videos.map(v => `<div style="padding:10px;background:var(--surface2);border-radius:6px;margin-bottom:8px;font-size:13px;">🎬 ${v}</div>`).join('')
     : '<div style="color:var(--text-muted);font-size:13px;margin-top:8px;">לא הועלו סרטונים</div>';
 
+  renderPipeline(l);
   switchTab('info');
   document.getElementById('listing-panel').classList.add('open');
   document.getElementById('panel-overlay').classList.add('open');
@@ -3175,6 +3367,7 @@ function setStatusInline(id, newStatus, menu) {
   renderListings();
   if (currentListing && currentListing.id === id) {
     document.getElementById('panel-status-badge').innerHTML = `<span class="badge ${badgeClass(newStatus)}">${newStatus}</span>`;
+    renderPipeline(l);
   }
   menu && menu.remove();
   toast(`סטטוס עודכן ל: ${newStatus}`, 'success');
