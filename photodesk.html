@@ -1466,9 +1466,15 @@
 
     <!-- ════════════════ SERVICES PAGE ════════════════ -->
     <div class="page" id="page-services">
-      <div class="section-title">שירותים</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="section-title" style="margin-bottom:0;">שירותים</div>
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="addService()">+ הוסף שירות</button>
+      </div>
       <div class="service-list" id="services-list"></div>
-      <div class="section-title" style="margin-top:24px">תוספות</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;margin-bottom:12px;">
+        <div class="section-title" style="margin-bottom:0;">תוספות</div>
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="addAddon()">+ הוסף תוספת</button>
+      </div>
       <div class="service-list" id="addons-list"></div>
     </div>
 
@@ -1557,6 +1563,7 @@
     <div style="display:flex; gap:8px; margin-right:auto; align-items:center;">
       <span id="panel-status-badge"></span>
       <button class="btn" style="font-size:12px; padding:5px 12px; background:var(--surface2); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="openInvoice(currentListing?.id)" title="צור חשבונית PDF">🧾 חשבונית</button>
+      <button class="btn" id="share-delivery-btn" style="font-size:12px; padding:5px 12px; background:var(--surface2); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="shareDeliveryLink()" title="שתף קישור מסירה ללקוח">🔗 שתף מסירה</button>
       <button class="btn btn-primary" style="font-size:12px; padding:5px 12px;" onclick="deliverListing()">סמן כנמסר</button>
       <div class="panel-close" onclick="closePanel()">✕</div>
     </div>
@@ -2070,10 +2077,12 @@ function navigate(page) {
 }
 
 function primaryAction() {
-  if (currentPage === 'listings') openModal('new-listing-modal');
-  else if (currentPage === 'customers') openModal('new-customer-modal');
-  else if (currentPage === 'orders') openShareLinkModal();
-  else if (currentPage === 'availability') toast('שעות העבודה נשמרו', 'success');
+  if (currentPage === 'listings')      openModal('new-listing-modal');
+  else if (currentPage === 'customers')  openModal('new-customer-modal');
+  else if (currentPage === 'orders')     openShareLinkModal();
+  else if (currentPage === 'packages')   addPackage();
+  else if (currentPage === 'services')   addService();
+  else if (currentPage === 'availability') { saveStore(); toast('שעות העבודה נשמרו', 'success'); }
 }
 
 function renderPage(page) {
@@ -2182,6 +2191,7 @@ function renderListings() {
       <td class="row-actions" onclick="event.stopPropagation()">
         ${phone ? `<a class="row-action" href="tel:${phone}" title="חייג">📞</a>` : ''}
         ${waLink ? `<a class="row-action" href="${waLink}" target="_blank" title="WhatsApp">💬</a>` : ''}
+        <span class="row-action" onclick="deleteListingInline('${l.id}')" title="מחק נכס" style="color:#EF4444;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑️</span>
         <span class="row-action ra-primary" onclick="openListing('${l.id}')" title="פתח פרטים">→</span>
       </td>
     </tr>`;
@@ -2261,6 +2271,16 @@ function bulkSetStatus(newStatus) {
   toast(`${ids.length} נכסים עודכנו ל: ${newStatus}`, 'success');
 }
 
+function bulkDelete() {
+  const ids = [...window._bulkSelected];
+  if (!ids.length) return;
+  if (!confirm(`למחוק ${ids.length} נכסים? לא ניתן לשחזר.`)) return;
+  store.listings = store.listings.filter(l => !ids.includes(l.id));
+  saveStore();
+  bulkClearSelection();
+  toast(`${ids.length} נכסים נמחקו`, 'success');
+}
+
 function bulkClearSelection() {
   window._bulkSelected.clear();
   renderListings();
@@ -2317,6 +2337,19 @@ function renderKanban(list) {
   });
 
   board.innerHTML = `<div class="kanban-board">${cols.join('')}</div>`;
+}
+
+// ── DELIVERY SHARE LINK ───────────────────────────
+function shareDeliveryLink() {
+  const l = currentListing;
+  if (!l) return;
+  const base = window.location.href.replace(/\/[^/]*$/, '');
+  const url = `${base}/delivery.html?id=${l.id}`;
+  navigator.clipboard.writeText(url).then(() => {
+    toast('קישור מסירה הועתק ללוח! שלח ללקוח', 'success');
+  }).catch(() => {
+    prompt('העתק קישור מסירה:', url);
+  });
 }
 
 // ── INVOICE GENERATOR ────────────────────────────
@@ -2710,6 +2743,17 @@ function deliverListing() {
   toast('הנכס סומן כנמסר ✓', 'success');
 }
 
+function deleteListingInline(id) {
+  const l = store.listings.find(x => x.id === id);
+  if (!l) return;
+  if (!confirm(`למחוק את הנכס "${l.address}"?`)) return;
+  store.listings = store.listings.filter(x => x.id !== id);
+  if (currentListing?.id === id) closePanel();
+  renderListings();
+  saveStore();
+  toast('הנכס נמחק', 'success');
+}
+
 function deleteListing() {
   if (!currentListing) return;
   if (!confirm('האם למחוק נכס זה?')) return;
@@ -2813,10 +2857,10 @@ function setCustomersView(mode) {
 
 function renderCompaniesView() {
   document.getElementById('customers-toolbar').innerHTML = `
-    <input class="cust-search" placeholder="חיפוש לשכה..." value="${customersSearch}"
+    <input class="cust-search" placeholder="חיפוש משרד..." value="${customersSearch}"
       oninput="customersSearch=this.value; renderCompaniesView()">
     ${_viewToggleHTML()}
-    <button class="btn btn-primary" style="margin-right:auto;" onclick="addCompany()">+ לשכה חדשה</button>`;
+    <button class="btn btn-primary" style="margin-right:auto;" onclick="addCompany()">+ משרד חדש</button>`;
 
   const q = customersSearch.trim().toLowerCase();
   const filtered = store.companies.filter(co =>
@@ -2824,7 +2868,7 @@ function renderCompaniesView() {
 
   if (!filtered.length) {
     document.getElementById('customers-list').innerHTML =
-      '<div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">לא נמצאו לשכות</div></div>';
+      '<div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">לא נמצאו משרדים</div></div>';
     return;
   }
 
@@ -2849,7 +2893,7 @@ function renderCompaniesView() {
           </div>
         </div>`;
     }).join('');
-    const addCard = `<div class="company-card company-add-card" onclick="addCompany()"><div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">＋</div><div style="font-size:13px;">הוסף לשכה</div></div></div>`;
+    const addCard = `<div class="company-card company-add-card" onclick="addCompany()"><div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">＋</div><div style="font-size:13px;">הוסף משרד</div></div></div>`;
     document.getElementById('customers-list').innerHTML = `<div class="company-grid">${cards}${addCard}</div>`;
   } else {
     document.getElementById('customers-list').innerHTML = filtered.map(co => {
@@ -2880,7 +2924,7 @@ function renderAgentsView(companyId) {
   if (!co) { currentCompanyView = null; renderCompaniesView(); return; }
 
   document.getElementById('customers-toolbar').innerHTML = `
-    <div class="agents-back" onclick="backToCompanies()">← לשכות</div>
+    <div class="agents-back" onclick="backToCompanies()">← משרדים</div>
     <div style="font-weight:700;font-size:16px;">${co.name}</div>
     <input class="cust-search" placeholder="חיפוש סוכן..." value="${customersSearch}"
       oninput="customersSearch=this.value; renderAgentsView('${companyId}')">
@@ -2952,7 +2996,7 @@ function backToCompanies() {
 let _editCoId = null;
 function addCompany() {
   _editCoId = null;
-  document.getElementById('modal-company-title').textContent = 'לשכה חדשה';
+  document.getElementById('modal-company-title').textContent = 'משרד חדש';
   document.getElementById('mco-name').value = '';
   document.getElementById('mco-city').value = '';
   openModal('modal-company');
@@ -2962,7 +3006,7 @@ function editCompany(id) {
   const co = store.companies.find(x => x.id === id);
   if (!co) return;
   _editCoId = id;
-  document.getElementById('modal-company-title').textContent = 'ערוך לשכה';
+  document.getElementById('modal-company-title').textContent = 'ערוך משרד';
   document.getElementById('mco-name').value = co.name;
   document.getElementById('mco-city').value = co.city || '';
   openModal('modal-company');
@@ -2979,13 +3023,16 @@ function _saveCo() {
     store.companies.push({ id:'CO'+Date.now(), name, city, phone:'', email:'', notes:'' });
     migrateToCompanies();
   }
-  saveStore(); renderCustomers(); closeModal('modal-company'); toast(_editCoId ? 'לשכה עודכנה' : 'לשכה חדשה נוספה', 'success');
+  saveStore(); renderCustomers(); closeModal('modal-company'); toast(_editCoId ? 'משרד עודכן' : 'משרד חדש נוסף', 'success');
 }
 
 function deleteCompany(id) {
-  const agents = store.customers.filter(c => c.companyId === id);
-  if (agents.length && !confirm(`למחוק לשכה זו? יש בה ${agents.length} סוכנים — הם יועברו ל"פרטי / ישיר".`)) return;
-  agents.forEach(c => { c.companyId = 'CO_PRIVATE'; c.company = 'פרטי / ישיר'; });
+  const co = store.companies.find(x => x.id === id);
+  if (!co) return;
+  // Match by BOTH companyId AND company-name string (migration may have left stale name refs)
+  const linked = store.customers.filter(c => c.companyId === id || c.company === co.name);
+  if (linked.length && !confirm(`למחוק משרד זה? יש בה ${linked.length} סוכנים — הם יועברו ל"פרטי / ישיר".`)) return;
+  linked.forEach(c => { c.companyId = 'CO_PRIVATE'; c.company = 'פרטי / ישיר'; });
   store.companies = store.companies.filter(x => x.id !== id);
   saveStore();
   if (currentCompanyView === id) currentCompanyView = null;
@@ -3116,8 +3163,9 @@ function renderServices() {
       <div style="font-size:11px;color:var(--text-muted)">⏱ ${s.duration} דק'</div>
       <div class="service-price">₪${s.price.toLocaleString('he-IL')}</div>
       <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="editService('${s.id}')">ערוך</button>
+      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:#ef4444;" onclick="deleteService('${s.id}')">מחק</button>
     </div>
-  `).join('');
+  `).join('') || '<div style="color:var(--text-muted);padding:16px;text-align:center;font-size:13px;">אין שירותים עדיין — לחץ "+ הוסף שירות"</div>';
   document.getElementById('addons-list').innerHTML = store.addons.map(a => `
     <div class="service-item">
       <div>
@@ -3127,46 +3175,93 @@ function renderServices() {
       <div></div>
       <div class="service-price">₪${a.price.toLocaleString('he-IL')}</div>
       <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="editAddon('${a.id}')">ערוך</button>
+      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:#ef4444;" onclick="deleteAddon('${a.id}')">מחק</button>
     </div>
-  `).join('');
+  `).join('') || '<div style="color:var(--text-muted);padding:16px;text-align:center;font-size:13px;">אין תוספות עדיין</div>';
 }
 
 let _editSvcId = null;
+
+function addService() {
+  _editSvcId = null;
+  document.getElementById('modal-svc-title').textContent = 'שירות חדש';
+  document.getElementById('msvc-name').value = '';
+  document.getElementById('msvc-price').value = '';
+  document.getElementById('msvc-duration').value = '60';
+  openModal('modal-service');
+}
+
 function editService(id) {
   const s = store.services.find(x => x.id === id);
   if (!s) return;
   _editSvcId = id;
+  document.getElementById('modal-svc-title').textContent = 'ערוך שירות';
   document.getElementById('msvc-name').value = s.name;
   document.getElementById('msvc-price').value = s.price;
   document.getElementById('msvc-duration').value = s.duration;
   openModal('modal-service');
 }
 
+function deleteService(id) {
+  if (!confirm('למחוק שירות זה?')) return;
+  store.services = store.services.filter(x => x.id !== id);
+  saveStore(); renderServices();
+}
+
 function _saveSvc() {
   const name = document.getElementById('msvc-name').value.trim();
-  if (!name) return;
-  const s = store.services.find(x => x.id === _editSvcId);
-  if (s) { s.name = name; s.price = +document.getElementById('msvc-price').value || s.price; s.duration = +document.getElementById('msvc-duration').value || s.duration; }
-  saveStore(); renderServices(); closeModal('modal-service'); toast('שירות עודכן', 'success');
+  if (!name) { toast('נא להזין שם שירות', 'error'); return; }
+  if (_editSvcId) {
+    const s = store.services.find(x => x.id === _editSvcId);
+    if (s) { s.name = name; s.price = +document.getElementById('msvc-price').value || 0; s.duration = +document.getElementById('msvc-duration').value || 60; }
+    toast('שירות עודכן', 'success');
+  } else {
+    store.services.push({ id:'S'+Date.now(), name, type:'צילום', price: +document.getElementById('msvc-price').value || 0, duration: +document.getElementById('msvc-duration').value || 60 });
+    toast('שירות חדש נוסף', 'success');
+  }
+  saveStore(); renderServices(); closeModal('modal-service');
 }
 
 let _editAddId = null;
+
+function addAddon() {
+  _editAddId = null;
+  document.getElementById('modal-add-title').textContent = 'תוספת חדשה';
+  document.getElementById('madd-name').value = '';
+  document.getElementById('madd-price').value = '';
+  document.getElementById('madd-desc').value = '';
+  openModal('modal-addon');
+}
+
 function editAddon(id) {
   const a = store.addons.find(x => x.id === id);
   if (!a) return;
   _editAddId = id;
+  document.getElementById('modal-add-title').textContent = 'ערוך תוספת';
   document.getElementById('madd-name').value = a.name;
   document.getElementById('madd-price').value = a.price;
   document.getElementById('madd-desc').value = a.desc;
   openModal('modal-addon');
 }
 
+function deleteAddon(id) {
+  if (!confirm('למחוק תוספת זו?')) return;
+  store.addons = store.addons.filter(x => x.id !== id);
+  saveStore(); renderServices();
+}
+
 function _saveAddon() {
   const name = document.getElementById('madd-name').value.trim();
-  if (!name) return;
-  const a = store.addons.find(x => x.id === _editAddId);
-  if (a) { a.name = name; a.price = +document.getElementById('madd-price').value || a.price; a.desc = document.getElementById('madd-desc').value.trim() || a.desc; }
-  saveStore(); renderServices(); closeModal('modal-addon'); toast('תוספת עודכנה', 'success');
+  if (!name) { toast('נא להזין שם תוספת', 'error'); return; }
+  if (_editAddId) {
+    const a = store.addons.find(x => x.id === _editAddId);
+    if (a) { a.name = name; a.price = +document.getElementById('madd-price').value || 0; a.desc = document.getElementById('madd-desc').value.trim(); }
+    toast('תוספת עודכנה', 'success');
+  } else {
+    store.addons.push({ id:'A'+Date.now(), name, price: +document.getElementById('madd-price').value || 0, desc: document.getElementById('madd-desc').value.trim() });
+    toast('תוספת חדשה נוספה', 'success');
+  }
+  saveStore(); renderServices(); closeModal('modal-addon');
 }
 
 // ══════════════════════════════════════════════════
@@ -3617,37 +3712,54 @@ function openBookingInTab() {
 // ══════════════════════════════════════════════════
 //  LOCALSTORAGE PERSISTENCE
 // ══════════════════════════════════════════════════
-function saveStore() {
+async function saveStore() {
+  store.lastModified = Date.now();
   try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
-  db.collection('store').doc('data').set(store).catch(() => {});
+  try {
+    await db.collection('store').doc('data').set(store);
+  } catch(e) {
+    console.warn('Firestore write failed, saved locally only', e);
+    toast('שגיאת ענן — נשמר מקומית', 'warning');
+  }
 }
 
 function _applyParsed(parsed) {
-  if (parsed.listings  && parsed.listings.length)  store.listings  = parsed.listings;
-  if (parsed.customers && parsed.customers.length) store.customers = parsed.customers;
-  if (parsed.packages  && parsed.packages.length)  store.packages  = parsed.packages;
-  if (parsed.services  && parsed.services.length)  store.services  = parsed.services;
-  if (parsed.addons    && parsed.addons.length)     store.addons    = parsed.addons;
-  if (parsed.schedule  && parsed.schedule.length)   store.schedule  = parsed.schedule;
-  if (parsed.settings)                              store.settings  = Object.assign(store.settings, parsed.settings);
-  if (parsed.companies)                             store.companies = parsed.companies;
+  // Use Array.isArray (not .length) so empty arrays (e.g. all customers deleted) are applied correctly
+  if (Array.isArray(parsed.listings))  store.listings  = parsed.listings;
+  if (Array.isArray(parsed.customers)) store.customers = parsed.customers;
+  if (Array.isArray(parsed.packages))  store.packages  = parsed.packages;
+  if (Array.isArray(parsed.services))  store.services  = parsed.services;
+  if (Array.isArray(parsed.addons))    store.addons    = parsed.addons;
+  if (Array.isArray(parsed.schedule))  store.schedule  = parsed.schedule;
+  if (parsed.settings)                 store.settings  = Object.assign(store.settings, parsed.settings);
+  if (parsed.companies)                store.companies = parsed.companies;
 }
 
 async function loadStore() {
-  // Try Firestore first
+  let fsData = null, lsData = null;
+
+  // Load from Firestore
   try {
     const snap = await db.collection('store').doc('data').get();
-    if (snap.exists) {
-      _applyParsed(snap.data());
-      try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
-      return;
-    }
+    if (snap.exists) fsData = snap.data();
   } catch(e) { console.warn('Firestore unavailable, using localStorage', e); }
-  // Fallback to localStorage
+
+  // Load from localStorage
   try {
     const saved = localStorage.getItem('photoDesk_store');
-    if (saved) _applyParsed(JSON.parse(saved));
+    if (saved) lsData = JSON.parse(saved);
   } catch(e) {}
+
+  // Use the version with the newer lastModified timestamp (localStorage wins on tie)
+  const fsTime = fsData?.lastModified || 0;
+  const lsTime = lsData?.lastModified || 0;
+  const best = (lsTime >= fsTime) ? lsData : fsData;
+
+  if (best) {
+    _applyParsed(best);
+    // Keep localStorage in sync with winner
+    try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
+  }
 }
 
 
@@ -3960,6 +4072,7 @@ function uploadLogo(input) {
     store.settings.logo = e.target.result;
     document.getElementById('logo-preview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
     applySidebarSettings();
+    saveStore();
   };
   reader.readAsDataURL(file);
 }
@@ -3969,6 +4082,7 @@ function clearLogo() {
   store.settings.logo = '';
   document.getElementById('logo-preview').innerHTML = '📷';
   applySidebarSettings();
+  saveStore();
 }
 
 function applySidebarSettings() {
@@ -4054,7 +4168,8 @@ function renderSkeletonListings() {
   <button class="bulk-status-btn" onclick="bulkSetStatus('ממתין למסירה')">ממתין למסירה</button>
   <button class="bulk-status-btn" onclick="bulkSetStatus('נמסר')">נמסר</button>
   <span style="width:1px;height:20px;background:rgba(255,255,255,0.2);"></span>
-  <button class="bulk-status-btn" style="color:#F87171;" onclick="bulkClearSelection()">✕ בטל</button>
+  <button class="bulk-status-btn" style="color:#F87171;" onclick="bulkDelete()">🗑️ מחק</button>
+  <button class="bulk-status-btn" style="color:rgba(255,255,255,0.5);" onclick="bulkClearSelection()">✕ בטל</button>
 </div>
 
 <!-- BOOKING DETAIL MODAL -->
@@ -4114,8 +4229,8 @@ function renderSkeletonListings() {
 <!-- COMPANY MODAL -->
 <div class="modal-bg" id="modal-company">
   <div class="modal" style="width:400px;">
-    <div class="modal-title"><span id="modal-company-title">לשכה</span><span class="modal-close" onclick="closeModal('modal-company')">✕</span></div>
-    <div class="form-group"><label class="form-label">שם הלשכה *</label><input class="form-input" id="mco-name" placeholder="רי/מקס ישראל" /></div>
+    <div class="modal-title"><span id="modal-company-title">משרד</span><span class="modal-close" onclick="closeModal('modal-company')">✕</span></div>
+    <div class="form-group"><label class="form-label">שם המשרד *</label><input class="form-input" id="mco-name" placeholder="רי/מקס ישראל" /></div>
     <div class="form-group"><label class="form-label">עיר</label><input class="form-input" id="mco-city" placeholder="תל אביב" /></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-company')">ביטול</button>
@@ -4146,7 +4261,7 @@ function renderSkeletonListings() {
 <!-- SERVICE MODAL -->
 <div class="modal-bg" id="modal-service">
   <div class="modal" style="width:400px;">
-    <div class="modal-title">ערוך שירות<span class="modal-close" onclick="closeModal('modal-service')">✕</span></div>
+    <div class="modal-title" id="modal-svc-title">ערוך שירות<span class="modal-close" onclick="closeModal('modal-service')">✕</span></div>
     <div class="form-group"><label class="form-label">שם שירות *</label><input class="form-input" id="msvc-name" placeholder="צילום בסיסי" /></div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">מחיר (₪)</label><input class="form-input" type="number" id="msvc-price" placeholder="800" /></div>
@@ -4162,7 +4277,7 @@ function renderSkeletonListings() {
 <!-- ADDON MODAL -->
 <div class="modal-bg" id="modal-addon">
   <div class="modal" style="width:400px;">
-    <div class="modal-title">ערוך תוספת<span class="modal-close" onclick="closeModal('modal-addon')">✕</span></div>
+    <div class="modal-title" id="modal-add-title">ערוך תוספת<span class="modal-close" onclick="closeModal('modal-addon')">✕</span></div>
     <div class="form-group"><label class="form-label">שם תוספת *</label><input class="form-input" id="madd-name" placeholder="תוספת דרון" /></div>
     <div class="form-group"><label class="form-label">מחיר (₪)</label><input class="form-input" type="number" id="madd-price" placeholder="300" /></div>
     <div class="form-group"><label class="form-label">תיאור</label><input class="form-input" id="madd-desc" placeholder="תיאור קצר" /></div>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מסירת קבצים — PhotoDesk</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --accent: #F97316;
+    --accent-light: #FFF7ED;
+    --green: #10B981;
+    --bg: #F5F6FA;
+    --surface: #fff;
+    --border: #E5E7EB;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --radius: 12px;
+    --shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+  }
+
+  /* ── HEADER ─────────────────────── */
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; gap: 12px;
+    height: 60px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .brand-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .brand-name { font-weight: 700; font-size: 16px; color: var(--text); }
+  .brand-sub  { font-size: 11px; color: var(--text-muted); }
+  .header-right { margin-right: auto; font-size: 12px; color: var(--text-muted); }
+
+  /* ── HERO ───────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, var(--accent) 0%, #FB923C 100%);
+    color: #fff;
+    padding: 40px 24px 32px;
+    text-align: center;
+  }
+  .hero-icon { font-size: 40px; margin-bottom: 12px; }
+  .hero-address { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .hero-sub { font-size: 14px; opacity: 0.85; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.2); border-radius: 20px;
+    padding: 4px 14px; font-size: 12px; font-weight: 600;
+    margin-top: 14px;
+  }
+
+  /* ── MAIN CONTENT ───────────────── */
+  .main { max-width: 900px; margin: 0 auto; padding: 32px 16px 60px; }
+
+  .section { margin-bottom: 32px; }
+  .section-title {
+    font-size: 13px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .8px;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── PHOTO GRID ─────────────────── */
+  .photo-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .photo-item {
+    position: relative; border-radius: var(--radius); overflow: hidden;
+    aspect-ratio: 4/3; background: var(--border); cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .photo-item:hover { transform: scale(1.02); }
+  .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .photo-item:hover .photo-overlay { background: rgba(0,0,0,0.35); }
+  .photo-overlay-icon {
+    color: #fff; font-size: 22px; opacity: 0; transition: opacity 0.15s;
+  }
+  .photo-item:hover .photo-overlay-icon { opacity: 1; }
+
+  /* ── DOWNLOAD CARD ──────────────── */
+  .download-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    transition: box-shadow 0.15s;
+  }
+  .download-card:hover { box-shadow: var(--shadow); }
+  .download-card-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--accent-light); display: flex;
+    align-items: center; justify-content: center; font-size: 22px;
+    flex-shrink: 0;
+  }
+  .download-card-info { flex: 1; }
+  .download-card-title { font-weight: 600; font-size: 14px; }
+  .download-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .btn-download {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 8px; padding: 8px 16px; font-size: 13px;
+    font-family: 'Heebo', sans-serif; font-weight: 600;
+    cursor: pointer; text-decoration: none; display: inline-flex;
+    align-items: center; gap: 5px; transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-download:hover { background: #EA6D0C; }
+  .btn-outline {
+    background: transparent; color: var(--accent);
+    border: 1.5px solid var(--accent); border-radius: 8px;
+    padding: 7px 14px; font-size: 12px; font-family: 'Heebo', sans-serif;
+    cursor: pointer; transition: all 0.15s; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-outline:hover { background: var(--accent-light); }
+
+  .cards-grid { display: grid; gap: 10px; }
+
+  /* ── LIGHTBOX ───────────────────── */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.92);
+    display: none; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 82vh; object-fit: contain; border-radius: 8px; }
+  .lightbox-close {
+    position: absolute; top: 20px; left: 20px;
+    color: #fff; font-size: 28px; cursor: pointer; opacity: 0.7;
+    background: none; border: none; line-height: 1;
+  }
+  .lightbox-close:hover { opacity: 1; }
+  .lightbox-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    color: #fff; font-size: 36px; cursor: pointer; opacity: 0.6;
+    background: none; border: none; line-height: 1; padding: 8px;
+  }
+  .lightbox-nav:hover { opacity: 1; }
+  .lightbox-nav.prev { right: 16px; }
+  .lightbox-nav.next { left: 16px; }
+  .lightbox-counter {
+    color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 12px;
+  }
+
+  /* ── EMPTY / LOADING ────────────── */
+  .loading { text-align: center; padding: 80px 20px; color: var(--text-muted); font-size: 14px; }
+  .loading-spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty-section {
+    text-align: center; padding: 24px; color: var(--text-dim);
+    font-size: 13px; background: var(--bg); border-radius: var(--radius);
+  }
+  .error-box {
+    background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C;
+    border-radius: var(--radius); padding: 24px; text-align: center;
+    margin: 32px auto; max-width: 480px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="page-header">
+  <div class="brand-icon">📷</div>
+  <div>
+    <div class="brand-name" id="brand-name">PhotoDesk</div>
+    <div class="brand-sub">צילום נדל"ן מקצועי</div>
+  </div>
+  <div class="header-right" id="header-date"></div>
+</header>
+
+<!-- LOADING STATE -->
+<div id="loading-state" class="loading">
+  <div class="loading-spinner"></div>
+  טוען את הקבצים שלך...
+</div>
+
+<!-- ERROR STATE -->
+<div id="error-state" style="display:none; padding:40px 16px;">
+  <div class="error-box">
+    <div style="font-size:36px; margin-bottom:12px;">😕</div>
+    <div style="font-weight:700; font-size:16px; margin-bottom:8px;">הדף לא נמצא</div>
+    <div style="font-size:13px;">הלינק שגוי או שהנכס לא קיים במערכת.</div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content" style="display:none;">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-icon">🏠</div>
+    <div class="hero-address" id="hero-address">כתובת הנכס</div>
+    <div class="hero-sub" id="hero-sub">—</div>
+    <div class="hero-badge" id="hero-badge">✅ הקבצים מוכנים להורדה</div>
+  </div>
+
+  <div class="main">
+    <!-- PHOTOS -->
+    <div class="section" id="section-photos" style="display:none;">
+      <div class="section-title">📸 תמונות</div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+        <button class="btn-download" id="btn-download-all-photos">⬇ הורד הכל</button>
+      </div>
+      <div class="photo-grid" id="photos-grid"></div>
+    </div>
+
+    <!-- VIDEOS -->
+    <div class="section" id="section-videos" style="display:none;">
+      <div class="section-title">🎬 סרטונים</div>
+      <div class="cards-grid" id="videos-list"></div>
+    </div>
+
+    <!-- FLOOR PLANS -->
+    <div class="section" id="section-floorplans" style="display:none;">
+      <div class="section-title">📐 תוכניות קומה</div>
+      <div class="cards-grid" id="floorplans-list"></div>
+    </div>
+
+    <!-- NO FILES -->
+    <div id="no-files-state" style="display:none; text-align:center; padding:60px 20px; color:var(--text-muted);">
+      <div style="font-size:48px; margin-bottom:16px; opacity:.4;">📁</div>
+      <div style="font-size:16px; font-weight:600; margin-bottom:6px;">הקבצים עדיין לא הועלו</div>
+      <div style="font-size:13px;">הצלם יעדכן אותך כשהקבצים יהיו מוכנים</div>
+    </div>
+
+    <!-- FOOTER NOTE -->
+    <div style="margin-top:40px; text-align:center; font-size:12px; color:var(--text-dim); padding: 20px 0; border-top:1px solid var(--border);">
+      מסופק על ידי <strong style="color:var(--accent)" id="footer-brand">PhotoDesk</strong> · שאלות? צור קשר עם הצלם
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav prev" onclick="lightboxNav(1)">›</button>
+  <button class="lightbox-nav next" onclick="lightboxNav(-1)">‹</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-counter" id="lightbox-counter"></div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCUrX8Lo8qS30q2E5dMSu8S96GE-RKuRmQ",
+  authDomain: "photodesk-45381.firebaseapp.com",
+  projectId: "photodesk-45381",
+  storageBucket: "photodesk-45381.firebasestorage.app",
+  messagingSenderId: "386049671606",
+  appId: "1:386049671606:web:placeholderappid"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ── LIGHTBOX ──────────────────────────
+let _lightboxPhotos = [];
+let _lightboxIdx = 0;
+
+function openLightbox(urls, idx) {
+  _lightboxPhotos = urls;
+  _lightboxIdx = idx;
+  document.getElementById('lightbox-img').src = urls[idx];
+  document.getElementById('lightbox-counter').textContent = `${idx + 1} / ${urls.length}`;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lightboxNav(dir) {
+  _lightboxIdx = (_lightboxIdx + dir + _lightboxPhotos.length) % _lightboxPhotos.length;
+  document.getElementById('lightbox-img').src = _lightboxPhotos[_lightboxIdx];
+  document.getElementById('lightbox-counter').textContent = `${_lightboxIdx + 1} / ${_lightboxPhotos.length}`;
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') lightboxNav(1);
+  if (e.key === 'ArrowLeft') lightboxNav(-1);
+  if (e.key === 'Escape') closeLightbox();
+});
+
+// ── LOAD DATA ─────────────────────────
+async function loadDelivery() {
+  const params = new URLSearchParams(location.search);
+  const listingId = params.get('id');
+
+  if (!listingId) { showError(); return; }
+
+  document.getElementById('header-date').textContent = new Date().toLocaleDateString('he-IL', {day:'2-digit', month:'long', year:'numeric'});
+
+  try {
+    // Try to find listing in the store document
+    const snap = await db.collection('store').doc('data').get();
+    if (!snap.exists) { showError(); return; }
+
+    const data = snap.data();
+    const listing = (data.listings || []).find(l => l.id === listingId);
+    if (!listing) { showError(); return; }
+
+    // Get business settings
+    const bizName = data.settings?.businessName || 'PhotoDesk';
+    document.getElementById('brand-name').textContent = bizName;
+    document.getElementById('footer-brand').textContent = bizName;
+
+    renderDelivery(listing);
+  } catch(e) {
+    console.error(e);
+    showError();
+  }
+}
+
+function renderDelivery(l) {
+  document.title = `${l.address} — מסירת קבצים`;
+  document.getElementById('hero-address').textContent = l.address;
+  document.getElementById('hero-sub').textContent = [l.city, l.state].filter(Boolean).join(' · ') + (l.beds ? ` · ${l.beds} חדרים` : '');
+
+  const photos = l.photoUrls || [];
+  const videos = l.videoUrls || [];
+  const floorplans = l.floorplanUrls || [];
+  const hasAny = photos.length || videos.length || floorplans.length;
+
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('main-content').style.display = 'block';
+
+  if (!hasAny) {
+    document.getElementById('no-files-state').style.display = 'block';
+    document.getElementById('hero-badge').innerHTML = '⏳ הקבצים בהכנה';
+    document.getElementById('hero-badge').style.background = 'rgba(255,255,255,0.15)';
+    return;
+  }
+
+  // Photos
+  if (photos.length) {
+    document.getElementById('section-photos').style.display = 'block';
+    const grid = document.getElementById('photos-grid');
+    grid.innerHTML = photos.map((url, i) => `
+      <div class="photo-item" onclick="openLightbox(${JSON.stringify(photos)}, ${i})">
+        <img src="${url}" alt="תמונה ${i+1}" loading="lazy">
+        <div class="photo-overlay"><div class="photo-overlay-icon">🔍</div></div>
+      </div>`).join('');
+
+    // Download all button
+    document.getElementById('btn-download-all-photos').onclick = () => {
+      photos.forEach((url, i) => {
+        const a = document.createElement('a');
+        a.href = url; a.download = `photo_${i+1}.jpg`; a.target = '_blank';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      });
+    };
+  }
+
+  // Videos
+  if (videos.length) {
+    document.getElementById('section-videos').style.display = 'block';
+    document.getElementById('videos-list').innerHTML = videos.map((url, i) => `
+      <div class="download-card">
+        <div class="download-card-icon">🎬</div>
+        <div class="download-card-info">
+          <div class="download-card-title">סרטון ${i+1}</div>
+          <div class="download-card-sub">${url.split('/').pop().split('?')[0]}</div>
+        </div>
+        <a class="btn-outline" href="${url}" target="_blank">▶ צפה</a>
+        <a class="btn-download" href="${url}" download="video_${i+1}">⬇ הורד</a>
+      </div>`).join('');
+  }
+
+  // Floor plans
+  if (floorplans.length) {
+    document.getElementById('section-floorplans').style.display = 'block';
+    document.getElementById('floorplans-list').innerHTML = floorplans.map((url, i) => `
+      <div class="download-card">
+        <div class="download-card-icon">📐</div>
+        <div class="download-card-info">
+          <div class="download-card-title">תוכנית קומה ${i+1}</div>
+          <div class="download-card-sub">PDF / תמונה</div>
+        </div>
+        <a class="btn-outline" href="${url}" target="_blank">👁 צפה</a>
+        <a class="btn-download" href="${url}" download="floorplan_${i+1}">⬇ הורד</a>
+      </div>`).join('');
+  }
+}
+
+function showError() {
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('error-state').style.display = 'block';
+}
+
+loadDelivery();
+</script>
+</body>
+</html>
