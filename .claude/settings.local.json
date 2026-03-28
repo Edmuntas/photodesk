@@ -7,7 +7,21 @@
       "Bash(git commit -m \"Add booking form \\(booking.html\\) + orders integration:*)",
       "Bash(open:*)",
       "Bash(git commit -m \"Fix orders page not rendering and missing customer creation:*)",
-      "Bash(grep -n \"\\\\.split\\\\|\\\\.replace\\\\|\\\\.replace.*$\\\\|encodeURIComponent\" /Users/edmontmac16max/photodesk/booking.html)"
+      "Bash(grep -n \"\\\\.split\\\\|\\\\.replace\\\\|\\\\.replace.*$\\\\|encodeURIComponent\" /Users/edmontmac16max/photodesk/booking.html)",
+      "Bash(brew list:*)",
+      "Bash(brew install:*)",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(npm --version)",
+      "Bash(kill 12812)",
+      "Bash(rm -rf /opt/homebrew/Cellar/node.incomplete)",
+      "Bash(/opt/homebrew/bin/node -e \"\nconst fs = require\\('fs'\\);\nconst html = fs.readFileSync\\('photodesk.html', 'utf8'\\);\nconst start = html.indexOf\\('<script>\\\\n// ══════════════════════════════════════════════════\\\\n//  FIREBASE'\\);\nconst end = html.lastIndexOf\\('</script>'\\);\nconst script = html.slice\\(start + 8, end\\);\ntry { new Function\\(script\\); console.log\\('SYNTAX OK'\\); }\ncatch\\(e\\) { console.log\\('SYNTAX ERROR:', e.message\\); }\n\" 2>&1)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(ls /Users/edmontmac16max/photodesk/*.html)",
+      "Bash(python3 -m pytest tests.py -v)",
+      "Bash(python3 tests.py)",
+      "Bash(grep -n import.html /Users/edmontmac16max/photodesk/*.html)",
+      "Bash(git rm:*)"
     ]
   }
 }

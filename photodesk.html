@@ -10,6 +10,7 @@
   :root {
     --bg: #F5F6FA;
     --surface: #FFFFFF;
+    --card: #FFFFFF;
     --surface2: #F3F4F6;
     --surface3: #E9ECEF;
     --border: #E5E7EB;
@@ -662,6 +663,46 @@
 
   .schedule-time { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
 
+  /* ── TOGGLE SWITCH ──────────────── */
+  .toggle-sw { display:inline-flex; align-items:center; gap:7px; cursor:pointer; font-size:12px; color:var(--text-muted); user-select:none; }
+  .toggle-sw input { display:none; }
+  .toggle-sw-track { width:34px; height:18px; background:var(--border); border-radius:9px; position:relative; transition:background .2s; flex-shrink:0; }
+  .toggle-sw-track::after { content:''; position:absolute; top:2px; left:2px; width:14px; height:14px; background:#fff; border-radius:50%; transition:transform .2s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .toggle-sw input:checked ~ .toggle-sw-track { background:var(--accent); }
+  .toggle-sw input:checked ~ .toggle-sw-track::after { transform:translateX(16px); }
+  .toggle-sw.green input:checked ~ .toggle-sw-track { background:var(--green); }
+
+  /* ── STATUS BADGES ───────────────── */
+  .vis-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px; }
+  .vis-badge.active   { background:rgba(34,197,94,.12);  color:#15803d; }
+  .vis-badge.inactive { background:rgba(239,68,68,.10);  color:#b91c1c; }
+  .vis-badge.hidden   { background:rgba(100,116,139,.12);color:var(--text-muted); }
+  .vis-badge.featured { background:rgba(249,115,22,.12); color:var(--accent); }
+
+  /* ── DIMMED CARD (hidden/inactive) ── */
+  .svc-card.card-hidden, .pkg-card.card-hidden { opacity:.45; }
+  .svc-card.card-inactive, .pkg-card.card-inactive { border: 1.5px dashed var(--border) !important; }
+  .svc-card .card-ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 14px; background:var(--surface2); border-radius:0 0 var(--radius) var(--radius); margin:10px -14px -14px; border-top:1px solid var(--border); }
+  .pkg-card .card-ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 10px; background:rgba(0,0,0,.04); border-radius:0 0 12px 12px; margin:10px -14px -14px; border-top:1px solid rgba(0,0,0,.08); }
+
+  /* ── PROMOTIONS PAGE ─────────────── */
+  .promo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+  .promo-card { background:var(--surface); border:1.5px solid var(--border); border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:10px; transition:box-shadow .15s; }
+  .promo-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.07); }
+  .promo-card.promo-active { border-color:var(--green); box-shadow:0 0 0 3px rgba(34,197,94,.08); }
+  .promo-card.promo-expired { opacity:.55; }
+  .promo-card-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .promo-card-name { font-size:15px; font-weight:700; }
+  .promo-badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
+  .promo-badge.live    { background:rgba(34,197,94,.15);  color:#15803d; }
+  .promo-badge.sched   { background:rgba(59,130,246,.12); color:#1d4ed8; }
+  .promo-badge.expired { background:rgba(239,68,68,.10);  color:#b91c1c; }
+  .promo-badge.off     { background:var(--surface2);      color:var(--text-muted); }
+  .promo-discount { font-size:22px; font-weight:800; color:var(--accent); }
+  .promo-desc { font-size:12px; color:var(--text-muted); }
+  .promo-dates { font-size:11px; color:var(--text-dim); display:flex; gap:8px; flex-wrap:wrap; }
+  .promo-footer { display:flex; align-items:center; justify-content:space-between; margin-top:4px; gap:8px; }
+
   /* ── PACKAGE CARDS ──────────────── */
   .pkg-grid {
     display: grid;
@@ -694,27 +735,227 @@
     border: 1px solid var(--border);
     border-radius: 20px;
     color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .pkg-service-tag:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
-  /* ── SERVICE TABLE ──────────────── */
-  .service-list { display: grid; gap: 8px; }
-  .service-item {
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 18px;
-    background: var(--surface);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.15s;
+  /* ── SERVICE TAG POPUP ──────────────── */
+  #svc-tag-popup {
+    position: fixed; z-index: 9999;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    padding: 14px 16px;
+    min-width: 240px; max-width: 320px;
+    font-size: 13px;
+    pointer-events: auto;
+    animation: popupIn 0.15s ease;
   }
-  .service-item:hover { box-shadow: var(--shadow); }
-  .service-name { font-weight: 600; font-size: 13px; color: var(--text); }
-  .service-type { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .service-price { font-weight: 700; color: var(--accent); font-size: 14px; }
-  .service-duration { font-size: 12px; color: var(--text-muted); }
+  @keyframes popupIn {
+    from { opacity:0; transform: scale(0.93) translateY(-4px); }
+    to   { opacity:1; transform: scale(1)    translateY(0); }
+  }
+  #svc-tag-popup .stp-header {
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  #svc-tag-popup .stp-icon { font-size: 22px; }
+  #svc-tag-popup .stp-desc {
+    color: var(--text-dim); margin-bottom: 8px; line-height: 1.5;
+  }
+  #svc-tag-popup .stp-deliverables {
+    background: var(--surface2); border-radius: 8px;
+    padding: 8px 10px; font-size: 12px;
+    color: var(--text); white-space: pre-wrap; line-height: 1.5;
+  }
+  #svc-tag-popup .stp-deliverables-label {
+    font-size: 10px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  #svc-tag-popup .stp-media-row {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+  }
+  #svc-tag-popup .stp-no-info {
+    color: var(--text-muted); font-style: italic; font-size: 12px;
+  }
+
+  /* ── SERVICE CARDS ──────────────── */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  @media (max-width: 900px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .services-grid { grid-template-columns: 1fr; } }
+
+  .svc-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    position: relative;
+    transition: all 0.18s;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .svc-card:hover { border-color: var(--accent); box-shadow: 0 4px 18px rgba(249,115,22,0.10); transform: translateY(-2px); }
+  .svc-card:hover .svc-actions { opacity: 1; }
+
+  .svc-card-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--accent-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 2px;
+    flex-shrink: 0;
+  }
+
+  .svc-card-name { font-size: 14px; font-weight: 700; color: var(--text); }
+
+  .svc-card-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    flex: 1;
+  }
+
+  .svc-deliverables {
+    background: var(--accent-light);
+    border: 1px solid rgba(249,115,22,0.18);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .svc-deliverables::before {
+    content: '📦 ';
+    font-size: 11px;
+  }
+  .svc-deliverables-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    margin-bottom: 3px;
+  }
+
+  .svc-actions {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .svc-btn {
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    transition: all 0.12s;
+  }
+  .svc-btn:hover { background: var(--surface2); }
+  .svc-btn.del { color: var(--red); border-color: rgba(239,68,68,0.2); }
+  .svc-btn.del:hover { background: rgba(239,68,68,0.06); }
+
+  .svc-category-label {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    width: fit-content;
+  }
+  .svc-category-label.main  { background: rgba(59,130,246,0.10); color: var(--blue); }
+  .svc-category-label.addon { background: rgba(139,92,246,0.10); color: var(--purple); }
+
+  /* ── EXAMPLES INLINE PREVIEW ─────── */
+  .svc-ex-preview {
+    margin: 10px 0 6px;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .svc-ex-preview:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  .svc-ex-thumb-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--surface3);
+  }
+  .svc-ex-thumb {
+    aspect-ratio: 1;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--surface3);
+  }
+  .svc-ex-thumb-more {
+    aspect-ratio: 1;
+    background: rgba(0,0,0,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+  }
+  .svc-ex-media-row { display: flex; flex-wrap: wrap; gap: 4px; padding: 7px 8px 5px; }
+  .svc-ex-media-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+  .svc-ex-footer {
+    font-size: 11px; color: var(--text-dim);
+    padding: 4px 10px; border-top: 1px solid var(--border);
+    text-align: center; background: var(--surface2);
+  }
+
+  /* ── EXAMPLES MODAL ─────────────── */
+  .mexs-type-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 9px; border-radius: 10px;
+    white-space: nowrap;
+  }
+  .mexs-embed-wrap {
+    position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+  }
+  .mexs-embed-wrap.kuula { padding-bottom: 75%; }
+  .mexs-embed-wrap iframe {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
+  }
+  .mexs-photo-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px;
+  }
+  .mexs-photo-grid img {
+    width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 6px;
+    cursor: pointer; transition: transform 0.15s;
+  }
+  .mexs-photo-grid img:hover { transform: scale(1.03); }
+
+  /* ── LIGHTBOX ───────────────────── */
+  .lightbox-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+    z-index: 9999; display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .lightbox-bg img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
 
   /* ── CALENDAR VIEW ──────────────── */
   .cal-header {
@@ -756,8 +997,25 @@
   .cal-cell:hover { background: var(--surface2); }
   .cal-cell.today { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); font-weight: 700; }
   .cal-cell.other-month { color: var(--text-dim); }
-  .cal-cell.has-shoot { background: rgba(96,165,250,0.1); border-color: rgba(96,165,250,0.3); }
-  .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); margin-top: 3px; }
+  .cal-cell.has-shoot { background: rgba(96,165,250,0.07); border-color: rgba(96,165,250,0.25); }
+  .cal-cell.has-shoot:hover { background: rgba(96,165,250,0.14); cursor:pointer; }
+  .cal-events { display:flex; flex-wrap:wrap; gap:2px; justify-content:center; margin-top:3px; min-height:8px; }
+  .cal-ev { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .cal-ev-more { font-size:9px; color:var(--text-muted); line-height:8px; }
+  .cal-ev.ev-done    { background:#22c55e; }
+  .cal-ev.ev-proc    { background:var(--blue); }
+  .cal-ev.ev-wait    { background:#f59e0b; }
+  .cal-ev.ev-new     { background:var(--accent); }
+  /* Day detail panel */
+  .day-panel { position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); }
+  .day-panel-card { background:var(--surface); border-radius:16px; padding:24px; min-width:320px; max-width:480px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+  .day-panel-title { font-size:16px; font-weight:700; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; }
+  .day-listing-row { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; background:var(--surface-2); margin-bottom:8px; cursor:pointer; transition:background 0.15s; }
+  .day-listing-row:hover { background:var(--surface3); }
+  .day-listing-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .day-listing-info { flex:1; }
+  .day-listing-addr { font-size:13px; font-weight:600; color:var(--text); }
+  .day-listing-sub  { font-size:11px; color:var(--text-muted); margin-top:2px; }
 
   /* ── MODAL ─────────────────────── */
   .modal-bg {
@@ -801,7 +1059,7 @@
   }
   .modal-close:hover { color: var(--text); background: var(--surface3); }
 
-  .modal-footer { display: flex; gap: 10px; justify-content: flex-start; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-start; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px; position: sticky; bottom: 0; background: var(--card); padding-bottom: 4px; }
 
   /* ── EMPTY STATE ────────────────── */
   .empty-state {
@@ -941,6 +1199,74 @@
   .cmd-item-kbd { font-size: 10px; color: var(--text-dim); background: var(--surface2);
     border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
   .cmd-empty { text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 13px; }
+
+  /* ── DELIVERY DOTS ─────────────── */
+  .dlv-wrap { display:flex; gap:3px; }
+  .dlv-dot {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:24px; height:24px; border-radius:6px; font-size:12px;
+    cursor:pointer; background:var(--surface3);
+    opacity:0.35; transition:opacity .15s, transform .12s, box-shadow .15s;
+    border:1.5px solid transparent;
+  }
+  .dlv-dot:hover { opacity:0.75; transform:scale(1.12); }
+  .dlv-dot.dlv-on {
+    opacity:1; background:var(--green-light);
+    border-color:var(--green); box-shadow:0 0 0 1px rgba(16,185,129,0.2);
+  }
+
+  /* ── ARCHIVE PAGE ──────────────── */
+  .archive-tabs { display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:0; }
+  .archive-tab {
+    background:none; border:none; cursor:pointer; padding:10px 18px;
+    font-size:13px; font-weight:600; color:var(--text-muted);
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+    transition:all 0.15s; border-radius:0; font-family:inherit;
+  }
+  .archive-tab:hover { color:var(--text); }
+  .archive-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .archive-tab-count { font-size:11px; font-weight:700; background:var(--surface3); color:var(--text-muted); border-radius:10px; padding:1px 7px; margin-right:4px; }
+  .archive-panel { }
+  .archive-row {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-sm); margin-bottom:8px;
+    transition:border-color 0.15s;
+  }
+  .archive-row:hover { border-color:var(--border-focus); }
+  .archive-row-icon { font-size:20px; flex-shrink:0; }
+  .archive-row-body { flex:1; overflow:hidden; }
+  .archive-row-title { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .archive-row-sub { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .archive-row-date { font-size:11px; color:var(--text-dim); flex-shrink:0; }
+  .archive-row-actions { display:flex; gap:6px; flex-shrink:0; }
+  .archive-empty { text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .archive-empty-icon { font-size:40px; margin-bottom:12px; }
+  .archive-empty-title { font-size:15px; font-weight:600; }
+  .archive-empty-sub { font-size:13px; margin-top:6px; }
+  .archive-cleanup-bar { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--text-muted); }
+
+  /* ── LOGIN OVERLAY ─────────────── */
+  #login-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(17,24,39,0.7);
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .login-card {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 44px 36px 36px;
+    width: 360px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    text-align: center;
+  }
+  .login-logo { font-size: 40px; margin-bottom: 12px; }
+  .login-title { font-size: 22px; font-weight: 800; color: var(--text); }
+  .login-sub   { font-size: 13px; color: var(--text-muted); margin-top: 4px; margin-bottom: 28px; }
+  .login-card .form-group { text-align: right; margin-bottom: 14px; }
+  #login-error { color: var(--red); font-size: 12px; min-height: 18px; text-align: right; margin-bottom: 10px; }
+  #login-btn { width: 100%; justify-content: center; padding: 12px; font-size: 15px; }
 
   /* ── SKELETON LOADING ───────────── */
   @keyframes skeleton-shimmer {
@@ -1261,13 +1587,220 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-focus); border-radius: 10px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — TABLET (641px – 1024px)
+══════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  :root { --sidebar: 64px; }
+  .sidebar .logo { justify-content: center; padding: 16px 0; }
+  .sidebar .logo-mark, .sidebar .logo-sub { display: none; }
+  .sidebar .nav-label { display: none; }
+  .sidebar .nav-item { justify-content: center; padding: 10px 0; gap: 0; }
+  .sidebar .nav-text { display: none; }
+  .sidebar .nav-badge { display: none; }
+  .sidebar .nav-item .icon { width: auto; margin: 0; font-size: 20px; opacity: 1; }
+  .sidebar .user-pill { justify-content: center; padding: 8px 0; }
+  .sidebar .user-name, .sidebar .user-role { display: none; }
+  .sidebar-toggle { display: none !important; }
+  .sidebar.mobile-open { width: 220px; }
+  .sidebar.mobile-open .logo { justify-content: flex-start; padding: 18px 16px 14px; }
+  .sidebar.mobile-open .logo-mark, .sidebar.mobile-open .logo-sub { display: block; }
+  .sidebar.mobile-open .nav-label { display: block; }
+  .sidebar.mobile-open .nav-item { justify-content: flex-start; padding: 8px 10px; gap: 9px; }
+  .sidebar.mobile-open .nav-text { display: block; }
+  .sidebar.mobile-open .nav-item .icon { font-size: 14px; width: 18px; }
+  .sidebar.mobile-open .user-pill { justify-content: flex-start; padding: 8px 10px; }
+  .sidebar.mobile-open .user-name, .sidebar.mobile-open .user-role { display: block; }
+
+  .stats-row { grid-template-columns: repeat(3, 1fr) !important; }
+  .pkg-grid { grid-template-columns: repeat(2, 1fr); }
+  .detail-panel { width: 420px; }
+  .modal { width: min(520px, 95vw); }
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 640px)
+══════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Sidebar: hidden → overlay drawer */
+  .sidebar {
+    display: none;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 260px !important;
+    z-index: 500;
+    box-shadow: -6px 0 32px rgba(0,0,0,0.2);
+    overflow-y: auto;
+  }
+  .sidebar.mobile-open {
+    display: flex;
+    /* restore all text */
+  }
+  .sidebar.mobile-open .logo { justify-content: flex-start; padding: 18px 16px 14px; }
+  .sidebar.mobile-open .logo-mark, .sidebar.mobile-open .logo-sub { display: block; }
+  .sidebar.mobile-open .nav-label { display: block; }
+  .sidebar.mobile-open .nav-item { justify-content: flex-start; padding: 8px 10px; gap: 9px; }
+  .sidebar.mobile-open .nav-text { display: block; }
+  .sidebar.mobile-open .nav-badge { display: inline-flex; }
+  .sidebar.mobile-open .nav-item .icon { font-size: 14px; width: 18px; }
+  .sidebar.mobile-open .user-pill { justify-content: flex-start; padding: 8px 10px; }
+  .sidebar.mobile-open .user-name, .sidebar.mobile-open .user-role { display: block; }
+  .sidebar-toggle { display: none !important; }
+
+  /* Sidebar overlay */
+  .sidebar-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 499;
+    display: none;
+  }
+  .sidebar-overlay.open { display: block; }
+
+  /* Topbar */
+  .topbar { padding: 0 14px; gap: 8px; height: 52px; }
+  .search-box { display: none; }
+  .mobile-menu-btn {
+    display: flex !important;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; cursor: pointer;
+    font-size: 16px; color: var(--text-muted); align-items: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .mobile-menu-btn:hover { background: var(--surface3); color: var(--text); }
+  /* ⌘K button — hide on mobile (no keyboard shortcut) */
+  button[onclick="openCmdPalette()"] { display: none !important; }
+
+  /* Content */
+  .content { padding: 14px 14px 76px; }
+
+  /* Bottom navigation */
+  .mobile-nav {
+    display: flex !important;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 58px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 400;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  }
+  .mobile-nav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; cursor: pointer; color: var(--text-muted);
+    font-size: 10px; font-weight: 500; padding: 6px 4px;
+    transition: color 0.15s; user-select: none;
+    border: none; background: none;
+  }
+  .mobile-nav-item .mn-icon { font-size: 20px; line-height: 1; }
+  .mobile-nav-item.active { color: var(--accent); }
+
+  /* Stats */
+  .stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; margin-bottom: 16px; }
+  .stat-value { font-size: 24px !important; }
+  .stat-card { padding: 14px 16px; }
+
+  /* Table: horizontal scroll */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 540px; }
+  thead th, tbody td { padding: 10px 14px; }
+
+  /* Detail panel: full screen bottom sheet */
+  .detail-panel {
+    width: 100% !important;
+    top: auto !important;
+    height: 92vh;
+    border-radius: 20px 20px 0 0;
+    border-left: none;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+  }
+  .detail-panel.open { transform: translateY(0); }
+
+  /* Modal: bottom sheet */
+  .modal-bg { align-items: flex-end !important; padding-bottom: 0; }
+  .modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 88vh;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 20px 18px 24px;
+    margin: 0;
+  }
+
+  /* Forms */
+  .form-row, .form-row-3 { grid-template-columns: 1fr !important; gap: 0; }
+  .form-group { margin-bottom: 12px; }
+
+  /* Packages */
+  .pkg-grid { grid-template-columns: 1fr; }
+
+  /* Calendar: single column */
+  #page-calendar > div { grid-template-columns: 1fr !important; }
+  .cal-sidebar-col { margin-top: 20px; }
+  .cal-cell { font-size: 10px; padding: 4px 2px; }
+  .cal-ev { width: 5px; height: 5px; }
+  .cal-month-title { font-size: 16px; }
+
+  /* Kanban: horizontal scroll */
+  #kanban-board { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Today banner */
+  .today-banner { margin: 0 -14px; border-radius: 0; font-size: 13px; }
+
+  /* Day panel: full width bottom */
+  .day-panel-card { border-radius: 20px 20px 0 0; width: 100%; margin-top: auto; }
+  .day-panel { align-items: flex-end !important; padding: 0; }
+
+  /* Command palette */
+  .cmd-box { width: 96vw !important; }
+
+  /* Bulk actions bar */
+  .bulk-bar { bottom: 66px !important; left: 8px; right: 8px; border-radius: 12px; }
+
+  /* Company grid */
+  .company-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Desktop: hide mobile-only elements */
+@media (min-width: 641px) {
+  .mobile-nav { display: none !important; }
+  .sidebar-overlay { display: none !important; }
+  .mobile-menu-btn { display: none !important; }
+}
 </style>
 <!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">📷</div>
+    <div class="login-title">PhotoDesk</div>
+    <div class="login-sub">כניסה לניהול צילום נדל&quot;ן</div>
+    <div class="form-group">
+      <label class="form-label">אימייל</label>
+      <input class="form-input" id="login-email" type="email" placeholder="you@example.com"
+        onkeydown="if(event.key==='Enter')loginUser()" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">סיסמה</label>
+      <input class="form-input" id="login-pass" type="password" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')loginUser()" autocomplete="current-password" />
+    </div>
+    <div id="login-error"></div>
+    <button id="login-btn" class="btn btn-primary" onclick="loginUser()">כניסה →</button>
+  </div>
+</div>
+
+<!-- APP ROOT (hidden until auth) -->
+<div id="app-root" style="display:none;width:100%;height:100%;">
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -1305,6 +1838,10 @@
     <div class="nav-item" onclick="navigate('services')">
       <span class="icon">🎯</span><span class="nav-text">שירותים</span>
     </div>
+    <div class="nav-item" onclick="navigate('promotions')">
+      <span class="icon">🏷️</span><span class="nav-text">מבצעים</span>
+      <span class="nav-badge" id="promo-badge" style="display:none;background:var(--green);">0</span>
+    </div>
   </div>
 
   <div class="nav-group">
@@ -1315,15 +1852,22 @@
     <div class="nav-item" onclick="navigate('settings')">
       <span class="icon">⚙️</span><span class="nav-text">הגדרות</span>
     </div>
+    <div class="nav-item" onclick="navigate('archive')">
+      <span class="icon">🗄️</span><span class="nav-text">ארכיון</span>
+      <span class="nav-badge" id="archive-badge" style="display:none;background:var(--text-muted);">0</span>
+    </div>
   </div>
 
   <div class="sidebar-footer">
-    <div class="user-pill">
-      <div class="avatar">SA</div>
-      <div>
-        <div class="user-name">Sisa Aero</div>
-        <div class="user-role">צלם נדל"ן</div>
+    <div class="user-pill" style="cursor:default;">
+      <div class="avatar" id="auth-avatar">SA</div>
+      <div style="flex:1;overflow:hidden;">
+        <div class="user-name" id="auth-user-name">Sisa Aero</div>
+        <div class="user-role" id="auth-user-email" style="font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;">צלם נדל&quot;ן</div>
       </div>
+      <button onclick="logoutUser()" title="התנתק"
+        style="background:none;border:none;cursor:pointer;font-size:17px;color:var(--text-muted);padding:4px 6px;border-radius:6px;transition:color 0.15s;flex-shrink:0;"
+        onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text-muted)'">⏻</button>
     </div>
   </div>
 </aside>
@@ -1336,6 +1880,7 @@
 
   <!-- TOPBAR -->
   <div class="topbar">
+    <button class="mobile-menu-btn" onclick="openMobileMenu()" style="display:none;">☰</button>
     <div class="page-title" id="page-title">נכסים</div>
     <div class="topbar-actions">
       <div class="search-box">
@@ -1414,6 +1959,7 @@
               <th>נכס</th>
               <th>סטטוס</th>
               <th>חבילה</th>
+              <th>מסירה</th>
               <th>לקוח</th>
               <th>נוצר</th>
             </tr>
@@ -1445,13 +1991,47 @@
             <button class="btn btn-ghost" style="margin-right:auto; font-size:12px;" onclick="calNav(0)">היום</button>
           </div>
           <div class="cal-grid" id="cal-grid"></div>
+          <!-- Legend -->
+          <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--text-muted);">
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-left:4px;"></span>נמסר</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);margin-left:4px;"></span>בעיבוד</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-left:4px;"></span>מתוכנן</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:4px;"></span>ממתין לאישור</span>
+          </div>
         </div>
-        <div>
-          <div class="section-title">צילומים קרובים</div>
+        <div class="cal-sidebar-col">
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button id="cal-tab-upcoming" class="btn btn-primary" style="font-size:12px;flex:1;" onclick="calSidebarTab('upcoming')">📅 קרובים</button>
+            <button id="cal-tab-history" class="btn btn-ghost" style="font-size:12px;flex:1;" onclick="calSidebarTab('history')">🕐 היסטוריה</button>
+          </div>
           <div class="shoots-list" id="upcoming-shoots"></div>
         </div>
       </div>
     </div>
+    <!-- Day detail overlay -->
+    <div id="day-panel" class="day-panel" style="display:none;" onclick="if(event.target===this)closeDayPanel()"></div>
+
+    <!-- Sidebar overlay (mobile) -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Mobile bottom navigation -->
+    <nav class="mobile-nav" id="mobile-nav">
+      <button class="mobile-nav-item active" id="mn-listings" onclick="navigate('listings');updateMobileNav('listings')">
+        <span class="mn-icon">🏠</span>נכסים
+      </button>
+      <button class="mobile-nav-item" id="mn-orders" onclick="navigate('orders');updateMobileNav('orders')">
+        <span class="mn-icon">📋</span>הזמנות
+      </button>
+      <button class="mobile-nav-item" id="mn-calendar" onclick="navigate('calendar');updateMobileNav('calendar')">
+        <span class="mn-icon">📅</span>יומן
+      </button>
+      <button class="mobile-nav-item" id="mn-customers" onclick="navigate('customers');updateMobileNav('customers')">
+        <span class="mn-icon">👥</span>לקוחות
+      </button>
+      <button class="mobile-nav-item" id="mn-more" onclick="openMobileMenu()">
+        <span class="mn-icon">☰</span>עוד
+      </button>
+    </nav>
 
     <!-- ════════════════ CUSTOMERS PAGE ════════════════ -->
     <div class="page" id="page-customers">
@@ -1466,16 +2046,37 @@
 
     <!-- ════════════════ SERVICES PAGE ════════════════ -->
     <div class="page" id="page-services">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="section-title" style="margin-bottom:0;">שירותים</div>
-        <button class="btn btn-ghost" style="font-size:12px;" onclick="addService()">+ הוסף שירות</button>
+      <!-- Main services -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div class="section-title" style="margin-bottom:2px;">שירותים ראשיים</div>
+          <div style="font-size:12px;color:var(--text-muted);">שירותים שמרכיבים את החבילות שלך</div>
+        </div>
       </div>
-      <div class="service-list" id="services-list"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;margin-bottom:12px;">
-        <div class="section-title" style="margin-bottom:0;">תוספות</div>
-        <button class="btn btn-ghost" style="font-size:12px;" onclick="addAddon()">+ הוסף תוספת</button>
+      <div class="services-grid" id="services-main-grid"></div>
+
+      <!-- Addons -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:28px;margin-bottom:14px;">
+        <div>
+          <div class="section-title" style="margin-bottom:2px;">תוספות</div>
+          <div style="font-size:12px;color:var(--text-muted);">שירותים שמתווספים לחבילה בנפרד</div>
+        </div>
       </div>
-      <div class="service-list" id="addons-list"></div>
+      <div class="services-grid" id="services-addon-grid"></div>
+    </div>
+
+    <!-- ════════════════ PROMOTIONS PAGE ════════════════ -->
+    <div class="page" id="page-promotions">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+        <div style="display:flex;gap:6px;" id="promo-filter-tabs">
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="filterPromos('all')" id="pf-all">הכל</button>
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="filterPromos('live')" id="pf-live">🟢 פעיל עכשיו</button>
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="filterPromos('scheduled')" id="pf-scheduled">🔵 מתוכנן</button>
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="filterPromos('expired')" id="pf-expired">🔴 פג תוקף</button>
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="filterPromos('disabled')" id="pf-disabled">⚫ כבוי</button>
+        </div>
+      </div>
+      <div class="promo-grid" id="promo-grid"></div>
     </div>
 
     <!-- ════════════════ AVAILABILITY PAGE ════════════════ -->
@@ -1547,6 +2148,20 @@
       </div>
     </div>
 
+    <!-- ════════════════ ARCHIVE PAGE ════════════════ -->
+    <div class="page" id="page-archive">
+      <!-- Tabs -->
+      <div class="archive-tabs" id="archive-tabs">
+        <button class="archive-tab active" onclick="switchArchiveTab('listings',this)">🏠 נכסים <span class="archive-tab-count" id="atab-listings-count"></span></button>
+        <button class="archive-tab" onclick="switchArchiveTab('customers',this)">👤 לקוחות <span class="archive-tab-count" id="atab-customers-count"></span></button>
+        <button class="archive-tab" onclick="switchArchiveTab('companies',this)">🏢 משרדים <span class="archive-tab-count" id="atab-companies-count"></span></button>
+      </div>
+      <!-- Panels -->
+      <div id="archive-panel-listings" class="archive-panel"></div>
+      <div id="archive-panel-customers" class="archive-panel" style="display:none;"></div>
+      <div id="archive-panel-companies" class="archive-panel" style="display:none;"></div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
 
@@ -1563,6 +2178,7 @@
     <div style="display:flex; gap:8px; margin-right:auto; align-items:center;">
       <span id="panel-status-badge"></span>
       <button class="btn" style="font-size:12px; padding:5px 12px; background:var(--surface2); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="openInvoice(currentListing?.id)" title="צור חשבונית PDF">🧾 חשבונית</button>
+      <button class="btn" style="font-size:12px; padding:5px 12px; background:var(--accent-light); border:1px solid rgba(249,115,22,0.3); color:var(--accent); cursor:pointer; font-weight:600;" onclick="shareQuoteLink()" title="שלח הצעת מחיר ללקוח">💰 שתף הצעה</button>
       <button class="btn" id="share-delivery-btn" style="font-size:12px; padding:5px 12px; background:var(--surface2); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="shareDeliveryLink()" title="שתף קישור מסירה ללקוח">🔗 שתף מסירה</button>
       <button class="btn btn-primary" style="font-size:12px; padding:5px 12px;" onclick="deliverListing()">סמן כנמסר</button>
       <div class="panel-close" onclick="closePanel()">✕</div>
@@ -1975,8 +2591,9 @@ const firebaseConfig = {
   appId: "1:445351440545:web:14895fba95a5c9001c00e0"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db      = firebase.firestore();
 const storage = firebase.storage();
+const auth    = firebase.auth();
 
 // ══════════════════════════════════════════════════
 //  DATA STORE
@@ -2007,16 +2624,32 @@ const store = {
     { id:'P003', name:'חבילה אינסופית', price:2000, duration:240, services:['צילום סיגנצ\'ר','וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'], addons:['מסירה באותו יום'], color:'var(--accent)' },
   ],
   services: [
-    { id:'S001', name:'צילום סיגנצ\'ר', type:'צילום', price:800, duration:60 },
-    { id:'S002', name:'וידאו סינמטי', type:'וידאו', price:1100, duration:90 },
-    { id:'S003', name:'סיור וירטואלי 3D', type:'סיור וירטואלי', price:750, duration:60 },
-    { id:'S004', name:'תוכנית קומה', type:'תוכנית', price:200, duration:30 },
+    { id:'S001', name:'צילום מקצועי', icon:'📸', category:'main',
+      description:'צילום נדל"ן מקצועי בציוד High-End עם תאורה מלאה. כל חדר מצולם מזוויות מיטביות ועם עריכה צבעונית מדויקת.',
+      deliverables:'עד 30 תמונות ערוכות בפורמט JPEG רזולוציה גבוהה + קישור הורדה בענן' },
+    { id:'S002', name:'וידאו סינמטי', icon:'🎥', category:'main',
+      description:'סרטון תדמיתי מקצועי של הנכס — מוזיקה, מעברים חלקים ועריכה מלאה. מושלם לפורטל Yad2 ולרשתות חברתיות.',
+      deliverables:'סרטון MP4 ברזולוציית 4K, אורך 60–90 שניות, מוכן לפרסום' },
+    { id:'S003', name:'סיור וירטואלי 360° (Kuula)', icon:'🌐', category:'main',
+      description:'סיור וירטואלי אינטראקטיבי מבוסס תמונות 360° — הלקוח "מסתובב" בנכס מכל מקום בעולם בלחיצת כפתור.',
+      deliverables:'קישור ייחודי לסיור פעיל באינטרנט, תקף ל-12 חודשים, ניתן להטמעה באתר' },
+    { id:'S004', name:'Matterport 3D Scan', icon:'🏠', category:'main',
+      description:'סריקה תלת-ממדית מלאה של הנכס בטכנולוגיית Matterport — דגם 3D מדויק, תוכנית קומה אוטומטית ומדידת שטחים.',
+      deliverables:'קישור Matterport עם דגם 3D, "בובה" מבט-עוף, מדידות שטח, מוכן להטמעה' },
+    { id:'S005', name:'תוכנית קומה', icon:'📐', category:'main',
+      description:'תרשים מידות מפורט של הנכס הכולל את כל החדרים, ממדים, שטחי ריצפה ומיקום חלונות ודלתות.',
+      deliverables:'קובץ PDF + PNG רזולוציה גבוהה, מדויק לפי מטר' },
+    { id:'S006', name:'צילום אוויר (רחפן)', icon:'🚁', category:'addon',
+      description:'צילום מהאוויר עם רחפן מוסמך. מציג את הנכס בהקשר שכונתי, קרבה לים / פארק / מרכז. רישיון CAA בתוקף.',
+      deliverables:'10 תמונות אוויריות ערוכות + קליפ וידאו אוירי 30 שניות' },
+    { id:'S007', name:'צילום בין ערביים', icon:'🌆', category:'addon',
+      description:'Twilight / Blue Hour — צילום הנכס בשעת השקיעה. תאורה פנימית דולקת על רקע שמיים כחולים עמוקים. מרשים ביותר.',
+      deliverables:'10 תמונות Twilight ערוכות, מוכנות לפרסום מיידי' },
+    { id:'S008', name:'Reels / TikTok', icon:'🎞️', category:'addon',
+      description:'קטעי וידאו קצרים מותאמים לרשתות חברתיות — פורמט אנכי 9:16, אפקטים ומוזיקה טרנדית. מגדיל חשיפה מאוד.',
+      deliverables:'2–3 קטעים 15–30 שניות מוכנים לפרסום ב-Instagram Reels / TikTok' },
   ],
-  addons: [
-    { id:'A001', name:'מסירה באותו יום', price:280, desc:'מסירה תוך 24 שעות' },
-    { id:'A002', name:'הום סטיינינג וירטואלי', price:190, desc:'לחדר, ריהוט דיגיטלי' },
-    { id:'A003', name:'צילום אווירי / רחפן', price:550, desc:'צילומי רחפן מוסמכים' },
-  ],
+  addons: [],
   schedule: [
     { day:'ראשון',  enabled:true,  start:'09:00', end:'17:00' },
     { day:'שני',    enabled:true,  start:'09:00', end:'17:00' },
@@ -2034,7 +2667,10 @@ const store = {
     serviceArea: 'תל אביב והמרכז',
     logo: ''
   },
-  companies: []
+  companies: [],
+  orders: [],
+  promotions: [],
+  archive: { listings: [], customers: [], companies: [] }
 };
 
 let currentListing = null;
@@ -2056,12 +2692,17 @@ const pageConfig = {
   calendar:     { title:'יומן',     btn:'+ קבע צילום' },
   customers:    { title:'לקוחות',   btn:'+ הוסף לקוח' },
   packages:     { title:'חבילות',   btn:'+ חבילה חדשה' },
-  services:     { title:'שירותים',  btn:'+ הוסף שירות' },
+  services:     { title:'שירותים',  btn:'+ שירות חדש' },
   availability: { title:'זמינות',   btn:'שמור שעות' },
+  promotions:   { title:'מבצעים',   btn:'+ מבצע חדש' },
   settings:     { title:'הגדרות',   btn:null },
+  archive:      { title:'ארכיון',   btn:null },
 };
 
 function navigate(page) {
+  // 'schedule' was a legacy alias — map to correct page name
+  if (page === 'schedule') page = 'availability';
+  if (!pageConfig[page] || !document.getElementById('page-' + page)) return;
   currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
@@ -2083,6 +2724,7 @@ function primaryAction() {
   else if (currentPage === 'packages')   addPackage();
   else if (currentPage === 'services')   addService();
   else if (currentPage === 'availability') { saveStore(); toast('שעות העבודה נשמרו', 'success'); }
+  else if (currentPage === 'promotions')   addPromotion();
 }
 
 function renderPage(page) {
@@ -2094,6 +2736,10 @@ function renderPage(page) {
   else if (page === 'availability') renderSchedule();
   else if (page === 'calendar') renderCalendar();
   else if (page === 'settings') renderSettings();
+  else if (page === 'archive')     renderArchive();
+  else if (page === 'promotions')  renderPromotions();
+  updateMobileNav(page);
+  closeMobileMenu();
 }
 
 // ══════════════════════════════════════════════════
@@ -2152,7 +2798,7 @@ function renderListings() {
 
   const tbody = document.getElementById('listings-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="8" style="padding:0;">
+    tbody.innerHTML = `<tr><td colspan="9" style="padding:0;">
       <div class="empty-state">
         <div class="empty-icon">🏠</div>
         <div class="empty-title">${store.listings.length ? 'לא נמצאו נכסים' : 'אין נכסים עדיין'}</div>
@@ -2186,6 +2832,13 @@ function renderListings() {
         <span class="badge ${badgeClass(l.status)}">${l.status}</span>
       </td>
       <td style="font-size:12px; color:var(--text-muted)">${l.pkg}</td>
+      <td onclick="event.stopPropagation()">
+        <div class="dlv-wrap">
+          <span class="dlv-dot${l.deliveredPhotos?' dlv-on':''}" onclick="toggleDelivery('${l.id}','photos',this)" title="תמונות — לחץ להחלפה">📸</span>
+          <span class="dlv-dot${l.deliveredVideo?' dlv-on':''}" onclick="toggleDelivery('${l.id}','video',this)" title="וידאו — לחץ להחלפה">🎬</span>
+          <span class="dlv-dot${l.deliveredFloorplan?' dlv-on':''}" onclick="toggleDelivery('${l.id}','floorplan',this)" title="תוכנית קומה — לחץ להחלפה">📐</span>
+        </div>
+      </td>
       <td style="font-size:12px; color:var(--text-muted)">${l.customer || '—'}</td>
       <td style="font-size:12px; color:var(--text-muted)">${l.created}</td>
       <td class="row-actions" onclick="event.stopPropagation()">
@@ -2214,6 +2867,21 @@ function badgeClass(status) {
 
 function filterByStatus(val) { filterStatus = val; renderListings(); }
 function handleSearch(val) { searchQuery = val; renderListings(); }
+
+// Toggle individual delivery flag directly from the table row
+function toggleDelivery(id, field, dotEl) {
+  const l = store.listings.find(x => x.id === id);
+  if (!l) return;
+  const key = field === 'photos' ? 'deliveredPhotos' : field === 'video' ? 'deliveredVideo' : 'deliveredFloorplan';
+  l[key] = !l[key];
+  dotEl.classList.toggle('dlv-on', l[key]);
+  saveStore();
+  // Sync checkbox in open panel if same listing
+  if (currentListing?.id === id) {
+    const cb = document.getElementById('panel-delivered' + field);
+    if (cb) cb.checked = l[key];
+  }
+}
 
 // ── BULK ACTIONS ──────────────────────────────────
 window._bulkSelected = new Set();
@@ -2337,6 +3005,19 @@ function renderKanban(list) {
   });
 
   board.innerHTML = `<div class="kanban-board">${cols.join('')}</div>`;
+}
+
+// ── QUOTE SHARE LINK ──────────────────────────────
+function shareQuoteLink() {
+  const l = currentListing;
+  if (!l) return;
+  const base = window.location.href.replace(/\/[^/]*$/, '');
+  const url = `${base}/quote.html?id=${l.id}`;
+  navigator.clipboard.writeText(url).then(() => {
+    toast('קישור הצעת מחיר הועתק ללוח! שלח ללקוח', 'success');
+  }).catch(() => {
+    prompt('העתק קישור הצעת מחיר:', url);
+  });
 }
 
 // ── DELIVERY SHARE LINK ───────────────────────────
@@ -2746,21 +3427,20 @@ function deliverListing() {
 function deleteListingInline(id) {
   const l = store.listings.find(x => x.id === id);
   if (!l) return;
-  if (!confirm(`למחוק את הנכס "${l.address}"?`)) return;
-  store.listings = store.listings.filter(x => x.id !== id);
+  if (!confirm(`להעביר לארכיון? ניתן לשחזר בכל עת.`)) return;
+  _archiveItem('listings', id);
   if (currentListing?.id === id) closePanel();
   renderListings();
-  saveStore();
-  toast('הנכס נמחק', 'success');
+  toast('הנכס הועבר לארכיון', 'success');
 }
 
 function deleteListing() {
   if (!currentListing) return;
-  if (!confirm('האם למחוק נכס זה?')) return;
-  store.listings = store.listings.filter(l => l.id !== currentListing.id);
+  if (!confirm('להעביר נכס זה לארכיון? ניתן לשחזר בכל עת.')) return;
+  _archiveItem('listings', currentListing.id);
   closePanel();
   renderListings();
-  saveStore();
+  toast('הנכס הועבר לארכיון', 'success');
 }
 
 function createListing() {
@@ -3031,12 +3711,14 @@ function deleteCompany(id) {
   if (!co) return;
   // Match by BOTH companyId AND company-name string (migration may have left stale name refs)
   const linked = store.customers.filter(c => c.companyId === id || c.company === co.name);
-  if (linked.length && !confirm(`למחוק משרד זה? יש בה ${linked.length} סוכנים — הם יועברו ל"פרטי / ישיר".`)) return;
+  if (!confirm(linked.length
+    ? `להעביר משרד זה לארכיון? ${linked.length} סוכנים יועברו ל"פרטי / ישיר".`
+    : 'להעביר משרד זה לארכיון? ניתן לשחזר בכל עת.')) return;
   linked.forEach(c => { c.companyId = 'CO_PRIVATE'; c.company = 'פרטי / ישיר'; });
-  store.companies = store.companies.filter(x => x.id !== id);
-  saveStore();
+  _archiveItem('companies', id);
   if (currentCompanyView === id) currentCompanyView = null;
   renderCustomers();
+  toast('המשרד הועבר לארכיון', 'success');
 }
 
 let _agentCompanyId = null;
@@ -3084,21 +3766,47 @@ function createCustomer() {
 //  PACKAGES
 // ══════════════════════════════════════════════════
 function renderPackages() {
-  document.getElementById('pkg-grid').innerHTML = store.packages.map(p => `
-    <div class="pkg-card" style="--pkg-color:${p.color}">
+  document.getElementById('pkg-grid').innerHTML = store.packages.map(p => {
+    const isActive  = p.is_active  !== false;
+    const isVisible = p.is_visible !== false;
+    const dimClass  = !isActive ? 'card-inactive' : !isVisible ? 'card-hidden' : '';
+    const statusBadge = !isActive
+      ? '<span class="vis-badge inactive">⛔ מושבת</span>'
+      : !isVisible
+        ? '<span class="vis-badge hidden">👁 מוסתר</span>'
+        : '<span class="vis-badge active">✓ פעיל</span>';
+    const activePromo = _getActivePromoForPackage(p.id);
+    const promoBadge = activePromo
+      ? `<span class="vis-badge featured" title="${activePromo.name}">🏷️ ${activePromo.discount_type==='pct' ? activePromo.discount_value+'%' : '₪'+activePromo.discount_value} הנחה</span>`
+      : '';
+    return `
+    <div class="pkg-card ${dimClass}" style="--pkg-color:${p.color}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
         <div class="pkg-name">${p.name}</div>
-        <div style="display:flex;gap:4px;margin-right:auto;padding-right:8px;">
+        <div style="display:flex;gap:4px;align-items:center;margin-right:auto;padding-right:8px;">
+          ${statusBadge} ${promoBadge}
           <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();editPackage('${p.id}')">ערוך</button>
           <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#ef4444;" onclick="event.stopPropagation();deletePackage('${p.id}')">מחק</button>
         </div>
       </div>
       <div class="pkg-price">₪${p.price.toLocaleString('he-IL')}<span> /צילום</span></div>
       <div class="pkg-duration">⏱ ${p.duration >= 60 ? Math.floor(p.duration/60) + ' שעות' + (p.duration%60 ? ' ' + p.duration%60 + ' דק\'' : '') : p.duration + ' דק\''}</div>
-      <div class="pkg-services">${p.services.map(s => `<span class="pkg-service-tag">${s}</span>`).join('')}</div>
+      <div class="pkg-services">${p.services.map(s => `<span class="pkg-service-tag" onclick="showSvcTagPopup('${s.replace(/'/g,"\\'")}',event)" title="לחץ לפרטים">${s}</span>`).join('')}</div>
       ${p.addons && p.addons.length ? `<div style="font-size:11px;color:var(--text-dim);margin-top:10px;">תוספות: ${p.addons.join(', ')}</div>` : ''}
+      <div class="card-ctrl-row">
+        <label class="toggle-sw green" title="הפעל/כבה חבילה">
+          <input type="checkbox" ${isActive?'checked':''} onchange="togglePackageFlag('${p.id}','is_active',this.checked)">
+          <div class="toggle-sw-track"></div>
+          <span>פעיל</span>
+        </label>
+        <label class="toggle-sw" title="הצג/הסתר מלקוחות">
+          <input type="checkbox" ${isVisible?'checked':''} onchange="togglePackageFlag('${p.id}','is_visible',this.checked)">
+          <div class="toggle-sw-track"></div>
+          <span>גלוי ללקוחות</span>
+        </label>
+      </div>
     </div>
-  `).join('') + `
+  `}).join('') + `
     <div onclick="addPackage()" style="border:2px dashed var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;min-height:160px;cursor:pointer;color:var(--text-muted);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="text-align:center;">
         <div style="font-size:32px;margin-bottom:6px;">＋</div>
@@ -3108,30 +3816,89 @@ function renderPackages() {
   `;
 }
 
+const PKG_COLORS = [
+  { label:'כחול',   val:'var(--blue)'   },
+  { label:'סגול',   val:'var(--purple)' },
+  { label:'כתום',   val:'var(--accent)' },
+  { label:'ירוק',   val:'var(--green)'  },
+  { label:'ענבר',   val:'var(--amber)'  },
+  { label:'אפור',   val:'var(--text-muted)' },
+];
 let _editPkgId = null;
+let _pkgColor  = 'var(--blue)';
+
+function _openPkgModal(p) {
+  // Color swatches
+  _pkgColor = p?.color || 'var(--blue)';
+  document.getElementById('mpkg-colors').innerHTML = PKG_COLORS.map(c => `
+    <div onclick="_selectPkgColor('${c.val}',this)"
+      title="${c.label}"
+      style="width:26px;height:26px;border-radius:50%;background:${c.val};cursor:pointer;
+        border:3px solid ${_pkgColor===c.val?'var(--text)':'transparent'};
+        transition:border-color .15s;flex-shrink:0;"
+      data-color="${c.val}"></div>
+  `).join('');
+
+  // Services checkboxes
+  const included = new Set(p?.services || []);
+  const svcList  = document.getElementById('mpkg-services-list');
+  if (store.services.length) {
+    svcList.innerHTML = store.services.map(s => `
+      <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid ${included.has(s.name)?'var(--accent)':'var(--border)'};background:${included.has(s.name)?'var(--accent-light)':'var(--surface2)'};transition:all .15s;" id="svc-row-${s.id}">
+        <input type="checkbox" id="mpkg-svc-${s.id}" value="${s.name}" ${included.has(s.name)?'checked':''} onchange="_toggleSvcRow('${s.id}',this)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0;" />
+        <span style="font-size:18px;">${s.icon||'🎯'}</span>
+        <span style="font-size:13px;font-weight:500;">${s.name}</span>
+        <span style="font-size:11px;color:var(--text-muted);margin-right:auto;">${s.category==='addon'?'תוספת':'ראשי'}</span>
+      </label>`).join('');
+  } else {
+    svcList.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px;">לא הוגדרו שירותים עדיין — הוסף שירותים בעמוד שירותים</div>`;
+  }
+}
+
+function _toggleSvcRow(svcId, cb) {
+  const row = document.getElementById('svc-row-' + svcId);
+  if (!row) return;
+  row.style.borderColor  = cb.checked ? 'var(--accent)'       : 'var(--border)';
+  row.style.background   = cb.checked ? 'var(--accent-light)' : 'var(--surface2)';
+}
+
+function _selectPkgColor(val, el) {
+  _pkgColor = val;
+  document.querySelectorAll('#mpkg-colors div').forEach(d => {
+    d.style.borderColor = d.dataset.color === val ? 'var(--text)' : 'transparent';
+  });
+}
+
 function editPackage(id) {
   const p = store.packages.find(x => x.id === id);
   if (!p) return;
   _editPkgId = id;
   document.getElementById('modal-pkg-title').textContent = 'ערוך חבילה';
-  document.getElementById('mpkg-name').value = p.name;
-  document.getElementById('mpkg-price').value = p.price;
-  document.getElementById('mpkg-duration').value = p.duration;
+  document.getElementById('mpkg-name').value     = p.name;
+  document.getElementById('mpkg-price').value    = p.price;
+  document.getElementById('mpkg-duration').value = p.duration || 120;
+  _openPkgModal(p);
   openModal('modal-pkg');
 }
 
 function _savePkg() {
   const name = document.getElementById('mpkg-name').value.trim();
-  if (!name) return;
-  const price = +document.getElementById('mpkg-price').value || 1000;
+  if (!name) { toast('נא להזין שם חבילה', 'error'); return; }
+  const price    = +document.getElementById('mpkg-price').value    || 1000;
   const duration = +document.getElementById('mpkg-duration').value || 120;
+  // Collect selected services
+  const services = [];
+  document.querySelectorAll('#mpkg-services-list input[type=checkbox]').forEach(cb => {
+    if (cb.checked) services.push(cb.value);
+  });
   if (_editPkgId) {
     const p = store.packages.find(x => x.id === _editPkgId);
-    if (p) { p.name = name; p.price = price; p.duration = duration; }
+    if (p) { p.name = name; p.price = price; p.duration = duration; p.services = services; p.color = _pkgColor; }
   } else {
-    store.packages.push({ id:'P'+Date.now(), name, price, duration, services:[], addons:[], color:'var(--blue)' });
+    store.packages.push({ id:'P'+Date.now(), name, price, duration, services, addons:[], color: _pkgColor, is_active:true, is_visible:true, created_at: Date.now() });
   }
-  saveStore(); renderPackages(); closeModal('modal-pkg'); toast(_editPkgId ? 'חבילה עודכנה' : 'חבילה חדשה נוספה', 'success');
+  saveStore(); renderPackages(); closeModal('modal-pkg');
+  toast(_editPkgId ? 'חבילה עודכנה' : 'חבילה חדשה נוספה', 'success');
 }
 
 function deletePackage(id) {
@@ -3144,9 +3911,10 @@ function deletePackage(id) {
 function addPackage() {
   _editPkgId = null;
   document.getElementById('modal-pkg-title').textContent = 'חבילה חדשה';
-  document.getElementById('mpkg-name').value = '';
-  document.getElementById('mpkg-price').value = '1000';
+  document.getElementById('mpkg-name').value     = '';
+  document.getElementById('mpkg-price').value    = '1000';
   document.getElementById('mpkg-duration').value = '120';
+  _openPkgModal(null);
   openModal('modal-pkg');
 }
 
@@ -3154,30 +3922,75 @@ function addPackage() {
 //  SERVICES
 // ══════════════════════════════════════════════════
 function renderServices() {
-  document.getElementById('services-list').innerHTML = store.services.map(s => `
-    <div class="service-item">
-      <div>
-        <div class="service-name">${s.name}</div>
-        <div class="service-type">${s.type}</div>
+  const main  = store.services.filter(s => s.category !== 'addon');
+  const addon = store.services.filter(s => s.category === 'addon');
+
+  const buildCard = (s) => {
+    const exCount   = (s.examples || []).length;
+    const isActive  = s.is_active  !== false;
+    const isVisible = s.is_visible !== false;
+    const isFeatured = !!s.is_featured;
+    const dimClass  = !isActive ? 'card-inactive' : !isVisible ? 'card-hidden' : '';
+    const statusBadge = !isActive
+      ? '<span class="vis-badge inactive">⛔ מושבת</span>'
+      : !isVisible
+        ? '<span class="vis-badge hidden">👁 מוסתר</span>'
+        : '<span class="vis-badge active">✓ פעיל</span>';
+    const featBadge = isFeatured ? '<span class="vis-badge featured">★ מומלץ</span>' : '';
+    return `
+    <div class="svc-card ${dimClass}">
+      <div class="svc-actions">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${statusBadge}${featBadge}</div>
+        <button class="svc-btn" onclick="openExamplesModal('${s.id}')">📎 דוגמאות${exCount ? ` (${exCount})` : ''}</button>
+        <button class="svc-btn" onclick="duplicateService('${s.id}')" title="שכפל שירות">⧉ שכפל</button>
+        <button class="svc-btn" onclick="editService('${s.id}')">✏️ ערוך</button>
+        <button class="svc-btn del" onclick="deleteService('${s.id}')">מחק</button>
       </div>
-      <div style="font-size:11px;color:var(--text-muted)">⏱ ${s.duration} דק'</div>
-      <div class="service-price">₪${s.price.toLocaleString('he-IL')}</div>
-      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="editService('${s.id}')">ערוך</button>
-      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:#ef4444;" onclick="deleteService('${s.id}')">מחק</button>
-    </div>
-  `).join('') || '<div style="color:var(--text-muted);padding:16px;text-align:center;font-size:13px;">אין שירותים עדיין — לחץ "+ הוסף שירות"</div>';
-  document.getElementById('addons-list').innerHTML = store.addons.map(a => `
-    <div class="service-item">
-      <div>
-        <div class="service-name">${a.name}</div>
-        <div class="service-type">${a.desc}</div>
+      <div class="svc-card-icon">${s.icon || '🎯'}</div>
+      <div class="svc-card-name">${s.name}</div>
+      <div class="svc-card-desc">${s.description || ''}</div>
+      ${s.deliverables ? `
+        <div class="svc-deliverables">
+          <div class="svc-deliverables-label">מה מקבלים</div>
+          ${s.deliverables}
+        </div>` : ''}
+      ${exCount ? _buildInlineExamplesPreview(s) : ''}
+      <div class="card-ctrl-row">
+        <label class="toggle-sw green" title="הפעל/כבה שירות">
+          <input type="checkbox" ${isActive?'checked':''} onchange="toggleServiceFlag('${s.id}','is_active',this.checked)">
+          <div class="toggle-sw-track"></div>
+          <span>פעיל</span>
+        </label>
+        <label class="toggle-sw" title="הצג/הסתר מלקוחות">
+          <input type="checkbox" ${isVisible?'checked':''} onchange="toggleServiceFlag('${s.id}','is_visible',this.checked)">
+          <div class="toggle-sw-track"></div>
+          <span>גלוי</span>
+        </label>
+        <label class="toggle-sw" title="סמן כשירות מומלץ">
+          <input type="checkbox" ${isFeatured?'checked':''} onchange="toggleServiceFlag('${s.id}','is_featured',this.checked)">
+          <div class="toggle-sw-track"></div>
+          <span>★ מומלץ</span>
+        </label>
       </div>
-      <div></div>
-      <div class="service-price">₪${a.price.toLocaleString('he-IL')}</div>
-      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="editAddon('${a.id}')">ערוך</button>
-      <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:#ef4444;" onclick="deleteAddon('${a.id}')">מחק</button>
     </div>
-  `).join('') || '<div style="color:var(--text-muted);padding:16px;text-align:center;font-size:13px;">אין תוספות עדיין</div>';
+  `};
+
+
+  const emptyMain = `
+    <div style="grid-column:1/-1; text-align:center; padding:36px 20px; color:var(--text-muted); font-size:13px; background:var(--surface); border:1.5px dashed var(--border); border-radius:var(--radius);">
+      <div style="font-size:28px;margin-bottom:8px;">📸</div>
+      <div style="font-weight:700;margin-bottom:4px;">אין שירותים עדיין</div>
+      <div>לחץ "+ שירות חדש" כדי להוסיף את הצילום, הוידאו וכו'</div>
+    </div>`;
+
+  const emptyAddon = `
+    <div style="grid-column:1/-1; text-align:center; padding:28px 20px; color:var(--text-muted); font-size:13px; background:var(--surface); border:1.5px dashed var(--border); border-radius:var(--radius);">
+      <div style="font-size:22px;margin-bottom:6px;">➕</div>
+      <div>אין תוספות — הוסף שירותים שנמכרים בנפרד (רחפן, twilight, reels...)</div>
+    </div>`;
+
+  document.getElementById('services-main-grid').innerHTML  = main.length  ? main.map(buildCard).join('')  : emptyMain;
+  document.getElementById('services-addon-grid').innerHTML = addon.length ? addon.map(buildCard).join('') : emptyAddon;
 }
 
 let _editSvcId = null;
@@ -3185,9 +3998,11 @@ let _editSvcId = null;
 function addService() {
   _editSvcId = null;
   document.getElementById('modal-svc-title').textContent = 'שירות חדש';
-  document.getElementById('msvc-name').value = '';
-  document.getElementById('msvc-price').value = '';
-  document.getElementById('msvc-duration').value = '60';
+  document.getElementById('msvc-name').value        = '';
+  document.getElementById('msvc-icon').value        = '';
+  document.getElementById('msvc-category').value    = 'main';
+  document.getElementById('msvc-desc').value        = '';
+  document.getElementById('msvc-deliverables').value = '';
   openModal('modal-service');
 }
 
@@ -3195,73 +4010,316 @@ function editService(id) {
   const s = store.services.find(x => x.id === id);
   if (!s) return;
   _editSvcId = id;
-  document.getElementById('modal-svc-title').textContent = 'ערוך שירות';
-  document.getElementById('msvc-name').value = s.name;
-  document.getElementById('msvc-price').value = s.price;
-  document.getElementById('msvc-duration').value = s.duration;
+  document.getElementById('modal-svc-title').textContent   = 'ערוך שירות';
+  document.getElementById('msvc-name').value               = s.name;
+  document.getElementById('msvc-icon').value               = s.icon || '';
+  document.getElementById('msvc-category').value           = s.category || 'main';
+  document.getElementById('msvc-desc').value               = s.description || '';
+  document.getElementById('msvc-deliverables').value       = s.deliverables || '';
   openModal('modal-service');
 }
 
+function duplicateService(id) {
+  const s = store.services.find(x => x.id === id);
+  if (!s) return;
+  const copy = JSON.parse(JSON.stringify(s));
+  copy.id   = 'S' + Date.now();
+  copy.name = copy.name + ' (עותק)';
+  // Insert right after the original
+  const idx = store.services.indexOf(s);
+  store.services.splice(idx + 1, 0, copy);
+  saveStore(); renderServices();
+  toast('שירות שוכפל — לחץ ערוך לשינוי', 'success');
+  // Open edit modal immediately so user can tweak it
+  editService(copy.id);
+}
+
 function deleteService(id) {
-  if (!confirm('למחוק שירות זה?')) return;
+  const s = store.services.find(x => x.id === id);
+  if (!s) return;
+  if (!confirm(`למחוק את השירות "${s.name}"?`)) return;
   store.services = store.services.filter(x => x.id !== id);
   saveStore(); renderServices();
+  toast('שירות נמחק', 'success');
 }
 
 function _saveSvc() {
   const name = document.getElementById('msvc-name').value.trim();
   if (!name) { toast('נא להזין שם שירות', 'error'); return; }
+  const data = {
+    name,
+    icon:        document.getElementById('msvc-icon').value.trim() || '🎯',
+    category:    document.getElementById('msvc-category').value,
+    description: document.getElementById('msvc-desc').value.trim(),
+    deliverables: document.getElementById('msvc-deliverables').value.trim(),
+  };
   if (_editSvcId) {
     const s = store.services.find(x => x.id === _editSvcId);
-    if (s) { s.name = name; s.price = +document.getElementById('msvc-price').value || 0; s.duration = +document.getElementById('msvc-duration').value || 60; }
+    if (s) Object.assign(s, data);
     toast('שירות עודכן', 'success');
   } else {
-    store.services.push({ id:'S'+Date.now(), name, type:'צילום', price: +document.getElementById('msvc-price').value || 0, duration: +document.getElementById('msvc-duration').value || 60 });
+    store.services.push({ id:'S'+Date.now(), ...data, is_active:true, is_visible:true, is_featured:false, created_at: Date.now() });
     toast('שירות חדש נוסף', 'success');
   }
   saveStore(); renderServices(); closeModal('modal-service');
 }
 
-let _editAddId = null;
+// ══════════════════════════════════════════════════
+//  SERVICE EXAMPLES
+// ══════════════════════════════════════════════════
+let _currentExSvcId = null;
+let _editExIdx = null;
 
-function addAddon() {
-  _editAddId = null;
-  document.getElementById('modal-add-title').textContent = 'תוספת חדשה';
-  document.getElementById('madd-name').value = '';
-  document.getElementById('madd-price').value = '';
-  document.getElementById('madd-desc').value = '';
-  openModal('modal-addon');
-}
+const _EX_COLORS = { youtube:'#FF0000', vimeo:'#1AB7EA', instagram:'#E1306C', kuula:'#6366F1', matterport:'#FF5A1F', photo:'#10B981', link:'#6B7280' };
+const _EX_ICONS  = { youtube:'🎬', vimeo:'🎬', instagram:'📱', kuula:'🌐', matterport:'🏠', photo:'🖼️', link:'🔗' };
+const _EX_LABELS = { youtube:'YouTube', vimeo:'Vimeo', instagram:'Instagram', kuula:'Kuula 360°', matterport:'Matterport 3D', photo:'תמונה', link:'קישור' };
 
-function editAddon(id) {
-  const a = store.addons.find(x => x.id === id);
-  if (!a) return;
-  _editAddId = id;
-  document.getElementById('modal-add-title').textContent = 'ערוך תוספת';
-  document.getElementById('madd-name').value = a.name;
-  document.getElementById('madd-price').value = a.price;
-  document.getElementById('madd-desc').value = a.desc;
-  openModal('modal-addon');
-}
-
-function deleteAddon(id) {
-  if (!confirm('למחוק תוספת זו?')) return;
-  store.addons = store.addons.filter(x => x.id !== id);
-  saveStore(); renderServices();
-}
-
-function _saveAddon() {
-  const name = document.getElementById('madd-name').value.trim();
-  if (!name) { toast('נא להזין שם תוספת', 'error'); return; }
-  if (_editAddId) {
-    const a = store.addons.find(x => x.id === _editAddId);
-    if (a) { a.name = name; a.price = +document.getElementById('madd-price').value || 0; a.desc = document.getElementById('madd-desc').value.trim(); }
-    toast('תוספת עודכנה', 'success');
-  } else {
-    store.addons.push({ id:'A'+Date.now(), name, price: +document.getElementById('madd-price').value || 0, desc: document.getElementById('madd-desc').value.trim() });
-    toast('תוספת חדשה נוספה', 'success');
+function _buildInlineExamplesPreview(s) {
+  const examples = s.examples || [];
+  if (!examples.length) return '';
+  const photos = examples.filter(e => e.type === 'photo');
+  const media  = examples.filter(e => e.type !== 'photo');
+  let html = `<div class="svc-ex-preview" onclick="event.stopPropagation();openExamplesModal('${s.id}')">`;
+  if (photos.length) {
+    const show = photos.slice(0, 4);
+    html += `<div class="svc-ex-thumb-strip">`;
+    show.forEach(p => {
+      html += `<div class="svc-ex-thumb" style="background-image:url('${p.url}')"></div>`;
+    });
+    if (photos.length > 4) html += `<div class="svc-ex-thumb svc-ex-thumb-more">+${photos.length - 4}</div>`;
+    html += `</div>`;
   }
-  saveStore(); renderServices(); closeModal('modal-addon');
+  if (media.length) {
+    html += `<div class="svc-ex-media-row">`;
+    media.forEach(m => {
+      const c = _EX_COLORS[m.type] || '#6B7280';
+      const i = _EX_ICONS[m.type]  || '🔗';
+      const l = _EX_LABELS[m.type] || m.type;
+      html += `<span class="svc-ex-media-badge" style="background:${c}18;color:${c};">${i} ${l}</span>`;
+    });
+    html += `</div>`;
+  }
+  html += `<div class="svc-ex-footer">📎 ${examples.length} דוגמ${examples.length===1?'ה':'אות'} · לחץ לניהול ←</div>`;
+  html += `</div>`;
+  return html;
+}
+
+function editExample(idx) {
+  _editExIdx = idx;
+  renderExamplesList();
+}
+function cancelEditExample() {
+  _editExIdx = null;
+  renderExamplesList();
+}
+function saveEditExample() {
+  const s = store.services.find(x => x.id === _currentExSvcId);
+  if (!s || _editExIdx === null) return;
+  const ex = s.examples[_editExIdx];
+  if (!ex) return;
+  const newUrl = document.getElementById('mexs-edit-url').value.trim();
+  const newCap = document.getElementById('mexs-edit-cap').value.trim();
+  if (!newUrl) { toast('נא להזין URL', 'error'); return; }
+  ex.url = newUrl;
+  ex.type = detectExampleType(newUrl);
+  ex.caption = newCap;
+  _editExIdx = null;
+  saveStore();
+  renderExamplesList();
+  renderServices();
+  toast('דוגמה עודכנה ✓', 'success');
+}
+
+function detectExampleType(url) {
+  if (!url) return null;
+  if (/youtu\.be\/|youtube\.com\/(watch|shorts|embed)/.test(url)) return 'youtube';
+  if (/vimeo\.com\/\d/.test(url)) return 'vimeo';
+  if (/instagram\.com\/(p|reel|tv)/.test(url)) return 'instagram';
+  if (/kuula\.co\/(share|post|photo|p\/)/.test(url)) return 'kuula';
+  if (/my\.matterport\.com|matterport\.com\/show/.test(url)) return 'matterport';
+  if (/\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url) ||
+      /images\.|photos\.|drive\.google\.com\/uc|dl\.dropbox|dropboxusercontent/.test(url)) return 'photo';
+  return 'link';
+}
+
+function getEmbedUrl(url, type) {
+  if (type === 'youtube') {
+    const id = url.match(/(?:v=|youtu\.be\/|\/shorts\/)([^&?/\s]+)/)?.[1];
+    return id ? `https://www.youtube.com/embed/${id}?rel=0` : url;
+  }
+  if (type === 'vimeo') {
+    const id = url.match(/vimeo\.com\/(\d+)/)?.[1];
+    return id ? `https://player.vimeo.com/video/${id}` : url;
+  }
+  if (type === 'kuula') return url.replace('/post/', '/share/');
+  if (type === 'matterport') {
+    const id = url.match(/[?&]m=([^&]+)/)?.[1];
+    return id ? `https://my.matterport.com/show/?m=${id}&play=1&qs=1` : url;
+  }
+  return url;
+}
+
+function openExamplesModal(svcId) {
+  _currentExSvcId = svcId;
+  const s = store.services.find(x => x.id === svcId);
+  if (!s) return;
+  document.getElementById('mexs-svc-name').textContent = s.name;
+  document.getElementById('mexs-url').value = '';
+  document.getElementById('mexs-caption').value = '';
+  document.getElementById('mexs-type-hint').innerHTML = '';
+  renderExamplesList();
+  openModal('modal-svc-examples');
+}
+
+function renderExamplesList() {
+  const s = store.services.find(x => x.id === _currentExSvcId);
+  if (!s) return;
+  const examples = s.examples || [];
+  const list = document.getElementById('mexs-list');
+  if (!examples.length) {
+    list.innerHTML = `<div style="text-align:center;padding:28px 20px;color:var(--text-muted);font-size:13px;background:var(--surface2);border-radius:var(--radius-sm);">
+      <div style="font-size:32px;margin-bottom:10px;">🖼️</div>
+      <div style="font-weight:700;margin-bottom:4px;">אין דוגמאות עדיין</div>
+      <div>הדבק לינק למעלה — YouTube, Vimeo, Kuula, Matterport, או URL תמונה</div>
+    </div>`;
+    return;
+  }
+  // Group photos together, show rest individually
+  const photos = examples.filter(e => e.type === 'photo');
+  const others = examples.filter(e => e.type !== 'photo');
+  let html = '';
+  if (photos.length) {
+    html += `<div style="margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📷 תמונות (${photos.length})</div>
+      <div class="mexs-photo-grid">${photos.map((p, i) => {
+        const idx = examples.indexOf(p);
+        const isEditing = (_editExIdx === idx);
+        if (isEditing) return buildExampleItem(p, idx);
+        return `<div style="position:relative;">
+          <img src="${p.url}" onerror="this.src=''" onclick="openLightbox('${p.url}')" title="${p.caption || ''}">
+          <div style="position:absolute;top:4px;left:4px;display:flex;gap:3px;">
+            <button onclick="editExample(${idx})" title="ערוך" style="width:22px;height:22px;border-radius:50%;background:rgba(249,115,22,0.85);color:#fff;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">✏️</button>
+            <button onclick="removeExample(${idx})" title="הסר" style="width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">✕</button>
+          </div>
+          ${p.caption ? `<div style="font-size:10px;color:var(--text-muted);padding:3px 4px;background:var(--surface2);text-align:center;">${p.caption}</div>` : ''}
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  }
+  html += others.map((ex) => {
+    const idx = examples.indexOf(ex);
+    return buildExampleItem(ex, idx);
+  }).join('');
+  list.innerHTML = html;
+}
+
+const EX_TYPE_META = {
+  youtube:    { label:'YouTube',      color:'#FF0000', icon:'🎬' },
+  vimeo:      { label:'Vimeo',        color:'#1AB7EA', icon:'🎬' },
+  instagram:  { label:'Instagram',    color:'#E1306C', icon:'📱' },
+  kuula:      { label:'Kuula 360°',   color:'#6366F1', icon:'🌐' },
+  matterport: { label:'Matterport',   color:'#FF5A1F', icon:'🏠' },
+  photo:      { label:'תמונה',        color:'#10B981', icon:'🖼️' },
+  link:       { label:'קישור',        color:'#6B7280', icon:'🔗' },
+};
+
+function buildExampleItem(ex, idx) {
+  const meta = EX_TYPE_META[ex.type] || EX_TYPE_META.link;
+  const embedUrl = getEmbedUrl(ex.url, ex.type);
+
+  // ── INLINE EDIT FORM ──
+  if (_editExIdx === idx) {
+    return `
+    <div style="background:var(--surface);border:2px solid var(--accent);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:10px;">
+      <div style="padding:10px 14px;background:var(--accent-light);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--accent);">✏️ עריכת דוגמה</span>
+        <span class="mexs-type-badge" style="background:${meta.color}18;color:${meta.color};">${meta.icon} ${meta.label}</span>
+      </div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+        <input id="mexs-edit-url" class="form-input" value="${ex.url}" placeholder="URL" oninput="" style="direction:ltr;font-size:12px;font-family:monospace;">
+        <input id="mexs-edit-cap" class="form-input" value="${ex.caption||''}" placeholder="כיתוב (אופציונלי)" style="font-size:13px;">
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" style="font-size:12px;padding:7px 16px;" onclick="saveEditExample()">שמור</button>
+          <button class="btn btn-ghost" style="font-size:12px;padding:7px 16px;" onclick="cancelEditExample()">ביטול</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ── NORMAL DISPLAY ──
+  let preview = '';
+  if (ex.type === 'youtube' || ex.type === 'vimeo') {
+    preview = `<div class="mexs-embed-wrap"><iframe src="${embedUrl}" allowfullscreen allow="autoplay; encrypted-media"></iframe></div>`;
+  } else if (ex.type === 'kuula') {
+    preview = `<div class="mexs-embed-wrap kuula"><iframe src="${embedUrl}" allowfullscreen allow="xr-spatial-tracking; gyroscope; accelerometer"></iframe></div>`;
+  } else if (ex.type === 'matterport') {
+    preview = `<div class="mexs-embed-wrap"><iframe src="${embedUrl}" allowfullscreen allow="xr-spatial-tracking"></iframe></div>`;
+  } else if (ex.type === 'instagram') {
+    preview = `<div style="padding:14px;text-align:center;"><a href="${ex.url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:#E1306C;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;">📱 פתח ב-Instagram</a></div>`;
+  } else if (ex.type === 'photo') {
+    preview = `<div style="padding:10px;"><img src="${ex.url}" style="width:100%;max-height:220px;object-fit:cover;border-radius:6px;cursor:pointer;" onclick="openLightbox('${ex.url}')" onerror="this.style.opacity=0.3"></div>`;
+  } else {
+    preview = `<div style="padding:14px;text-align:center;"><a href="${ex.url}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:var(--surface3);color:var(--text);border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;">🔗 פתח קישור</a></div>`;
+  }
+  const btnStyle = 'border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;padding:3px 8px;border-radius:4px;transition:background 0.1s;';
+  return `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2);">
+        <span class="mexs-type-badge" style="background:${meta.color}18;color:${meta.color};">${meta.icon} ${meta.label}</span>
+        <span style="font-size:11px;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;">${ex.url}</span>
+        <button onclick="editExample(${idx})" style="${btnStyle}color:var(--accent);" onmouseover="this.style.background='var(--accent-light)'" onmouseout="this.style.background='none'">✏️ ערוך</button>
+        <button onclick="removeExample(${idx})" style="${btnStyle}color:var(--red);" onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background='none'">✕ הסר</button>
+      </div>
+      ${preview}
+      ${ex.caption ? `<div style="padding:8px 14px;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border);">💬 ${ex.caption}</div>` : ''}
+    </div>`;
+}
+
+function previewExType() {
+  const url = document.getElementById('mexs-url').value.trim();
+  const type = detectExampleType(url);
+  const hint = document.getElementById('mexs-type-hint');
+  if (!url) { hint.innerHTML = ''; return; }
+  if (!type) { hint.innerHTML = '<span style="color:var(--text-dim)">הכנס URL תקין</span>'; return; }
+  const meta = EX_TYPE_META[type] || EX_TYPE_META.link;
+  hint.innerHTML = `<span style="color:${meta.color};font-weight:700;">${meta.icon} זוהה: ${meta.label}</span>`;
+}
+
+function addExample() {
+  const url = document.getElementById('mexs-url').value.trim();
+  const caption = document.getElementById('mexs-caption').value.trim();
+  if (!url) { toast('נא להזין URL', 'error'); return; }
+  const type = detectExampleType(url) || 'link';
+  const s = store.services.find(x => x.id === _currentExSvcId);
+  if (!s) return;
+  if (!s.examples) s.examples = [];
+  if (s.examples.length >= 10) { toast('מקסימום 10 דוגמאות לשירות', 'error'); return; }
+  s.examples.push({ id:'EX'+Date.now(), url, type, caption });
+  saveStore();
+  document.getElementById('mexs-url').value = '';
+  document.getElementById('mexs-caption').value = '';
+  document.getElementById('mexs-type-hint').innerHTML = '';
+  renderExamplesList();
+  renderServices();
+  toast('דוגמה נוספה ✓', 'success');
+}
+
+function removeExample(idx) {
+  const s = store.services.find(x => x.id === _currentExSvcId);
+  if (!s || !s.examples) return;
+  s.examples.splice(idx, 1);
+  saveStore();
+  renderExamplesList();
+  renderServices();
+  toast('דוגמה הוסרה', 'success');
+}
+
+function openLightbox(src) {
+  const div = document.createElement('div');
+  div.className = 'lightbox-bg';
+  div.innerHTML = `<img src="${src}">`;
+  div.onclick = () => div.remove();
+  document.body.appendChild(div);
 }
 
 // ══════════════════════════════════════════════════
@@ -3292,17 +4350,46 @@ function toggleDay(i, val) { store.schedule[i].enabled = val; renderSchedule(); 
 // ══════════════════════════════════════════════════
 //  CALENDAR
 // ══════════════════════════════════════════════════
+const CAL_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+let calSidebarMode = 'upcoming'; // 'upcoming' | 'history'
+
+function _statusEvClass(status) {
+  if (!status) return 'ev-new';
+  if (status === 'נמסר') return 'ev-done';
+  if (status === 'בעיבוד' || status === 'צולם') return 'ev-proc';
+  if (status === 'ממתין למסירה' || status === 'מתוכנן') return 'ev-wait';
+  return 'ev-new'; // ממתין לאישור, etc.
+}
+
+function _statusEvColor(status) {
+  const c = _statusEvClass(status);
+  if (c === 'ev-done') return '#22c55e';
+  if (c === 'ev-proc') return 'var(--blue)';
+  if (c === 'ev-wait') return '#f59e0b';
+  return 'var(--accent)';
+}
+
 function renderCalendar() {
   const year = calDate.getFullYear();
   const month = calDate.getMonth();
   const today = new Date();
 
-  const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-  document.getElementById('cal-month-title').textContent = `${months[month]} ${year}`;
+  document.getElementById('cal-month-title').textContent = `${CAL_MONTHS[month]} ${year}`;
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const daysInPrev = new Date(year, month, 0).getDate();
+
+  // Build day → listings map for this month
+  const dayMap = {}; // day (1-31) → [listing, ...]
+  store.listings.forEach(l => {
+    if (!l.shootDate) return;
+    const d = new Date(l.shootDate);
+    if (d.getFullYear() !== year || d.getMonth() !== month) return;
+    const day = d.getDate();
+    if (!dayMap[day]) dayMap[day] = [];
+    dayMap[day].push(l);
+  });
 
   const days = ['א\'','ב\'','ג\'','ד\'','ה\'','ו\'','ש\''];
   let html = days.map(d => `<div class="cal-day-label">${d}</div>`).join('');
@@ -3310,19 +4397,21 @@ function renderCalendar() {
   for (let i = firstDay - 1; i >= 0; i--) {
     html += `<div class="cal-cell other-month">${daysInPrev - i}</div>`;
   }
-  // Build set of days that have a shoot this month
-  const shootDays = new Set(
-    store.listings
-      .filter(l => l.shootDate)
-      .map(l => new Date(l.shootDate))
-      .filter(d => d.getFullYear() === year && d.getMonth() === month)
-      .map(d => d.getDate())
-  );
 
   for (let d = 1; d <= daysInMonth; d++) {
     const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-    const hasShoot = shootDays.has(d);
-    html += `<div class="cal-cell ${isToday?'today':''} ${hasShoot?'has-shoot':''}">${d}${hasShoot?'<div class="cal-dot"></div>':''}</div>`;
+    const listings = dayMap[d] || [];
+    const hasShoot = listings.length > 0;
+    let evHtml = '';
+    if (hasShoot) {
+      const dots = listings.slice(0, 3).map(l => `<span class="cal-ev ${_statusEvClass(l.status)}"></span>`).join('');
+      const more = listings.length > 3 ? `<span class="cal-ev-more">+${listings.length-3}</span>` : '';
+      evHtml = `<div class="cal-events">${dots}${more}</div>`;
+    } else {
+      evHtml = `<div class="cal-events"></div>`;
+    }
+    const clickAttr = hasShoot ? ` onclick="openDayPanel(${year},${month},${d})"` : '';
+    html += `<div class="cal-cell ${isToday?'today':''} ${hasShoot?'has-shoot':''}"${clickAttr}>${d}${evHtml}</div>`;
   }
   const total = firstDay + daysInMonth;
   const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
@@ -3331,39 +4420,114 @@ function renderCalendar() {
   }
 
   document.getElementById('cal-grid').innerHTML = html;
+  _renderCalSidebar();
+}
 
-  // Upcoming shoots sidebar
+function _renderCalSidebar() {
   const shootsEl = document.getElementById('upcoming-shoots');
-  if (shootsEl) {
-    const todayStr = today.toDateString();
-    const upcoming = store.listings
-      .filter(l => l.shootDate && new Date(l.shootDate) >= today)
-      .sort((a, b) => new Date(a.shootDate) - new Date(b.shootDate))
-      .slice(0, 5);
-    if (!upcoming.length) {
-      shootsEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0;">אין צילומים קרובים</div>';
-    } else {
-      shootsEl.innerHTML = upcoming.map(l => {
-        const d = new Date(l.shootDate);
-        const hhmm = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
-        const isToday = d.toDateString() === todayStr;
-        const color = isToday ? 'var(--accent)' : 'var(--blue)';
-        return `<div class="shoot-item" style="border-right-color:${color}">
-          <div class="shoot-time">${d.getDate()} ${months[d.getMonth()]}, ${hhmm}</div>
-          <div>
-            <div class="shoot-address">${l.address}</div>
-            <div class="shoot-pkg">${l.pkg}</div>
-          </div>
-        </div>`;
-      }).join('');
-    }
+  if (!shootsEl) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const all = store.listings
+    .filter(l => l.shootDate)
+    .sort((a, b) => new Date(a.shootDate) - new Date(b.shootDate));
+
+  const items = calSidebarMode === 'upcoming'
+    ? all.filter(l => new Date(l.shootDate) >= today)
+    : all.filter(l => new Date(l.shootDate) < today).reverse();
+
+  if (!items.length) {
+    shootsEl.innerHTML = `<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0;">${calSidebarMode==='upcoming'?'אין צילומים קרובים':'אין היסטוריה'}</div>`;
+    return;
   }
+
+  const todayStr = today.toDateString();
+  shootsEl.innerHTML = items.slice(0, 20).map(l => {
+    const d = new Date(l.shootDate);
+    const isToday = d.toDateString() === todayStr;
+    const color = _statusEvColor(l.status);
+    const dateLabel = isToday ? 'היום' : `${d.getDate()} ${CAL_MONTHS[d.getMonth()]} ${d.getFullYear() !== today.getFullYear() ? d.getFullYear() : ''}`.trim();
+    return `<div class="shoot-item" style="border-right-color:${color};cursor:pointer;" onclick="openListing('${l.id}')">
+      <div class="shoot-time">${dateLabel}</div>
+      <div style="flex:1;">
+        <div class="shoot-address">${l.address}</div>
+        <div class="shoot-pkg" style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+          <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${l.status}</span>
+          <span>${l.pkg}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calSidebarTab(mode) {
+  calSidebarMode = mode;
+  document.getElementById('cal-tab-upcoming').className = mode==='upcoming' ? 'btn btn-primary' : 'btn btn-ghost';
+  document.getElementById('cal-tab-history').className  = mode==='history'  ? 'btn btn-primary' : 'btn btn-ghost';
+  _renderCalSidebar();
+}
+
+function openDayPanel(year, month, day) {
+  const listings = store.listings.filter(l => {
+    if (!l.shootDate) return false;
+    const d = new Date(l.shootDate);
+    return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+  });
+  if (!listings.length) return;
+  const dateTitle = `${day} ${CAL_MONTHS[month]} ${year}`;
+  const rows = listings.map(l => {
+    const color = _statusEvColor(l.status);
+    return `<div class="day-listing-row" onclick="closeDayPanel();openListing('${l.id}')">
+      <span class="day-listing-dot" style="background:${color}"></span>
+      <div class="day-listing-info">
+        <div class="day-listing-addr">${l.address}</div>
+        <div class="day-listing-sub">${l.pkg} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${l.status}</span></div>
+      </div>
+      <span style="font-size:18px;color:var(--text-dim);">›</span>
+    </div>`;
+  }).join('');
+  const panel = document.getElementById('day-panel');
+
+  panel.innerHTML = `<div class="day-panel-card">
+    <div class="day-panel-title">
+      <span>📅 ${dateTitle}</span>
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;" onclick="closeDayPanel()">✕</button>
+    </div>
+    ${rows}
+  </div>`;
+  panel.style.display = 'flex';
+}
+
+function closeDayPanel() {
+  document.getElementById('day-panel').style.display = 'none';
 }
 
 function calNav(dir) {
   if (dir === 0) { calDate = new Date(); }
   else calDate.setMonth(calDate.getMonth() + dir);
   renderCalendar();
+}
+
+// ══════════════════════════════════════════════════
+//  MOBILE NAVIGATION
+// ══════════════════════════════════════════════════
+function openMobileMenu() {
+  document.querySelector('.sidebar').classList.add('mobile-open');
+  document.getElementById('sidebar-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileMenu() {
+  document.querySelector('.sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function updateMobileNav(page) {
+  const mobileNavMap = { listings:'mn-listings', orders:'mn-orders', calendar:'mn-calendar', customers:'mn-customers' };
+  document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+  const id = mobileNavMap[page];
+  if (id) document.getElementById(id)?.classList.add('active');
 }
 
 // ══════════════════════════════════════════════════
@@ -3382,6 +4546,70 @@ function toast(msg, type = 'success', duration = 3000) {
   t.innerHTML = `<span class="toast-icon">${icons[type]||'✓'}</span>${msg}`;
   c.appendChild(t);
   setTimeout(() => { t.style.transition = 'opacity 0.3s, transform 0.3s'; t.style.opacity = '0'; t.style.transform = 'translateY(8px)'; setTimeout(() => t.remove(), 300); }, duration);
+}
+
+/* ── SERVICE TAG POPUP ─────────────── */
+let _svcPopupEl = null;
+
+function showSvcTagPopup(svcName, event) {
+  event.stopPropagation();
+  closeSvcTagPopup();
+
+  const svc = store.services.find(s => s.name === svcName);
+  if (!svc) return;
+
+  const popup = document.createElement('div');
+  popup.id = 'svc-tag-popup';
+
+  const examples = svc.examples || [];
+  const mediaTypes = [...new Set(examples.filter(e => e.type !== 'photo').map(e => e.type))];
+  const photoCount = examples.filter(e => e.type === 'photo').length;
+
+  let mediaBadgesHtml = '';
+  if (photoCount > 0) {
+    mediaBadgesHtml += `<span class="svc-ex-media-badge" style="background:#10B98118;color:#10B981;">🖼️ ${photoCount} תמונות</span>`;
+  }
+  mediaTypes.forEach(t => {
+    const c = _EX_COLORS[t] || '#6B7280';
+    const i = _EX_ICONS[t]  || '🔗';
+    const l = _EX_LABELS[t] || t;
+    mediaBadgesHtml += `<span class="svc-ex-media-badge" style="background:${c}18;color:${c};">${i} ${l}</span>`;
+  });
+
+  popup.innerHTML = `
+    <div class="stp-header">
+      <span class="stp-icon">${svc.icon || '🎯'}</span>
+      <span>${svc.name}</span>
+    </div>
+    ${svc.description
+      ? `<div class="stp-desc">${svc.description}</div>`
+      : '<div class="stp-no-info">אין תיאור</div>'}
+    ${svc.deliverables ? `
+      <div class="stp-deliverables-label">מה מקבלים</div>
+      <div class="stp-deliverables">${svc.deliverables}</div>
+    ` : ''}
+    ${mediaBadgesHtml ? `<div class="stp-media-row">${mediaBadgesHtml}</div>` : ''}
+  `;
+
+  document.body.appendChild(popup);
+  _svcPopupEl = popup;
+
+  // Position popup near the tag
+  const rect = event.target.getBoundingClientRect();
+  const pw = popup.offsetWidth || 280;
+  const ph = popup.offsetHeight || 160;
+  let left = rect.left + window.scrollX;
+  let top  = rect.bottom + window.scrollY + 6;
+  if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+  if (top  + ph > window.innerHeight + window.scrollY - 12) top = rect.top + window.scrollY - ph - 6;
+  popup.style.left = left + 'px';
+  popup.style.top  = top  + 'px';
+
+  setTimeout(() => document.addEventListener('click', closeSvcTagPopup, { once: true }), 10);
+}
+
+function closeSvcTagPopup() {
+  if (_svcPopupEl) { _svcPopupEl.remove(); _svcPopupEl = null; }
 }
 
 /* ── INLINE STATUS CHANGE ─────────── */
@@ -3458,6 +4686,14 @@ function setStatusInline(id, newStatus, menu) {
   const old = l.status;
   if (old === newStatus) { menu && menu.remove(); return; }
   l.status = newStatus;
+  // Sync to orders: create order if entering pipeline, update status if already there
+  if (ORDER_PIPELINE.includes(newStatus)) {
+    const o = _ensureOrder(l);
+    o.status = newStatus;
+  } else {
+    const o = store.orders.find(x => x.id === id);
+    if (o) o.status = newStatus; // keep in orders with final status (נמסר/בוטל)
+  }
   saveStore();
   renderListings();
   if (currentListing && currentListing.id === id) {
@@ -3642,13 +4878,14 @@ function saveCustomerInfo() {
 
 function deleteCustomer() {
   if (!currentCustomer) return;
-  if (!confirm('למחוק לקוח זה? נכסים משויכים לא יימחקו.')) return;
-  store.customers = store.customers.filter(c => c.id !== currentCustomer.id);
-  // Unlink listings
-  store.listings.forEach(l => { if (l.customer === currentCustomer.id) l.customer = ''; });
-  saveStore();
+  if (!confirm('להעביר לקוח זה לארכיון? נכסים משויכים לא יושפעו.')) return;
+  const cid = currentCustomer.id;
+  // Unlink active listings
+  store.listings.forEach(l => { if (l.customer === cid) l.customer = ''; });
+  _archiveItem('customers', cid);
   closeCustomerPanel();
   renderCustomers();
+  toast('הלקוח הועבר לארכיון', 'success');
 }
 
 function openListingFromCustomer(id) {
@@ -3702,7 +4939,14 @@ function whatsappShareLink() {
     (store.settings.businessName || 'Sisa Aero Photography') +
     ', אנא מלא את הטופס הבא:\n' + link
   );
-  window.open('https://wa.me/?text=' + text, '_blank');
+  // Use customer phone for a reliable direct WA link; fall back to share URL
+  if (currentCustomer && currentCustomer.phone) {
+    const digits = currentCustomer.phone.replace(/[^0-9]/g, '');
+    const waPhone = digits.startsWith('972') ? digits : '972' + digits.replace(/^0/, '');
+    window.open('https://wa.me/' + waPhone + '?text=' + text, '_blank');
+  } else {
+    window.open('https://wa.me/?text=' + text, '_blank');
+  }
 }
 
 function openBookingInTab() {
@@ -3710,66 +4954,407 @@ function openBookingInTab() {
 }
 
 // ══════════════════════════════════════════════════
-//  LOCALSTORAGE PERSISTENCE
+//  PERSISTENCE  (Firestore subcollections + localStorage)
 // ══════════════════════════════════════════════════
+
 async function saveStore() {
   store.lastModified = Date.now();
   try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
   try {
-    await db.collection('store').doc('data').set(store);
+    // Small/shared data (settings, packages, services, schedule)
+    const small = {
+      lastModified: store.lastModified,
+      settings: store.settings,
+      packages: store.packages,
+      services: store.services,
+      addons:   store.addons,
+      schedule: store.schedule,
+      orders:      store.orders || [],
+      promotions:  store.promotions || [],
+      archive:     store.archive,
+    };
+    const batch = db.batch();
+    batch.set(db.collection('store').doc('data'), small);
+    // Each listing / customer / company in its own document
+    store.listings.forEach(l =>
+      batch.set(db.collection('listings').doc(l.id), l));
+    store.customers.forEach(c =>
+      batch.set(db.collection('customers').doc(c.id), c));
+    (store.companies || []).forEach(co =>
+      batch.set(db.collection('companies').doc(co.id), co));
+    await batch.commit();
   } catch(e) {
     console.warn('Firestore write failed, saved locally only', e);
     toast('שגיאת ענן — נשמר מקומית', 'warning');
   }
 }
 
-function _applyParsed(parsed) {
-  // Use Array.isArray (not .length) so empty arrays (e.g. all customers deleted) are applied correctly
-  if (Array.isArray(parsed.listings))  store.listings  = parsed.listings;
-  if (Array.isArray(parsed.customers)) store.customers = parsed.customers;
+// Apply only small data (settings / packages / services / schedule / archive)
+function _applySmall(parsed) {
   if (Array.isArray(parsed.packages))  store.packages  = parsed.packages;
   if (Array.isArray(parsed.services))  store.services  = parsed.services;
   if (Array.isArray(parsed.addons))    store.addons    = parsed.addons;
   if (Array.isArray(parsed.schedule))  store.schedule  = parsed.schedule;
-  if (parsed.settings)                 store.settings  = Object.assign(store.settings, parsed.settings);
+  if (Array.isArray(parsed.orders))      store.orders      = parsed.orders;
+  if (Array.isArray(parsed.promotions))  store.promotions  = parsed.promotions;
+  if (parsed.settings) store.settings = Object.assign({}, store.settings, parsed.settings);
+  if (parsed.archive)  store.archive  = Object.assign({ listings:[], customers:[], companies:[] }, parsed.archive);
+}
+
+// Apply full store snapshot (used for localStorage fallback)
+function _applyParsed(parsed) {
+  if (Array.isArray(parsed.listings))  store.listings  = parsed.listings;
+  if (Array.isArray(parsed.customers)) store.customers = parsed.customers;
   if (parsed.companies)                store.companies = parsed.companies;
+  _applySmall(parsed);
 }
 
 async function loadStore() {
-  let fsData = null, lsData = null;
+  let lsData = null;
+  let fsSmall = null, fsListings = [], fsCustomers = [], fsCompanies = [];
 
-  // Load from Firestore
+  // localStorage
   try {
-    const snap = await db.collection('store').doc('data').get();
-    if (snap.exists) fsData = snap.data();
-  } catch(e) { console.warn('Firestore unavailable, using localStorage', e); }
-
-  // Load from localStorage
-  try {
-    const saved = localStorage.getItem('photoDesk_store');
-    if (saved) lsData = JSON.parse(saved);
+    const s = localStorage.getItem('photoDesk_store');
+    if (s) lsData = JSON.parse(s);
   } catch(e) {}
 
-  // Use the version with the newer lastModified timestamp (localStorage wins on tie)
-  const fsTime = fsData?.lastModified || 0;
-  const lsTime = lsData?.lastModified || 0;
-  const best = (lsTime >= fsTime) ? lsData : fsData;
+  // Firestore — parallel reads
+  try {
+    const [smallSnap, lSnap, cSnap, coSnap] = await Promise.all([
+      db.collection('store').doc('data').get(),
+      db.collection('listings').get(),
+      db.collection('customers').get(),
+      db.collection('companies').get(),
+    ]);
+    if (smallSnap.exists) fsSmall = smallSnap.data();
+    fsListings  = lSnap.docs.map(d => d.data());
+    fsCustomers = cSnap.docs.map(d => d.data());
+    fsCompanies = coSnap.docs.map(d => d.data());
+  } catch(e) { console.warn('Firestore unavailable, using localStorage', e); }
 
-  if (best) {
-    _applyParsed(best);
-    // Keep localStorage in sync with winner
-    try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
+  const fsTime = fsSmall?.lastModified || 0;
+  const lsTime = lsData?.lastModified  || 0;
+
+  if (fsSmall) {
+    _applySmall(fsSmall);
+    if (fsListings.length)  store.listings  = fsListings;
+    else if (Array.isArray(fsSmall.listings)  && fsSmall.listings.length)
+      store.listings  = fsSmall.listings;   // legacy single-doc format
+    if (fsCustomers.length) store.customers = fsCustomers;
+    else if (Array.isArray(fsSmall.customers) && fsSmall.customers.length)
+      store.customers = fsSmall.customers;
+    if (fsCompanies.length) store.companies = fsCompanies;
+    else if (fsSmall.companies)
+      store.companies = fsSmall.companies;
+
+    // If localStorage is strictly newer (e.g. offline edits) — override
+    if (lsTime > fsTime && lsData) _applyParsed(lsData);
+  } else if (lsData) {
+    _applyParsed(lsData);
   }
+
+  try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
 }
 
 
 
 // ══════════════════════════════════════════════════
-//  ORDERS — PENDING BOOKINGS
+//  VISIBILITY FLAGS — SERVICES & PACKAGES
 // ══════════════════════════════════════════════════
+
+// Migration: add default flags to existing services/packages
+function _migrateVisibilityFlags() {
+  store.services.forEach(s => {
+    if (s.is_active  === undefined) s.is_active  = true;
+    if (s.is_visible === undefined) s.is_visible = true;
+    if (s.is_featured=== undefined) s.is_featured= false;
+    if (!s.created_at) s.created_at = Date.now();
+  });
+  store.packages.forEach(p => {
+    if (p.is_active  === undefined) p.is_active  = true;
+    if (p.is_visible === undefined) p.is_visible = true;
+    if (!p.created_at) p.created_at = Date.now();
+  });
+  if (!store.promotions) store.promotions = [];
+}
+
+function toggleServiceFlag(id, flag, val) {
+  const s = store.services.find(x => x.id === id);
+  if (!s) return;
+  s[flag] = val;
+  saveStore();
+  renderServices();
+  const label = flag === 'is_active' ? (val ? 'שירות הופעל' : 'שירות הושבת')
+              : flag === 'is_visible' ? (val ? 'שירות גלוי ללקוחות' : 'שירות מוסתר')
+              : (val ? 'מסומן כמומלץ' : 'הוסר כמומלץ');
+  toast(label, val ? 'success' : 'warning');
+}
+
+function togglePackageFlag(id, flag, val) {
+  const p = store.packages.find(x => x.id === id);
+  if (!p) return;
+  p[flag] = val;
+  saveStore();
+  renderPackages();
+  const label = flag === 'is_active' ? (val ? 'חבילה הופעלה' : 'חבילה הושבתה')
+              : (val ? 'חבילה גלויה ללקוחות' : 'חבילה מוסתרת');
+  toast(label, val ? 'success' : 'warning');
+}
+
+// ══════════════════════════════════════════════════
+//  PROMOTIONS (מבצעים)
+// ══════════════════════════════════════════════════
+
+let _promoFilter = 'all';
+let _editPromoId = null;
+
+// Compute runtime status of a promotion
+function _promoStatus(pr) {
+  if (!pr.is_active) return 'off';
+  const now = Date.now();
+  const start = pr.start_date ? new Date(pr.start_date).getTime() : 0;
+  const end   = pr.end_date   ? new Date(pr.end_date).getTime()   : Infinity;
+  if (end < now)   return 'expired';
+  if (start > now) return 'scheduled';
+  return 'live';
+}
+
+// Get active promotion applicable to a package
+function _getActivePromoForPackage(pkgId) {
+  return (store.promotions || []).find(pr => {
+    if (_promoStatus(pr) !== 'live') return false;
+    if (!pr.applicable_packages || !pr.applicable_packages.length) return true; // applies to all
+    return pr.applicable_packages.includes(pkgId);
+  }) || null;
+}
+
+// Apply promotion discount to a price
+function applyPromo(price, promo) {
+  if (!promo) return price;
+  if (promo.discount_type === 'pct') return Math.round(price * (1 - promo.discount_value / 100));
+  return Math.max(0, price - promo.discount_value);
+}
+
+let _promoFilterActive = 'all';
+
+function filterPromos(filter) {
+  _promoFilterActive = filter;
+  document.querySelectorAll('#promo-filter-tabs button').forEach(b => {
+    b.classList.toggle('btn-primary', b.id === 'pf-' + filter);
+    b.classList.toggle('btn-ghost',   b.id !== 'pf-' + filter);
+  });
+  renderPromotions();
+}
+
+function renderPromotions() {
+  updatePromoBadge();
+  const all = store.promotions || [];
+  const filtered = _promoFilterActive === 'all' ? all
+    : all.filter(pr => _promoStatus(pr) === _promoFilterActive);
+
+  const grid = document.getElementById('promo-grid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--text-muted);">
+      <div style="font-size:36px;margin-bottom:10px;">🏷️</div>
+      <div style="font-weight:700;margin-bottom:4px;">אין מבצעים</div>
+      <div style="font-size:13px;">לחץ "+ מבצע חדש" כדי ליצור מבצע</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(pr => {
+    const st = _promoStatus(pr);
+    const badgeMap = { live:'<span class="promo-badge live">🟢 פעיל עכשיו</span>', scheduled:'<span class="promo-badge sched">🔵 מתוכנן</span>', expired:'<span class="promo-badge expired">🔴 פג תוקף</span>', off:'<span class="promo-badge off">⚫ כבוי</span>' };
+    const discStr = pr.discount_type === 'pct' ? `${pr.discount_value}% הנחה` : `₪${pr.discount_value} הנחה`;
+    const startFmt = pr.start_date ? new Date(pr.start_date).toLocaleDateString('he-IL') : 'ללא הגבלה';
+    const endFmt   = pr.end_date   ? new Date(pr.end_date).toLocaleDateString('he-IL')   : 'ללא הגבלה';
+    const pkgNames = pr.applicable_packages?.length
+      ? pr.applicable_packages.map(id => store.packages.find(p=>p.id===id)?.name||id).join(', ')
+      : 'כל החבילות';
+    const svcNames = pr.applicable_services?.length
+      ? pr.applicable_services.map(id => store.services.find(s=>s.id===id)?.name||id).join(', ')
+      : 'כל השירותים';
+    return `
+    <div class="promo-card ${st==='live'?'promo-active':''} ${st==='expired'?'promo-expired':''}">
+      <div class="promo-card-header">
+        <div class="promo-card-name">${pr.name}</div>
+        ${badgeMap[st]}
+      </div>
+      <div class="promo-discount">${discStr}</div>
+      ${pr.description ? `<div class="promo-desc">${pr.description}</div>` : ''}
+      <div class="promo-dates">
+        <span>📅 מ: ${startFmt}</span>
+        <span>עד: ${endFmt}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);">📦 ${pkgNames}</div>
+      <div style="font-size:11px;color:var(--text-muted);">🎯 ${svcNames}</div>
+      <div class="promo-footer">
+        <label class="toggle-sw green">
+          <input type="checkbox" ${pr.is_active?'checked':''} onchange="togglePromo('${pr.id}',this.checked)">
+          <div class="toggle-sw-track"></div>
+          <span>${pr.is_active ? 'מופעל' : 'כבוי'}</span>
+        </label>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px;" onclick="editPromotion('${pr.id}')">✏️ ערוך</button>
+          <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px;color:#ef4444;" onclick="deletePromotion('${pr.id}')">מחק</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updatePromoBadge() {
+  const liveCount = (store.promotions||[]).filter(pr => _promoStatus(pr) === 'live').length;
+  const badge = document.getElementById('promo-badge');
+  if (!badge) return;
+  if (liveCount > 0) { badge.textContent = liveCount; badge.style.display = ''; }
+  else badge.style.display = 'none';
+}
+
+function togglePromo(id, val) {
+  const pr = (store.promotions||[]).find(x => x.id === id);
+  if (!pr) return;
+  pr.is_active = val;
+  saveStore();
+  renderPromotions();
+  toast(val ? 'מבצע הופעל' : 'מבצע כובה', val ? 'success' : 'warning');
+}
+
+function addPromotion() {
+  _editPromoId = null;
+  document.getElementById('mpromo-title-text').textContent = 'מבצע חדש';
+  document.getElementById('mpromo-name').value        = '';
+  document.getElementById('mpromo-desc').value        = '';
+  document.getElementById('mpromo-dtype').value       = 'pct';
+  document.getElementById('mpromo-dval').value        = '10';
+  document.getElementById('mpromo-start').value       = '';
+  document.getElementById('mpromo-end').value         = '';
+  document.getElementById('mpromo-active').checked    = true;
+  _renderPromoTargetSelectors(null);
+  openModal('modal-promo');
+}
+
+function editPromotion(id) {
+  const pr = (store.promotions||[]).find(x => x.id === id);
+  if (!pr) return;
+  _editPromoId = id;
+  document.getElementById('mpromo-title-text').textContent = 'ערוך מבצע';
+  document.getElementById('mpromo-name').value        = pr.name;
+  document.getElementById('mpromo-desc').value        = pr.description || '';
+  document.getElementById('mpromo-dtype').value       = pr.discount_type || 'pct';
+  document.getElementById('mpromo-dval').value        = pr.discount_value || 10;
+  document.getElementById('mpromo-start').value       = pr.start_date || '';
+  document.getElementById('mpromo-end').value         = pr.end_date   || '';
+  document.getElementById('mpromo-active').checked    = pr.is_active !== false;
+  _renderPromoTargetSelectors(pr);
+  openModal('modal-promo');
+}
+
+function _renderPromoTargetSelectors(pr) {
+  const selPkgs = pr?.applicable_packages || [];
+  const selSvcs = pr?.applicable_services || [];
+  document.getElementById('mpromo-packages').innerHTML = store.packages.map(p => `
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0;">
+      <input type="checkbox" value="${p.id}" ${selPkgs.includes(p.id)?'checked':''} style="accent-color:var(--accent);">
+      <span>${p.name}</span>
+    </label>`).join('') || '<div style="font-size:12px;color:var(--text-muted);">אין חבילות</div>';
+  document.getElementById('mpromo-services').innerHTML = store.services.map(s => `
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0;">
+      <input type="checkbox" value="${s.id}" ${selSvcs.includes(s.id)?'checked':''} style="accent-color:var(--accent);">
+      <span>${s.icon||''} ${s.name}</span>
+    </label>`).join('') || '<div style="font-size:12px;color:var(--text-muted);">אין שירותים</div>';
+}
+
+function _savePromotion() {
+  const name = document.getElementById('mpromo-name').value.trim();
+  if (!name) { toast('נא להזין שם מבצע', 'error'); return; }
+  const dval = +document.getElementById('mpromo-dval').value || 0;
+  if (!dval) { toast('נא להזין ערך הנחה', 'error'); return; }
+  const pkgs = [...document.querySelectorAll('#mpromo-packages input:checked')].map(c=>c.value);
+  const svcs = [...document.querySelectorAll('#mpromo-services input:checked')].map(c=>c.value);
+  const data = {
+    name,
+    description:   document.getElementById('mpromo-desc').value.trim(),
+    discount_type: document.getElementById('mpromo-dtype').value,
+    discount_value: dval,
+    start_date:    document.getElementById('mpromo-start').value || null,
+    end_date:      document.getElementById('mpromo-end').value   || null,
+    is_active:     document.getElementById('mpromo-active').checked,
+    applicable_packages: pkgs,
+    applicable_services: svcs,
+  };
+  if (_editPromoId) {
+    const pr = store.promotions.find(x => x.id === _editPromoId);
+    if (pr) Object.assign(pr, data);
+    toast('מבצע עודכן', 'success');
+  } else {
+    store.promotions.push({ id:'PR'+Date.now(), ...data, created_at: Date.now() });
+    toast('מבצע חדש נוסף!', 'success');
+  }
+  saveStore();
+  closeModal('modal-promo');
+  renderPromotions();
+  renderPackages(); // refresh promo badges on packages
+}
+
+function deletePromotion(id) {
+  const pr = (store.promotions||[]).find(x=>x.id===id);
+  if (!pr) return;
+  if (!confirm(`למחוק את המבצע "${pr.name}"?`)) return;
+  store.promotions = store.promotions.filter(x=>x.id!==id);
+  saveStore(); renderPromotions(); renderPackages();
+  toast('מבצע נמחק', 'success');
+}
+
+// ══════════════════════════════════════════════════
+//  ORDERS — INDEPENDENT FROM LISTINGS
+// ══════════════════════════════════════════════════
+const ORDER_PIPELINE = ['ממתין לאישור','מתוכנן','צולם','בעיבוד','ממתין למסירה'];
+
+// Create/fetch order snapshot from listing. Orders survive listing deletion.
+function _ensureOrder(l) {
+  if (!store.orders) store.orders = [];
+  let o = store.orders.find(x => x.id === l.id);
+  if (!o) {
+    o = {
+      id: l.id,
+      address: l.address, city: l.city || '',
+      pkg: l.pkg || '', status: l.status,
+      customer: l.customer || '', beds: l.beds || 0,
+      shootDate: l.shootDate || '', created: l.created || '',
+      paymentStatus: l.paymentStatus || 'unpaid',
+      deliveredPhotos:   !!(l.deliveredPhotos),
+      deliveredVideo:    !!(l.deliveredVideo),
+      deliveredFloorplan:!!(l.deliveredFloorplan),
+    };
+    store.orders.push(o);
+  }
+  return o;
+}
+
+// Sync mutable order fields back to listing (if listing still exists)
+function _syncOrderToListing(o) {
+  const l = store.listings.find(x => x.id === o.id);
+  if (!l) return;
+  l.status = o.status;
+  l.paymentStatus = o.paymentStatus;
+  l.deliveredPhotos    = o.deliveredPhotos;
+  l.deliveredVideo     = o.deliveredVideo;
+  l.deliveredFloorplan = o.deliveredFloorplan;
+}
+
+// On startup: migrate existing pipeline listings into store.orders
+function _migrateOrdersFromListings() {
+  if (!store.orders) store.orders = [];
+  store.listings.forEach(l => {
+    if (ORDER_PIPELINE.includes(l.status)) _ensureOrder(l);
+  });
+}
+
 function renderOrders() {
   const pending  = loadPendingBookings();
-  const active   = store.listings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל');
+  const active   = store.orders.filter(o => ORDER_PIPELINE.includes(o.status));
   const listEl   = document.getElementById('orders-list');
   const total    = pending.length + active.length;
 
@@ -3869,9 +5454,9 @@ function renderOrders() {
             </div>
             <div style="display:flex;gap:10px;align-items:center;margin-top:8px;" onclick="event.stopPropagation()">
               <span class="pay-badge ${payClass}" onclick="cyclePayment('${l.id}')">${payLbl}</span>
-              <span class="deliver-icon" onclick="toggleDelivery('${l.id}','deliveredPhotos')" style="color:${l.deliveredPhotos?'var(--green)':'var(--text-dim)'}">📸 ${l.deliveredPhotos?'✓':'✗'}</span>
-              <span class="deliver-icon" onclick="toggleDelivery('${l.id}','deliveredVideo')"  style="color:${l.deliveredVideo?'var(--green)':'var(--text-dim)'}">🎬 ${l.deliveredVideo?'✓':'✗'}</span>
-              <span class="deliver-icon" onclick="toggleDelivery('${l.id}','deliveredFloorplan')" style="color:${l.deliveredFloorplan?'var(--green)':'var(--text-dim)'}">📐 ${l.deliveredFloorplan?'✓':'✗'}</span>
+              <span class="deliver-icon" onclick="toggleOrderDelivery('${l.id}','deliveredPhotos')" style="color:${l.deliveredPhotos?'var(--green)':'var(--text-dim)'}">📸 ${l.deliveredPhotos?'✓':'✗'}</span>
+              <span class="deliver-icon" onclick="toggleOrderDelivery('${l.id}','deliveredVideo')"  style="color:${l.deliveredVideo?'var(--green)':'var(--text-dim)'}">🎬 ${l.deliveredVideo?'✓':'✗'}</span>
+              <span class="deliver-icon" onclick="toggleOrderDelivery('${l.id}','deliveredFloorplan')" style="color:${l.deliveredFloorplan?'var(--green)':'var(--text-dim)'}">📐 ${l.deliveredFloorplan?'✓':'✗'}</span>
             </div>
           </div>
           ${next ? `<div class="booking-actions" onclick="event.stopPropagation()">
@@ -3952,6 +5537,9 @@ function approveBooking(id) {
     shootDate: b.shootDate || ''
   });
 
+  // Also create an order entry (independent from listing)
+  _ensureOrder(store.listings[0]);
+
   // Remove from pending
   savePendingBookings(pending.filter(x => x.id !== id));
   db.collection('bookings').doc(id).delete().catch(() => {});
@@ -3986,26 +5574,30 @@ function viewBooking(id) {
 }
 
 function cyclePayment(id) {
-  const l = store.listings.find(x => x.id === id);
-  if (!l) return;
+  const o = store.orders.find(x => x.id === id);
+  if (!o) return;
   const cycle = { unpaid: 'deposit', deposit: 'paid', paid: 'unpaid' };
-  l.paymentStatus = cycle[l.paymentStatus || 'unpaid'];
+  o.paymentStatus = cycle[o.paymentStatus || 'unpaid'];
+  _syncOrderToListing(o);
   saveStore();
   renderOrders();
 }
 
-function toggleDelivery(id, field) {
-  const l = store.listings.find(x => x.id === id);
-  if (!l) return;
-  l[field] = !l[field];
+function toggleOrderDelivery(id, field) {
+  const o = store.orders.find(x => x.id === id);
+  if (!o) return;
+  o[field] = !o[field];
+  _syncOrderToListing(o);
   saveStore();
   renderOrders();
 }
 
 function advanceStatus(listingId, newStatus) {
+  const o = store.orders.find(x => x.id === listingId);
+  if (o) o.status = newStatus;
+  _syncOrderToListing(o || { id: listingId, status: newStatus });
   const l = store.listings.find(x => x.id === listingId);
-  if (!l) return;
-  l.status = newStatus;
+  if (l) l.status = newStatus;
   saveStore();
   renderOrders();
   renderListings();
@@ -4013,7 +5605,7 @@ function advanceStatus(listingId, newStatus) {
 
 function updateOrdersBadge() {
   const pendingCount = loadPendingBookings().length;
-  const activeCount  = store.listings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
+  const activeCount  = (store.orders || []).filter(o => ORDER_PIPELINE.includes(o.status)).length;
   const total = pendingCount + activeCount;
   const navItem = document.querySelector('.nav-item[onclick="navigate(\'orders\')"]');
   if (!navItem) return;
@@ -4102,6 +5694,156 @@ function applySidebarSettings() {
 // ══════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════
+//  ARCHIVE
+// ══════════════════════════════════════════════════
+
+// Move an item from active collection to archive
+function _archiveItem(type, id) {
+  const arr   = store[type];
+  const idx   = arr.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  const item  = arr.splice(idx, 1)[0];
+  item.deletedAt = Date.now();
+  if (!store.archive) store.archive = { listings:[], customers:[], companies:[] };
+  store.archive[type].push(item);
+  saveStore();
+  // Remove from Firestore subcollection (archived, no longer active)
+  db.collection(type).doc(id).delete().catch(() => {});
+  updateArchiveBadge();
+}
+
+function updateArchiveBadge() {
+  const a = store.archive || {};
+  const total = (a.listings||[]).length + (a.customers||[]).length + (a.companies||[]).length;
+  const badge = document.getElementById('archive-badge');
+  if (!badge) return;
+  if (total > 0) {
+    badge.textContent = total;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// Restore item back to active collection
+function restoreArchiveItem(type, id) {
+  const a = store.archive?.[type] || [];
+  const idx = a.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  const item = a.splice(idx, 1)[0];
+  delete item.deletedAt;
+  store[type].push(item);
+  saveStore();
+  // Re-add to Firestore subcollection
+  db.collection(type).doc(id).set(item).catch(() => {});
+  toast('הפריט שוחזר בהצלחה', 'success');
+  updateArchiveBadge();
+  renderArchive();
+}
+
+// Permanently delete from archive
+function permanentDeleteArchiveItem(type, id) {
+  if (!confirm('למחוק לצמיתות? לא ניתן לשחזר!')) return;
+  if (!store.archive?.[type]) return;
+  store.archive[type] = store.archive[type].filter(x => x.id !== id);
+  saveStore();
+  updateArchiveBadge();
+  renderArchive();
+  toast('נמחק לצמיתות', 'success');
+}
+
+// Auto-cleanup items older than 90 days
+function _cleanupArchive() {
+  if (!store.archive) return;
+  const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  let cleaned = 0;
+  ['listings','customers','companies'].forEach(type => {
+    const before = (store.archive[type]||[]).length;
+    store.archive[type] = (store.archive[type]||[]).filter(x => (x.deletedAt||0) > cutoff);
+    cleaned += before - store.archive[type].length;
+  });
+  if (cleaned > 0) { saveStore(); }
+}
+
+let _archiveTab = 'listings';
+
+function switchArchiveTab(tab, btn) {
+  _archiveTab = tab;
+  document.querySelectorAll('.archive-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('archive-panel-listings').style.display  = tab === 'listings'  ? '' : 'none';
+  document.getElementById('archive-panel-customers').style.display = tab === 'customers' ? '' : 'none';
+  document.getElementById('archive-panel-companies').style.display = tab === 'companies' ? '' : 'none';
+}
+
+function renderArchive() {
+  const a = store.archive || {};
+  _renderArchivePanel('listings',  a.listings  || []);
+  _renderArchivePanel('customers', a.customers || []);
+  _renderArchivePanel('companies', a.companies || []);
+  // Update tab counts
+  ['listings','customers','companies'].forEach(type => {
+    const cnt = document.getElementById(`atab-${type}-count`);
+    const n = (a[type]||[]).length;
+    if (cnt) cnt.textContent = n ? n : '';
+  });
+  updateArchiveBadge();
+}
+
+function _renderArchivePanel(type, items) {
+  const el = document.getElementById('archive-panel-' + type);
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = `<div class="archive-empty">
+      <div class="archive-empty-icon">🗄️</div>
+      <div class="archive-empty-title">הארכיון ריק</div>
+      <div class="archive-empty-sub">פריטים שיועברו לארכיון יופיעו כאן</div>
+    </div>`;
+    return;
+  }
+
+  const total = items.length;
+  const cutoff90 = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const expiringSoon = items.filter(x => (x.deletedAt||0) < cutoff90 + 7 * 24 * 60 * 60 * 1000).length;
+
+  let html = `<div class="archive-cleanup-bar">
+    <span>🗄️ ${total} פריטים בארכיון${expiringSoon ? ` · <strong>${expiringSoon} פגים עוד 7 ימים</strong>` : ''}</span>
+    <span style="color:var(--text-dim);">מחיקה אוטומטית לאחר 90 יום מהארכיון</span>
+  </div>`;
+
+  items.sort((a,b) => (b.deletedAt||0) - (a.deletedAt||0)).forEach(item => {
+    const daysAgo = Math.floor((Date.now() - (item.deletedAt||0)) / 86400000);
+    const daysLeft = 90 - daysAgo;
+    const icon   = type === 'listings' ? '🏠' : type === 'customers' ? '👤' : '🏢';
+    const title  = type === 'listings'  ? (item.address || item.id)
+                 : type === 'customers' ? `${item.first||''} ${item.last||''}`
+                 : (item.name || item.id);
+    const sub    = type === 'listings'  ? `${item.city||''} · ${item.pkg||''} · ${item.status||''}`
+                 : type === 'customers' ? `${item.phone||''} · ${item.email||''}`
+                 : `${(item.agents||[]).length} סוכנים`;
+    const danger = daysLeft <= 7 ? 'color:var(--red);font-weight:700;' : '';
+
+    html += `<div class="archive-row">
+      <div class="archive-row-icon">${icon}</div>
+      <div class="archive-row-body">
+        <div class="archive-row-title">${title}</div>
+        <div class="archive-row-sub">${sub}</div>
+      </div>
+      <div class="archive-row-date" style="${danger}">
+        הועבר לפני ${daysAgo} ימים<br>
+        <span style="font-size:10px;">נמחק בעוד ${daysLeft} יום</span>
+      </div>
+      <div class="archive-row-actions">
+        <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;" onclick="restoreArchiveItem('${type}','${item.id}')">↩ שחזר</button>
+        <button class="btn" style="font-size:12px;padding:6px 12px;background:var(--red-light);color:var(--red);border:1px solid rgba(239,68,68,0.2);" onclick="permanentDeleteArchiveItem('${type}','${item.id}')">🗑 מחק</button>
+      </div>
+    </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════
 function renderSkeletonListings() {
   const tbody = document.getElementById('listings-tbody');
   if (!tbody) return;
@@ -4114,7 +5856,62 @@ function renderSkeletonListings() {
 }
 
 // ══════════════════════════════════════════════════
-(async () => {
+//  AUTH
+// ══════════════════════════════════════════════════
+let _appInited = false;
+
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    // Show app, hide login overlay
+    document.getElementById('login-overlay').style.display = 'none';
+    const appRoot = document.getElementById('app-root');
+    appRoot.style.cssText = 'display:contents;';
+    // Update sidebar user info
+    const initials = (user.email[0] || 'U').toUpperCase();
+    document.getElementById('auth-avatar').textContent    = initials;
+    document.getElementById('auth-user-name').textContent = user.email.split('@')[0];
+    document.getElementById('auth-user-email').textContent = user.email;
+    if (!_appInited) { _appInited = true; await _initApp(); }
+  } else {
+    document.getElementById('login-overlay').style.display = 'flex';
+    document.getElementById('app-root').style.display = 'none';
+  }
+});
+
+async function loginUser() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-error');
+  if (!email || !pass) { err.textContent = 'הזן אימייל וסיסמה'; return; }
+  btn.disabled = true; btn.textContent = 'מתחבר...';
+  err.textContent = '';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e) {
+    const msgs = {
+      'auth/wrong-password':      'סיסמה שגויה',
+      'auth/invalid-credential':  'אימייל או סיסמה שגויים',
+      'auth/user-not-found':      'משתמש לא נמצא',
+      'auth/invalid-email':       'אימייל לא תקין',
+      'auth/too-many-requests':   'יותר מדי ניסיונות — נסה שוב מאוחר יותר',
+    };
+    err.textContent = msgs[e.code] || ('שגיאה: ' + e.message);
+    btn.disabled = false; btn.textContent = 'כניסה →';
+  }
+}
+
+function logoutUser() {
+  if (!confirm('להתנתק?')) return;
+  if (window._bookingsUnsub) { window._bookingsUnsub(); window._bookingsUnsub = null; }
+  auth.signOut();
+  _appInited = false;
+}
+
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+async function _initApp() {
   renderSkeletonListings();
   await loadStore();
   applySidebarSettings();
@@ -4125,20 +5922,24 @@ function renderSkeletonListings() {
     sb.classList.add('collapsed');
     if (btn) btn.textContent = '▶';
   }
-  saveStore(); // push local data to Firestore on first run
+  _cleanupArchive();
+  _migrateOrdersFromListings();
+  _migrateVisibilityFlags(); // add is_active/is_visible to existing items
+  saveStore();         // push local data to Firestore on first run
   migrateToCompanies();
+  updateArchiveBadge();
   renderListings();
   renderCalendar();
   updateOrdersBadge();
 
   // Real-time listener: new bookings from agents appear instantly
-  db.collection('bookings').where('status', '==', 'pending')
+  window._bookingsUnsub = db.collection('bookings').where('status', '==', 'pending')
     .onSnapshot(snapshot => {
       window._pendingBookings = snapshot.docs.map(d => d.data());
       if (currentPage === 'orders') renderOrders();
       updateOrdersBadge();
     }, err => console.warn('Firestore listener error:', err));
-})();
+}
 </script>
 
 <!-- COMMAND PALETTE -->
@@ -4212,16 +6013,42 @@ function renderSkeletonListings() {
 
 <!-- PACKAGE MODAL -->
 <div class="modal-bg" id="modal-pkg">
-  <div class="modal" style="width:420px;">
+  <div class="modal" style="width:500px;max-height:88vh;overflow-y:auto;">
     <div class="modal-title"><span id="modal-pkg-title">חבילה</span><span class="modal-close" onclick="closeModal('modal-pkg')">✕</span></div>
-    <div class="form-group"><label class="form-label">שם חבילה *</label><input class="form-input" id="mpkg-name" placeholder="חבילה פרמיום" /></div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">מחיר (₪)</label><input class="form-input" type="number" id="mpkg-price" placeholder="1200" /></div>
-      <div class="form-group"><label class="form-label">משך (דקות)</label><input class="form-input" type="number" id="mpkg-duration" placeholder="120" /></div>
+
+    <!-- Name -->
+    <div class="form-group">
+      <label class="form-label">שם חבילה *</label>
+      <input class="form-input" id="mpkg-name" placeholder="חבילה פרמיום" />
     </div>
+
+    <!-- Price + Duration -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">מחיר (₪)</label>
+        <input class="form-input" type="number" id="mpkg-price" placeholder="1200" min="0" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">משך (דקות)</label>
+        <input class="form-input" type="number" id="mpkg-duration" placeholder="120" min="0" />
+      </div>
+    </div>
+
+    <!-- Color -->
+    <div class="form-group">
+      <label class="form-label">צבע</label>
+      <div id="mpkg-colors" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;"></div>
+    </div>
+
+    <!-- Services included -->
+    <div class="form-group">
+      <label class="form-label">שירותים הכלולים בחבילה</label>
+      <div id="mpkg-services-list" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:200px;overflow-y:auto;padding:2px;"></div>
+    </div>
+
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-pkg')">ביטול</button>
-      <button class="btn btn-primary" onclick="_savePkg()">שמור</button>
+      <button class="btn btn-primary" onclick="_savePkg()">שמור חבילה</button>
     </div>
   </div>
 </div>
@@ -4258,35 +6085,147 @@ function renderSkeletonListings() {
   </div>
 </div>
 
-<!-- SERVICE MODAL -->
-<div class="modal-bg" id="modal-service">
-  <div class="modal" style="width:400px;">
-    <div class="modal-title" id="modal-svc-title">ערוך שירות<span class="modal-close" onclick="closeModal('modal-service')">✕</span></div>
-    <div class="form-group"><label class="form-label">שם שירות *</label><input class="form-input" id="msvc-name" placeholder="צילום בסיסי" /></div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">מחיר (₪)</label><input class="form-input" type="number" id="msvc-price" placeholder="800" /></div>
-      <div class="form-group"><label class="form-label">משך (דקות)</label><input class="form-input" type="number" id="msvc-duration" placeholder="90" /></div>
+<!-- PROMOTION MODAL -->
+<div class="modal-bg" id="modal-promo">
+  <div class="modal" style="width:520px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-title"><span id="mpromo-title-text">מבצע חדש</span><span class="modal-close" onclick="closeModal('modal-promo')">✕</span></div>
+
+    <div class="form-group">
+      <label class="form-label">שם המבצע *</label>
+      <input class="form-input" id="mpromo-name" placeholder="לדוגמה: מבצע קיץ 2026">
     </div>
+    <div class="form-group">
+      <label class="form-label">תיאור (אופציונלי)</label>
+      <input class="form-input" id="mpromo-desc" placeholder="תיאור קצר של המבצע">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">סוג הנחה</label>
+        <select class="form-select" id="mpromo-dtype">
+          <option value="pct">אחוזים (%)</option>
+          <option value="fixed">סכום קבוע (₪)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ערך ההנחה *</label>
+        <input class="form-input" id="mpromo-dval" type="number" min="1" placeholder="10">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">תאריך התחלה</label>
+        <input class="form-input" id="mpromo-start" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">תאריך סיום</label>
+        <input class="form-input" id="mpromo-end" type="date">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" style="margin-bottom:8px;">חל על חבילות (ריק = כולן)</label>
+      <div id="mpromo-packages" style="display:flex;flex-direction:column;gap:2px;max-height:120px;overflow-y:auto;padding:6px;background:var(--surface2);border-radius:8px;"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" style="margin-bottom:8px;">חל על שירותים (ריק = כולם)</label>
+      <div id="mpromo-services" style="display:flex;flex-direction:column;gap:2px;max-height:120px;overflow-y:auto;padding:6px;background:var(--surface2);border-radius:8px;"></div>
+    </div>
+
+    <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+      <label class="toggle-sw green">
+        <input type="checkbox" id="mpromo-active" checked>
+        <div class="toggle-sw-track"></div>
+        <span style="font-size:13px;color:var(--text);">מופעל מיד</span>
+      </label>
+    </div>
+
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-service')">ביטול</button>
-      <button class="btn btn-primary" onclick="_saveSvc()">שמור</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-promo')">ביטול</button>
+      <button class="btn btn-primary" onclick="_savePromotion()">שמור מבצע</button>
     </div>
   </div>
 </div>
 
-<!-- ADDON MODAL -->
-<div class="modal-bg" id="modal-addon">
-  <div class="modal" style="width:400px;">
-    <div class="modal-title" id="modal-add-title">ערוך תוספת<span class="modal-close" onclick="closeModal('modal-addon')">✕</span></div>
-    <div class="form-group"><label class="form-label">שם תוספת *</label><input class="form-input" id="madd-name" placeholder="תוספת דרון" /></div>
-    <div class="form-group"><label class="form-label">מחיר (₪)</label><input class="form-input" type="number" id="madd-price" placeholder="300" /></div>
-    <div class="form-group"><label class="form-label">תיאור</label><input class="form-input" id="madd-desc" placeholder="תיאור קצר" /></div>
+<!-- SERVICE MODAL -->
+<div class="modal-bg" id="modal-service">
+  <div class="modal" style="width:480px;">
+    <div class="modal-title" id="modal-svc-title">שירות חדש<span class="modal-close" onclick="closeModal('modal-service')">✕</span></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:0 0 80px;">
+        <label class="form-label">אייקון</label>
+        <input class="form-input" id="msvc-icon" placeholder="📸" style="font-size:20px;text-align:center;" />
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">שם שירות *</label>
+        <input class="form-input" id="msvc-name" placeholder="צילום מקצועי" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">סוג</label>
+      <select class="form-select" id="msvc-category">
+        <option value="main">שירות ראשי (נכלל בחבילה)</option>
+        <option value="addon">תוספת (נמכר בנפרד)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">תיאור השירות</label>
+      <textarea class="form-textarea" id="msvc-desc" placeholder="מה כולל השירות? ציוד, שיטת עבודה, מה מיוחד בו..." style="min-height:72px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">מה הלקוח מקבל בסוף <span style="font-size:10px;color:var(--text-dim);">(Deliverables)</span></label>
+      <textarea class="form-textarea" id="msvc-deliverables" placeholder="לדוגמה: 30 תמונות JPEG ערוכות + קישור הורדה בענן..." style="min-height:64px;"></textarea>
+    </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-addon')">ביטול</button>
-      <button class="btn btn-primary" onclick="_saveAddon()">שמור</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-service')">ביטול</button>
+      <button class="btn btn-primary" onclick="_saveSvc()">שמור שירות</button>
     </div>
   </div>
 </div>
+
+<!-- EXAMPLES MODAL -->
+<div class="modal-bg" id="modal-svc-examples">
+  <div class="modal" style="width:580px;max-height:85vh;overflow-y:auto;">
+    <div class="modal-title">
+      📎 דוגמאות — <span id="mexs-svc-name">שירות</span>
+      <span class="modal-close" onclick="closeModal('modal-svc-examples')">✕</span>
+    </div>
+
+    <!-- Add example form -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:10px;">➕ הוסף דוגמה חדשה</div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label class="form-label">קישור</label>
+        <input class="form-input" id="mexs-url"
+          placeholder="YouTube · Vimeo · Kuula · Matterport · URL תמונה (JPEG/PNG)"
+          oninput="previewExType()" />
+        <div id="mexs-type-hint" style="font-size:12px;margin-top:5px;min-height:16px;"></div>
+      </div>
+      <div class="form-row" style="align-items:flex-end;">
+        <div class="form-group" style="margin-bottom:0;flex:1;">
+          <label class="form-label">כיתוב (אופציונלי)</label>
+          <input class="form-input" id="mexs-caption" placeholder="לדוגמה: פרויקט ברח׳ הרצל, ת״א" />
+        </div>
+        <button class="btn btn-primary" style="flex:0 0 auto;padding:10px 20px;" onclick="addExample()">+ הוסף</button>
+      </div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:10px;line-height:1.6;">
+        💡 תמונות Google Drive: שנה לינק ל <code style="background:var(--surface3);padding:1px 5px;border-radius:3px;">drive.google.com/uc?id=FILE_ID</code>
+        &nbsp;|&nbsp; Dropbox: שנה <code style="background:var(--surface3);padding:1px 5px;border-radius:3px;">?dl=0</code> ל <code style="background:var(--surface3);padding:1px 5px;border-radius:3px;">?raw=1</code>
+      </div>
+    </div>
+
+    <!-- Examples list -->
+    <div id="mexs-list"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-svc-examples')">סגור</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /#app-root -->
 
 </body>
 </html>

@@ -3,117 +3,236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>הזמנת צילום נדל"ן — Sisa Aero Photography</title>
+<title>הזמנת צילום נדל"ן</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0f11;
-    --surface: #16161a;
-    --surface2: #1e1e24;
-    --surface3: #26262e;
-    --border: #2a2a34;
-    --text: #e8e8ec;
-    --text-muted: #6b6b7e;
-    --text-dim: #3e3e50;
-    --accent: #e8c547;
-    --accent2: #f0a050;
-    --accent-glow: rgba(232,197,71,0.15);
-    --green: #4ade80;
-    --red: #f87171;
-    --blue: #60a5fa;
-    --purple: #a78bfa;
+    --bg: #F5F6FA;
+    --surface: #FFFFFF;
+    --surface2: #F3F4F6;
+    --surface3: #E9ECEF;
+    --border: #E5E7EB;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --accent: #F97316;
+    --accent2: #FB923C;
+    --accent-light: #FFF7ED;
+    --green: #10B981;
+    --green-light: rgba(16,185,129,0.1);
+    --red: #EF4444;
+    --red-light: rgba(239,68,68,0.08);
     --radius: 12px;
-    --radius-sm: 7px;
-    --font-display: 'Frank Ruhl Libre', serif;
-    --font-body: 'Heebo', sans-serif;
+    --radius-sm: 8px;
+    --shadow: 0 4px 16px rgba(0,0,0,0.07);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: var(--font-body);
+    font-family: 'Heebo', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
     direction: rtl;
-    padding: 0 0 60px;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* ── HEADER ─────────────────────── */
   .header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 20px 24px;
+    padding: 16px 24px;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 20;
+    box-shadow: var(--shadow-sm);
   }
 
-  .header-logo {
-    font-family: var(--font-display);
-    font-size: 20px;
+  .header-logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .header-business {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .header-tag {
+    margin-right: auto;
+    background: var(--accent-light);
     color: var(--accent);
-  }
-
-  .header-divider {
-    width: 1px;
-    height: 28px;
-    background: var(--border);
-  }
-
-  .header-name {
-    font-size: 14px;
-    color: var(--text-muted);
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(249,115,22,0.2);
   }
 
   /* ── HERO ────────────────────────── */
   .hero {
-    background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
-    padding: 40px 24px 32px;
+    background: linear-gradient(135deg, var(--accent) 0%, #ea580c 100%);
+    padding: 40px 24px 48px;
     text-align: center;
-    border-bottom: 1px solid var(--border);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
   }
 
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50%;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -40px;
+    width: 260px; height: 260px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+
+  .hero-icon { font-size: 44px; margin-bottom: 12px; position: relative; z-index: 1; }
+
   .hero-title {
-    font-family: var(--font-display);
-    font-size: 32px;
-    color: var(--text);
-    margin-bottom: 10px;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
     letter-spacing: -0.5px;
+    position: relative; z-index: 1;
   }
 
   .hero-sub {
     font-size: 15px;
-    color: var(--text-muted);
-    max-width: 460px;
+    opacity: 0.88;
+    max-width: 420px;
     margin: 0 auto;
     line-height: 1.6;
+    position: relative; z-index: 1;
   }
 
-  /* ── FORM CONTAINER ─────────────── */
-  .container {
-    max-width: 680px;
+  /* ── STEPPER ─────────────────────── */
+  .stepper-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    position: sticky;
+    top: 69px;
+    z-index: 10;
+  }
+
+  .stepper {
+    max-width: 600px;
     margin: 0 auto;
-    padding: 32px 24px;
     display: flex;
-    flex-direction: column;
-    gap: 28px;
+    align-items: center;
+    padding: 16px 0;
+    gap: 0;
   }
 
-  /* ── SECTION CARD ───────────────── */
-  .section-card {
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+  }
+
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: calc(100% - 28px);
+    height: 2px;
+    background: var(--border);
+    margin-left: 28px;
+    transition: background 0.3s;
+  }
+
+  .step.done:not(:last-child)::after { background: var(--accent); }
+
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--surface);
+    flex-shrink: 0;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step.active .step-num {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .step.done .step-num {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    white-space: nowrap;
+    transition: color 0.2s;
+  }
+
+  .step.active .step-label { color: var(--accent); }
+  .step.done .step-label { color: var(--text-muted); }
+
+  @media (max-width: 480px) { .step-label { display: none; } }
+
+  /* ── CONTAINER ───────────────────── */
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  /* ── STEP PANEL ──────────────────── */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeIn 0.2s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── CARD ────────────────────────── */
+  .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
   }
 
-  .section-header {
+  .card-header {
     padding: 16px 20px;
     border-bottom: 1px solid var(--border);
     display: flex;
@@ -122,170 +241,171 @@
     background: var(--surface2);
   }
 
-  .section-icon { font-size: 18px; }
-
-  .section-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
+  .card-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--accent-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
   }
 
-  .section-subtitle {
+  .card-title { font-size: 14px; font-weight: 700; }
+  .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .card-body { padding: 20px; }
+
+  /* ── FORM ────────────────────────── */
+  .form-group { margin-bottom: 14px; }
+  .form-group:last-child { margin-bottom: 0; }
+
+  .form-label {
+    display: block;
     font-size: 12px;
+    font-weight: 600;
     color: var(--text-muted);
-    margin-top: 1px;
+    margin-bottom: 6px;
   }
 
-  .section-body { padding: 20px; }
+  .required-star { color: var(--accent); }
 
-  /* ── RADIO TABS ─────────────────── */
-  .radio-tabs {
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Heebo', sans-serif;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    direction: rtl;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.08);
+  }
+
+  .form-input.error { border-color: var(--red) !important; background: var(--red-light); }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--text-dim); }
+  .form-select { cursor: pointer; }
+  .form-textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── CLIENT TYPE TOGGLE ──────────── */
+  .type-toggle {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-bottom: 20px;
   }
 
-  .radio-tab {
-    position: relative;
-    cursor: pointer;
-  }
+  .type-option { position: relative; cursor: pointer; }
+  .type-option input { position: absolute; opacity: 0; width: 0; height: 0; }
 
-  .radio-tab input {
-    position: absolute;
-    opacity: 0;
-    width: 0; height: 0;
-  }
-
-  .radio-tab-label {
+  .type-label {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 16px;
+    gap: 7px;
+    padding: 11px 16px;
     border: 2px solid var(--border);
     border-radius: var(--radius-sm);
     font-size: 14px;
     font-weight: 600;
     color: var(--text-muted);
     background: var(--surface2);
-    transition: all 0.15s;
     cursor: pointer;
+    transition: all 0.15s;
   }
 
-  .radio-tab input:checked + .radio-tab-label {
+  .type-option input:checked + .type-label {
     border-color: var(--accent);
     color: var(--accent);
-    background: var(--accent-glow);
+    background: var(--accent-light);
   }
 
-  .radio-tab-label:hover { color: var(--text); border-color: var(--border); background: var(--surface3); }
-  .radio-tab input:checked + .radio-tab-label:hover { color: var(--accent); }
-
-  /* ── EXISTING CLIENT LOOKUP ─────── */
-  .lookup-row {
-    display: flex;
-    gap: 10px;
-  }
-
+  /* ── LOOKUP ──────────────────────── */
+  .lookup-row { display: flex; gap: 8px; }
   .lookup-row .form-input { flex: 1; }
-
-  .lookup-result {
-    margin-top: 12px;
-    padding: 12px 14px;
+  .btn-lookup {
+    padding: 10px 16px;
+    background: var(--surface3);
+    border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     font-size: 13px;
-    display: none;
-  }
-
-  .lookup-result.found {
-    background: rgba(74,222,128,0.1);
-    border: 1px solid rgba(74,222,128,0.3);
-    color: var(--green);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .lookup-result.not-found {
-    background: rgba(248,113,113,0.1);
-    border: 1px solid rgba(248,113,113,0.3);
-    color: var(--red);
-    display: block;
-  }
-
-  /* ── FORM FIELDS ────────────────── */
-  .form-group { margin-bottom: 14px; }
-  .form-group:last-child { margin-bottom: 0; }
-
-  .form-label {
-    display: block;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
     font-weight: 600;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-  }
-
-  .required-star { color: var(--accent); margin-right: 2px; }
-
-  .form-input, .form-select, .form-textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
     color: var(--text);
-    font-size: 14px;
-    font-family: var(--font-body);
-    outline: none;
-    transition: border-color 0.15s;
-    direction: rtl;
-    text-align: right;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    font-family: 'Heebo', sans-serif;
   }
+  .btn-lookup:hover { background: var(--border); }
 
-  .form-input:focus, .form-select:focus, .form-textarea:focus {
-    border-color: var(--accent);
-    background: var(--surface3);
-  }
+  .lookup-result { margin-top: 10px; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; display: none; }
+  .lookup-result.found { background: var(--green-light); border: 1px solid rgba(16,185,129,0.25); color: #065f46; display: flex; align-items: center; gap: 8px; }
+  .lookup-result.not-found { background: var(--red-light); border: 1px solid rgba(239,68,68,0.2); color: #991b1b; display: block; }
 
-  .form-input::placeholder, .form-textarea::placeholder { color: var(--text-dim); }
-
-  .form-select { cursor: pointer; }
-  .form-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
-
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-
-  /* ── PACKAGES ────────────────────── */
-  .packages-grid {
+  /* ── PROPERTY TYPE ───────────────── */
+  .prop-type-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    gap: 8px;
+    margin-bottom: 0;
   }
 
-  .pkg-option {
-    position: relative;
+  .ptype-option { position: relative; cursor: pointer; }
+  .ptype-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+  .ptype-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-align: center;
     cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+    min-height: 64px;
   }
 
-  .pkg-option input {
-    position: absolute;
-    opacity: 0;
-    width: 0; height: 0;
+  .ptype-option input:checked + .ptype-label {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    color: var(--accent);
   }
+
+  .ptype-label:hover { border-color: var(--accent2); background: var(--surface3); }
+
+  .ptype-icon { font-size: 20px; }
+  .ptype-name { font-size: 11px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .ptype-option input:checked + .ptype-label .ptype-name { color: var(--accent); }
+
+  /* ── PACKAGES ────────────────────── */
+  .packages-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  .pkg-option { position: relative; cursor: pointer; }
+  .pkg-option input { position: absolute; opacity: 0; width: 0; height: 0; }
 
   .pkg-card {
     border: 2px solid var(--border);
     border-radius: var(--radius);
-    padding: 16px 14px;
+    padding: 18px 14px;
     background: var(--surface2);
-    transition: all 0.15s;
     cursor: pointer;
     text-align: center;
     position: relative;
     overflow: hidden;
+    transition: all 0.18s;
   }
 
   .pkg-card::before {
@@ -298,145 +418,285 @@
 
   .pkg-option input:checked + .pkg-card {
     border-color: var(--pkg-color, var(--accent));
-    background: var(--surface3);
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(249,115,22,0.12);
+    transform: translateY(-2px);
   }
 
-  .pkg-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .pkg-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
 
-  .pkg-card-check {
-    position: absolute;
-    top: 10px;
-    left: 10px;
+  .pkg-check {
+    position: absolute; top: 10px; left: 10px;
     width: 20px; height: 20px;
     border-radius: 50%;
     background: var(--pkg-color, var(--accent));
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px;
-    color: #111;
-    font-weight: 700;
-    opacity: 0;
-    transition: opacity 0.15s;
+    font-size: 10px; color: #fff; font-weight: 700;
+    opacity: 0; transition: opacity 0.15s;
   }
 
-  .pkg-option input:checked + .pkg-card .pkg-card-check { opacity: 1; }
+  .pkg-option input:checked + .pkg-card .pkg-check { opacity: 1; }
 
-  .pkg-card-name { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
-  .pkg-card-price { font-family: var(--font-display); font-size: 24px; color: var(--accent); line-height: 1; margin-bottom: 4px; }
-  .pkg-card-price span { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); }
-  .pkg-card-duration { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
-  .pkg-card-services { display: flex; flex-direction: column; gap: 3px; }
+  .pkg-name { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+  .pkg-price { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 2px; }
+  .pkg-price span { font-size: 11px; font-weight: 400; color: var(--text-muted); }
+  .pkg-duration { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+  .pkg-services { display: flex; flex-direction: column; gap: 3px; text-align: right; }
   .pkg-service { font-size: 11px; color: var(--text-muted); }
-  .pkg-service::before { content: '✓ '; color: var(--green); }
+  .pkg-service::before { content: '✓ '; color: var(--green); font-weight: 700; }
 
-  /* ── DATE/TIME ───────────────────── */
-  input[type="datetime-local"] {
-    color-scheme: dark;
-  }
-
-  /* ── SUBMIT ──────────────────────── */
-  .submit-section {
+  /* ── PRICE PREVIEW ───────────────── */
+  .price-preview {
+    display: none;
+    background: linear-gradient(135deg, var(--accent-light), #fff);
+    border: 1.5px solid rgba(249,115,22,0.25);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-top: 16px;
     text-align: center;
+    animation: fadeIn 0.2s ease;
   }
 
-  .btn-submit {
-    display: inline-flex;
-    align-items: center;
+  .price-preview.show { display: block; text-align: right; }
+  .price-preview-label { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; text-align: center; font-weight: 600; }
+  .price-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; border-bottom: 1px dashed rgba(249,115,22,0.15); }
+  .price-row:last-child { border-bottom: none; }
+  .price-row-label { color: var(--text-muted); }
+  .price-row-val { font-weight: 600; color: var(--text); }
+  .price-row.total-row { border-top: 2px solid rgba(249,115,22,0.3); border-bottom: none; margin-top: 4px; padding-top: 8px; }
+  .price-row.total-row .price-row-label { font-size: 14px; font-weight: 700; color: var(--text); }
+  .price-row.total-row .price-row-val { font-size: 22px; font-weight: 800; color: var(--accent); }
+
+  /* ── SCHEDULE ────────────────────── */
+  .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  input[type="datetime-local"] { color-scheme: light; }
+
+  /* ── NAVIGATION BUTTONS ──────────── */
+  .nav-btns {
+    display: flex;
     gap: 10px;
-    padding: 14px 40px;
+    margin-top: 20px;
+  }
+
+  .btn-back {
+    flex: 0 0 auto;
+    padding: 13px 22px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    transition: all 0.15s;
+  }
+
+  .btn-back:hover { background: var(--surface3); color: var(--text); }
+
+  .btn-next {
+    flex: 1;
+    padding: 13px 24px;
     background: var(--accent);
-    color: #111;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-next:hover { background: #ea580c; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(249,115,22,0.35); }
+  .btn-next:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .btn-submit-final {
+    width: 100%;
+    padding: 15px 24px;
+    background: var(--green);
     border: none;
     border-radius: var(--radius-sm);
     font-size: 16px;
-    font-weight: 700;
-    font-family: var(--font-body);
+    font-weight: 800;
+    color: #fff;
     cursor: pointer;
+    font-family: 'Heebo', sans-serif;
     transition: all 0.15s;
-    width: 100%;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 10px;
+    margin-top: 4px;
   }
 
-  .btn-submit:hover { background: #f0d050; transform: translateY(-1px); }
-  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-submit-final:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(16,185,129,0.35); }
+  .btn-submit-final:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  .submit-note {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 12px;
+  /* ── REVIEW CARD ─────────────────── */
+  .review-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
   }
+  .review-row:last-child { border-bottom: none; }
+  .review-key { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+  .review-val { font-size: 13px; font-weight: 600; text-align: left; }
 
   /* ── SUCCESS SCREEN ──────────────── */
-  .success-screen {
-    display: none;
-    text-align: center;
-    padding: 60px 24px;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-
+  .success-screen { display: none; }
   .success-screen.show { display: block; }
 
-  .success-icon {
-    font-size: 64px;
-    margin-bottom: 20px;
+  .success-inner {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 60px 24px;
+    text-align: center;
   }
 
-  .success-title {
-    font-family: var(--font-display);
-    font-size: 28px;
-    margin-bottom: 12px;
-    color: var(--green);
+  .success-circle {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--green-light);
+    border: 3px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 24px;
   }
 
-  .success-sub {
-    font-size: 15px;
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-bottom: 24px;
-  }
+  .success-title { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+  .success-sub { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 28px; }
 
   .success-ref {
-    display: inline-block;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 20px;
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 20px;
     font-size: 13px;
     color: var(--text-muted);
+    box-shadow: var(--shadow-sm);
   }
 
-  .success-ref strong { color: var(--accent); font-size: 16px; }
+  .success-ref strong { color: var(--accent); font-size: 18px; display: block; margin-top: 4px; }
 
-  /* ── REQUIRED ERROR ──────────────── */
-  .form-input.error, .form-select.error { border-color: var(--red); }
-  .error-msg { font-size: 11px; color: var(--red); margin-top: 4px; display: none; }
-  .error-msg.show { display: block; }
+  .btn-wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: #25D366;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
 
-  /* ── HIDDEN ──────────────────────── */
+  .btn-wa:hover { background: #1da851; transform: translateY(-1px); }
+
+  /* ── MISC ────────────────────────── */
   .hidden { display: none !important; }
 
+  .submit-note {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+
+  .pkg-no-items {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 32px 0;
+  }
+
   /* ── RESPONSIVE ──────────────────── */
-  @media (max-width: 600px) {
+  @media (max-width: 640px) {
+    .header { padding: 12px 16px; }
+    .hero { padding: 28px 16px 36px; }
+    .hero-title { font-size: 22px; }
+    .hero-sub { font-size: 14px; }
+    .hero-icon { font-size: 36px; margin-bottom: 8px; }
+    .container { padding: 18px 14px 80px; }
+    .card-body { padding: 16px; }
+    .card-header { padding: 12px 16px; }
     .packages-grid { grid-template-columns: 1fr; }
-    .form-row { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; gap: 0; }
     .form-row-3 { grid-template-columns: 1fr 1fr; }
-    .hero-title { font-size: 24px; }
-    .radio-tabs { grid-template-columns: 1fr 1fr; }
+    .prop-type-grid { grid-template-columns: repeat(3, 1fr); }
+    .schedule-grid { grid-template-columns: 1fr; }
+    /* Sticky bottom nav buttons */
+    .nav-btns {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      margin-top: 0;
+      z-index: 30;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+    }
+    .container { padding-bottom: 90px; }
+    .btn-next, .btn-back { min-height: 46px; font-size: 15px; }
+    /* Summary section */
+    .summary-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .summary-label { min-width: auto; }
+  }
+
+  @media (max-width: 380px) {
+    .prop-type-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-row-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ── TIME SLOTS ──────────────────── */
+  .time-slots {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px;
+  }
+  .time-slot {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--surface2);
+    cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-muted);
+    font-family: inherit; transition: all .15s; gap: 2px; line-height: 1.3;
+  }
+  .time-slot span { font-size: 11px; font-weight: 400; color: var(--text-dim); }
+  .time-slot:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .time-slot:hover span { color: var(--accent); }
+  .time-slot.selected {
+    border-color: var(--accent); background: var(--accent-light);
+    color: var(--accent);
+  }
+  .time-slot.selected span { color: var(--accent); }
+  @media (max-width: 480px) {
+    .time-slot { padding: 8px 10px; font-size: 12px; }
   }
 </style>
-<!-- Firebase compat SDK -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
-const firebaseConfig = {
+firebase.initializeApp({
   apiKey: "AIzaSyCUrX8Lo8qS30q2E5dMSu8S96GE-RKuRmQ",
   authDomain: "photodesk-45381.firebaseapp.com",
   projectId: "photodesk-45381",
   storageBucket: "photodesk-45381.firebasestorage.app",
   messagingSenderId: "445351440545",
   appId: "1:445351440545:web:14895fba95a5c9001c00e0"
-};
-firebase.initializeApp(firebaseConfig);
+});
 const db = firebase.firestore();
 </script>
 </head>
@@ -444,426 +704,701 @@ const db = firebase.firestore();
 
 <!-- HEADER -->
 <div class="header">
-  <div class="header-logo">📷 PhotoDesk</div>
-  <div class="header-divider"></div>
-  <div class="header-name">Sisa Aero Photography</div>
+  <div class="header-logo-icon">📷</div>
+  <div class="header-business" id="header-business">PhotoDesk</div>
+  <span class="header-tag">הזמנת צילום</span>
 </div>
 
 <!-- HERO -->
 <div class="hero">
+  <div class="hero-icon">🏠</div>
   <div class="hero-title">הזמנת צילום נדל"ן</div>
   <div class="hero-sub">מלא את הפרטים ואחזור אליך לאישור מועד הצילום בהקדם</div>
 </div>
 
-<!-- SUCCESS SCREEN -->
-<div class="success-screen" id="success-screen">
-  <div class="success-icon">✅</div>
-  <div class="success-title">ההזמנה נשלחה בהצלחה!</div>
-  <div class="success-sub">
-    קיבלנו את פרטי ההזמנה שלך.<br>
-    נחזור אליך בהקדם לאישור מועד הצילום.
+<!-- STEPPER -->
+<div class="stepper-wrap">
+  <div class="stepper">
+    <div class="step active" id="step-ind-1">
+      <div class="step-num" id="step-num-1">1</div>
+      <div class="step-label">פרטי לקוח</div>
+    </div>
+    <div class="step" id="step-ind-2">
+      <div class="step-num" id="step-num-2">2</div>
+      <div class="step-label">פרטי הנכס</div>
+    </div>
+    <div class="step" id="step-ind-3">
+      <div class="step-num" id="step-num-3">3</div>
+      <div class="step-label">חבילה ואישור</div>
+    </div>
   </div>
-  <div class="success-ref">מספר הזמנה: <strong id="order-ref">—</strong></div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="success-screen">
+  <div class="success-inner">
+    <div class="success-circle">✅</div>
+    <div class="success-title">ההזמנה נשלחה!</div>
+    <div class="success-sub">קיבלנו את הפרטים שלך.<br>ניצור איתך קשר בהקדם לאישור מועד הצילום.</div>
+    <div class="success-ref">מספר הזמנה:<strong id="order-ref">—</strong></div>
+    <a id="success-wa" href="#" class="btn-wa" target="_blank">
+      💬 שלח WhatsApp לצלם
+    </a>
+  </div>
 </div>
 
 <!-- FORM -->
-<form class="container" id="booking-form" onsubmit="submitBooking(event)">
+<div class="container" id="form-container">
 
-  <!-- ── SECTION 1: CLIENT ───────── -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-icon">👤</span>
-      <div>
-        <div class="section-title">פרטי המתווך / לקוח</div>
-        <div class="section-subtitle">לקוח קיים או חדש?</div>
-      </div>
-    </div>
-    <div class="section-body">
+  <!-- ══ STEP 1: CLIENT ══════════════ -->
+  <div class="step-panel active" id="panel-1">
 
-      <!-- Radio: existing / new -->
-      <div class="radio-tabs">
-        <label class="radio-tab">
-          <input type="radio" name="client-type" value="existing" id="type-existing" onchange="toggleClientType('existing')">
-          <span class="radio-tab-label">👋 לקוח קיים</span>
-        </label>
-        <label class="radio-tab">
-          <input type="radio" name="client-type" value="new" id="type-new" onchange="toggleClientType('new')" checked>
-          <span class="radio-tab-label">✨ לקוח חדש</span>
-        </label>
-      </div>
-
-      <!-- Existing client lookup -->
-      <div id="existing-section" class="hidden">
-        <div class="form-group">
-          <label class="form-label">מייל או טלפון</label>
-          <div class="lookup-row">
-            <input class="form-input" id="lookup-input" placeholder="050-000-0000 או name@email.com" oninput="clearLookup()">
-            <button type="button" class="btn-submit" style="width:auto; padding:10px 20px; font-size:14px;" onclick="lookupClient()">חפש</button>
-          </div>
-          <div class="lookup-result" id="lookup-result"></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">👤</div>
+        <div>
+          <div class="card-title">פרטי המתווך / לקוח</div>
+          <div class="card-sub">לקוח קיים או חדש?</div>
         </div>
       </div>
+      <div class="card-body">
 
-      <!-- New client fields -->
-      <div id="new-section">
+        <div class="type-toggle">
+          <label class="type-option">
+            <input type="radio" name="client-type" value="new" id="type-new" checked onchange="toggleClientType('new')">
+            <span class="type-label">✨ לקוח חדש</span>
+          </label>
+          <label class="type-option">
+            <input type="radio" name="client-type" value="existing" id="type-existing" onchange="toggleClientType('existing')">
+            <span class="type-label">👋 לקוח קיים</span>
+          </label>
+        </div>
+
+        <!-- existing lookup -->
+        <div id="existing-section" class="hidden">
+          <div class="form-group">
+            <label class="form-label">מייל או טלפון</label>
+            <div class="lookup-row">
+              <input class="form-input" id="lookup-input" placeholder="050-000-0000 או name@email.com" oninput="clearLookup()">
+              <button type="button" class="btn-lookup" onclick="lookupClient()">חפש</button>
+            </div>
+            <div class="lookup-result" id="lookup-result"></div>
+          </div>
+        </div>
+
+        <!-- new client fields -->
+        <div id="new-section">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label"><span class="required-star">* </span>שם פרטי</label>
+              <input class="form-input" id="cust-first" placeholder="דנה">
+            </div>
+            <div class="form-group">
+              <label class="form-label"><span class="required-star">* </span>שם משפחה</label>
+              <input class="form-input" id="cust-last" placeholder="כהן">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label"><span class="required-star">* </span>טלפון</label>
+              <input class="form-input" type="tel" id="cust-phone" placeholder="050-000-0000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">אימייל</label>
+              <input class="form-input" type="email" id="cust-email" placeholder="dana@remax.co.il">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">חברה / משרד</label>
+            <input class="form-input" id="cust-company" placeholder="רי/מקס ישראל">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button type="button" class="btn-next" onclick="goStep(2)">המשך — פרטי הנכס ←</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: PROPERTY ════════════ -->
+  <div class="step-panel" id="panel-2">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🏠</div>
+        <div>
+          <div class="card-title">פרטי הנכס</div>
+          <div class="card-sub">כתובת, סוג ומאפיינים</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label"><span class="required-star">* </span>כתובת הנכס</label>
+          <input class="form-input" id="prop-address" placeholder="רחוב הרצל 10, דירה 4">
+        </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label"><span class="required-star">*</span>שם פרטי</label>
-            <input class="form-input" id="cust-first" placeholder="דנה">
+            <label class="form-label"><span class="required-star">* </span>עיר</label>
+            <input class="form-input" id="prop-city" placeholder="תל אביב">
           </div>
           <div class="form-group">
-            <label class="form-label"><span class="required-star">*</span>שם משפחה</label>
-            <input class="form-input" id="cust-last" placeholder="כהן">
+            <label class="form-label">שכונה</label>
+            <input class="form-input" id="prop-neighborhood" placeholder="פלורנטין">
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">חדרים</label>
+            <input class="form-input" type="number" id="prop-rooms" placeholder="3" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">אמבטיות</label>
+            <input class="form-input" type="number" id="prop-baths" placeholder="1" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">קומה</label>
+            <input class="form-input" type="number" id="prop-floor" placeholder="2" min="0">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label"><span class="required-star">*</span>טלפון</label>
-            <input class="form-input" type="tel" id="cust-phone" placeholder="050-000-0000">
+            <label class="form-label">שטח (מ"ר)</label>
+            <input class="form-input" type="number" id="prop-area" placeholder="85">
           </div>
           <div class="form-group">
-            <label class="form-label">אימייל</label>
-            <input class="form-input" type="email" id="cust-email" placeholder="dana@remax.co.il">
+            <label class="form-label">שנת בנייה</label>
+            <input class="form-input" type="number" id="prop-year" placeholder="2010">
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">חברה / סוכנות</label>
-          <input class="form-input" id="cust-company" placeholder="רי/מקס ישראל">
+      </div>
+    </div>
+
+    <!-- Property type -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🏷️</div>
+        <div>
+          <div class="card-title">סוג הנכס</div>
+          <div class="card-sub">לידיעתנו בלבד · אינו משפיע על המחיר</div>
         </div>
       </div>
+      <div class="card-body">
+        <div class="prop-type-grid" id="prop-type-grid">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+    </div>
 
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📝</div>
+        <div><div class="card-title">הערות לצלם</div></div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <textarea class="form-textarea" id="prop-notes" placeholder="קודי כניסה, חניה, דגשים מיוחדים, מה חשוב להדגיש בנכס..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goStep(1)">← חזור</button>
+      <button type="button" class="btn-next" onclick="goStep(3)">המשך — בחר חבילה ←</button>
     </div>
   </div>
 
-  <!-- ── SECTION 2: PROPERTY ────── -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-icon">🏠</span>
-      <div>
-        <div class="section-title">פרטי הנכס</div>
-        <div class="section-subtitle">כתובת ומאפיינים</div>
+  <!-- ══ STEP 3: PACKAGE + CONFIRM ══ -->
+  <div class="step-panel" id="panel-3">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📦</div>
+        <div>
+          <div class="card-title">בחר חבילה</div>
+          <div class="card-sub">בחר חבילה · המחיר כולל מע"מ 18%</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="packages-grid" id="packages-grid">
+          <!-- Rendered by JS -->
+        </div>
+        <!-- Price preview -->
+        <div class="price-preview" id="price-preview">
+          <div class="price-preview-label">💰 מחיר לצילום</div>
+          <div class="price-row">
+            <span class="price-row-label">מחיר בסיס</span>
+            <span class="price-row-val" id="price-preview-base">₪0</span>
+          </div>
+          <div class="price-row">
+            <span class="price-row-label">מע"מ (18%)</span>
+            <span class="price-row-val" id="price-preview-vat">₪0</span>
+          </div>
+          <div class="price-row total-row">
+            <span class="price-row-label">סה"כ לתשלום</span>
+            <span class="price-row-val" id="price-preview-total">₪0</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="section-body">
-      <div class="form-group">
-        <label class="form-label"><span class="required-star">*</span>כתובת הנכס</label>
-        <input class="form-input" id="prop-address" placeholder="רחוב הרצל 10, דירה 4">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label"><span class="required-star">*</span>עיר</label>
-          <input class="form-input" id="prop-city" placeholder="תל אביב">
-        </div>
-        <div class="form-group">
-          <label class="form-label">שכונה / אזור</label>
-          <input class="form-input" id="prop-neighborhood" placeholder="פלורנטין">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📅</div>
+        <div>
+          <div class="card-title">תאריך מועדף</div>
+          <div class="card-sub">נאשר בהתאם לזמינות</div>
         </div>
       </div>
-      <div class="form-row-3">
-        <div class="form-group">
-          <label class="form-label">חדרים</label>
-          <input class="form-input" type="number" id="prop-rooms" placeholder="3" min="1">
+      <div class="card-body">
+        <div class="schedule-grid">
+          <div class="form-group">
+            <label class="form-label">תאריך מועדף</label>
+            <input class="form-input" type="date" id="shoot-date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">גמישות</label>
+            <select class="form-select" id="shoot-flexibility">
+              <option value="exact">תאריך קבוע</option>
+              <option value="flexible-week">גמיש — תוך שבוע</option>
+              <option value="flexible-2weeks">גמיש — תוך שבועיים</option>
+              <option value="asap">מוקדם ככל האפשר</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">חד' אמבטיה</label>
-          <input class="form-input" type="number" id="prop-baths" placeholder="1" min="0">
-        </div>
-        <div class="form-group">
-          <label class="form-label">קומה</label>
-          <input class="form-input" type="number" id="prop-floor" placeholder="2" min="0">
+
+        <!-- Preferred time slots -->
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label">שעות מועדפות <span style="font-weight:400;color:var(--text-muted);">(ניתן לבחור מספר אפשרויות)</span></label>
+          <div class="time-slots" id="time-slots">
+            <button type="button" class="time-slot" data-val="08:00–10:00" onclick="toggleTimeSlot(this)">🌅 בוקר מוקדם<span>08:00–10:00</span></button>
+            <button type="button" class="time-slot" data-val="10:00–12:00" onclick="toggleTimeSlot(this)">☀️ בוקר<span>10:00–12:00</span></button>
+            <button type="button" class="time-slot" data-val="12:00–14:00" onclick="toggleTimeSlot(this)">🕛 צהריים<span>12:00–14:00</span></button>
+            <button type="button" class="time-slot" data-val="14:00–17:00" onclick="toggleTimeSlot(this)">🌤 אחר הצהריים<span>14:00–17:00</span></button>
+            <button type="button" class="time-slot" data-val="17:00–20:00" onclick="toggleTimeSlot(this)">🌆 בין ערביים<span>17:00–20:00</span></button>
+          </div>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">שטח בנוי (מ"ר)</label>
-          <input class="form-input" type="number" id="prop-area" placeholder="85">
-        </div>
-        <div class="form-group">
-          <label class="form-label">שנת בנייה</label>
-          <input class="form-input" type="number" id="prop-year" placeholder="2010">
-        </div>
+    </div>
+
+    <!-- Review summary -->
+    <div class="card" id="review-card" style="display:none;">
+      <div class="card-header">
+        <div class="card-icon">📋</div>
+        <div><div class="card-title">סיכום ההזמנה</div></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">הערות לצלם</label>
-        <textarea class="form-textarea" id="prop-notes" placeholder="קודי כניסה, חניה, דגשים מיוחדים, מה חשוב להדגיש בנכס..."></textarea>
-      </div>
+      <div class="card-body" id="review-body"></div>
+    </div>
+
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goStep(2)">← חזור</button>
+      <button type="button" class="btn-next" onclick="buildReview()" id="btn-review">סקור הזמנה</button>
+    </div>
+
+    <div id="submit-section" style="display:none; margin-top:12px;">
+      <button type="button" class="btn-submit-final" id="submit-btn" onclick="submitBooking()">
+        ✅ שלח הזמנה
+      </button>
+      <div class="submit-note">על ידי שליחת הטופס אתה מסכים לתנאי השירות.<br>לא תחויב עד לאישור ההזמנה.</div>
     </div>
   </div>
 
-  <!-- ── SECTION 3: PACKAGE ──────── -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-icon">📦</span>
-      <div>
-        <div class="section-title">בחר חבילה</div>
-        <div class="section-subtitle">בחר את החבילה המתאימה לנכס</div>
-      </div>
-    </div>
-    <div class="section-body">
-      <div class="packages-grid" id="packages-grid">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- ── SECTION 4: SCHEDULE ──────── -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-icon">📅</span>
-      <div>
-        <div class="section-title">תאריך וזמן מועדף</div>
-        <div class="section-subtitle">נאשר בהתאם לזמינות</div>
-      </div>
-    </div>
-    <div class="section-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">תאריך ושעה מועדפים</label>
-          <input class="form-input" type="datetime-local" id="shoot-date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">גמישות בתאריך</label>
-          <select class="form-select" id="shoot-flexibility">
-            <option value="exact">תאריך קבוע</option>
-            <option value="flexible-week">גמיש — תוך שבוע</option>
-            <option value="flexible-2weeks">גמיש — תוך שבועיים</option>
-            <option value="asap">מוקדם ככל האפשר</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── SUBMIT ──────────────────── -->
-  <div class="submit-section">
-    <button type="submit" class="btn-submit" id="submit-btn">
-      שלח הזמנה ←
-    </button>
-    <div class="submit-note">על ידי שליחת הטופס אתה מסכים לתנאי השירות. לא תחויב עד לאישור ההזמנה.</div>
-  </div>
-
-</form>
+</div><!-- /container -->
 
 <script>
 // ══════════════════════════════════════════════════
-//  PACKAGES DATA (synced with main app via localStorage)
+//  DATA
 // ══════════════════════════════════════════════════
+const PROPERTY_TYPES = [
+  { id:'apt2',   icon:'🏢', name:'דירה 2 חד\'',    mult:1.0 },
+  { id:'apt3',   icon:'🏢', name:'דירה 3 חד\'',    mult:1.1 },
+  { id:'apt4',   icon:'🏢', name:'דירה 4 חד\'',    mult:1.2 },
+  { id:'apt5',   icon:'🏢', name:'דירה 5 חד\'',    mult:1.3 },
+  { id:'apt6p',  icon:'🏢', name:'דירה 6+ חד\'',   mult:1.4 },
+  { id:'garden', icon:'🌿', name:'דירת גן',         mult:1.4 },
+  { id:'mini',   icon:'🏙️', name:'מיני פנטהאוז',   mult:1.5 },
+  { id:'duplex', icon:'🏠', name:'דופלקס',          mult:1.5 },
+  { id:'triplex',icon:'🏠', name:'טריפלקס',         mult:1.6 },
+  { id:'urban',  icon:'🏡', name:'בית עירוני',      mult:1.6 },
+  { id:'pent',   icon:'⭐', name:'פנטהאוז',          mult:1.8 },
+  { id:'cottage',icon:'🏡', name:'קוטג\'',          mult:1.7 },
+  { id:'villa',  icon:'🏰', name:'וילה / בית פרטי', mult:2.0 },
+  { id:'detach', icon:'🏠', name:'בית בודד',         mult:2.0 },
+  { id:'farm',   icon:'🌾', name:'נחלה / משק',       mult:2.5 },
+  { id:'bldg',   icon:'🏗️', name:'בניין מגורים',    mult:3.0 },
+  { id:'comm',   icon:'💼', name:'מסחרי / משרד',    mult:1.3 },
+  { id:'plot',   icon:'📐', name:'מגרש',             mult:0.8 },
+  { id:'other',  icon:'🏘️', name:'אחר',             mult:1.0 },
+];
+
 const packages = loadPackages();
+let selectedPackageId = null;
+let selectedPropType = null;
+let foundClientId = null;
+let currentStep = 1;
 
 function loadPackages() {
   try {
     const saved = localStorage.getItem('photoDesk_store');
     if (saved) {
-      const store = JSON.parse(saved);
-      if (store.packages && store.packages.length) return store.packages;
+      const s = JSON.parse(saved);
+      if (s.packages && s.packages.length)
+        return s.packages.filter(p => p.is_active !== false && p.is_visible !== false);
     }
   } catch(e) {}
-  // fallback defaults — kept in sync with photodesk.html packages
   return [
     { id:'P001', name:'חבילה בסיסית', price:800, duration:90,
-      services:['צילום סיגנצ\'ר','תוכנית קומה'],
-      addons:['מסירה באותו יום','הום סטיינינג וירטואלי'], color:'var(--blue)' },
+      services:['צילום סיגנצ\'ר','תוכנית קומה'], color:'#3B82F6' },
     { id:'P002', name:'חבילה פרמיום', price:1200, duration:180,
-      services:['וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'],
-      addons:['מסירה באותו יום','הום סטיינינג וירטואלי'], color:'var(--purple)' },
+      services:['וידאו סינמטי','תוכנית קומה','סיור 3D'], color:'#8B5CF6' },
     { id:'P003', name:'חבילה אינסופית', price:2000, duration:240,
-      services:['צילום סיגנצ\'ר','וידאו סינמטי','תוכנית קומה','סיור וירטואלי 3D'],
-      addons:['מסירה באותו יום'], color:'var(--accent)' },
+      services:['צילום סיגנצ\'ר','וידאו סינמטי','תוכנית קומה','סיור 3D'], color:'#F97316' },
   ];
 }
 
-let selectedPackageId = null;
-let foundClientId = null;
+function loadServices() {
+  try {
+    const saved = localStorage.getItem('photoDesk_store');
+    if (saved) {
+      const s = JSON.parse(saved);
+      if (s.services && s.services.length) return s.services;
+    }
+  } catch(e) {}
+  return [];
+}
+const _bkgServices = loadServices();
 
-// ══════════════════════════════════════════════════
-//  RENDER PACKAGES
-// ══════════════════════════════════════════════════
-function renderPackages() {
-  const grid = document.getElementById('packages-grid');
-  grid.innerHTML = packages.map(p => `
-    <label class="pkg-option">
-      <input type="radio" name="package" value="${p.id}" onchange="selectPackage('${p.id}')">
-      <div class="pkg-card" style="--pkg-color:${p.color}">
-        <div class="pkg-card-check">✓</div>
-        <div class="pkg-card-name">${p.name}</div>
-        <div class="pkg-card-price">₪${p.price.toLocaleString('he-IL')}<span>/צילום</span></div>
-        <div class="pkg-card-duration">⏱ ${formatDuration(p.duration)}</div>
-        <div class="pkg-card-services">
-          ${p.services.map(s => `<div class="pkg-service">${s}</div>`).join('')}
-        </div>
-      </div>
+function _bkgFindSvc(name) {
+  return _bkgServices.find(s => s.name === name || s.name.includes(name) || name.includes(s.name)) || null;
+}
+
+function openBkgExViewer(svcId) {
+  const svc = _bkgServices.find(s => s.id === svcId);
+  if (!svc || !svc.examples || !svc.examples.length) return;
+  const examples = svc.examples;
+  const photos = examples.filter(e => e.type === 'photo');
+  const others = examples.filter(e => e.type !== 'photo');
+  const EMBED = { youtube: u => { const id=u.match(/(?:v=|youtu\.be\/|\/shorts\/)([^&?/\s]+)/)?.[1]; return id?`https://www.youtube.com/embed/${id}?rel=0`:u; }, vimeo: u => { const id=u.match(/vimeo\.com\/(\d+)/)?.[1]; return id?`https://player.vimeo.com/video/${id}`:u; }, kuula: u => u.replace('/post/','/share/'), matterport: u => { const id=u.match(/[?&]m=([^&]+)/)?.[1]; return id?`https://my.matterport.com/show/?m=${id}&play=1&qs=1`:u; } };
+  let body = '';
+  if (photos.length) body += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px;margin-bottom:10px;">${photos.map(p=>`<img src="${p.url}" onclick="this.closest('.bkg-ex-bg').remove();_bkgLightbox('${p.url}')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer;" onerror="this.style.display='none'">`).join('')}</div>`;
+  others.forEach(ex => {
+    const eu = (EMBED[ex.type] || (u=>u))(ex.url);
+    if (ex.type==='youtube'||ex.type==='vimeo') body += `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;margin-bottom:10px;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
+    else if (ex.type==='kuula'||ex.type==='matterport') body += `<div style="position:relative;padding-bottom:75%;height:0;overflow:hidden;border-radius:8px;margin-bottom:10px;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
+    else body += `<a href="${ex.url}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface3);border-radius:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;margin-bottom:8px;">${ex.type==='instagram'?'📱':'🔗'} ${ex.caption||ex.url}</a>`;
+    if (ex.caption) body += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">💬 ${ex.caption}</div>`;
+  });
+  const ov = document.createElement('div');
+  ov.className = 'bkg-ex-bg';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.onclick = e => { if(e.target===ov) ov.remove(); };
+  ov.innerHTML = `<div style="background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;"><div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e5e7eb;font-weight:700;font-size:14px;">${svc.icon||'🎯'} דוגמאות — ${svc.name}<button onclick="this.closest('.bkg-ex-bg').remove()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#6b7280;">✕</button></div><div style="padding:16px;">${body}</div></div>`;
+  document.body.appendChild(ov);
+}
+function _bkgLightbox(src) {
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:10000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+  d.innerHTML=`<img src="${src}" style="max-width:95vw;max-height:95vh;border-radius:8px;">`;
+  d.onclick=()=>d.remove();
+  document.body.appendChild(d);
+}
+
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('photoDesk_store');
+    if (saved) return JSON.parse(saved).settings || {};
+  } catch(e) {}
+  return {};
+}
+
+// ── INIT ───────────────────────────────────────────
+(function init() {
+  const s = loadSettings();
+  if (s.businessName) document.getElementById('header-business').textContent = s.businessName;
+  renderPropTypes();
+  renderPackages();
+})();
+
+// ── PROPERTY TYPES ─────────────────────────────────
+function renderPropTypes() {
+  document.getElementById('prop-type-grid').innerHTML = PROPERTY_TYPES.map(pt => `
+    <label class="ptype-option">
+      <input type="radio" name="prop-type" value="${pt.id}" onchange="selectPropType('${pt.id}')">
+      <span class="ptype-label">
+        <span class="ptype-icon">${pt.icon}</span>
+        <span class="ptype-name">${pt.name}</span>
+      </span>
     </label>
   `).join('');
 }
 
-function formatDuration(min) {
-  if (min < 60) return min + ' דק\'';
-  const h = Math.floor(min/60);
-  const m = min % 60;
-  return h + ' שעות' + (m ? ' ' + m + ' דק\'' : '');
+function selectPropType(id) {
+  selectedPropType = id;
+  updatePricePreview();
+}
+
+// ── PACKAGES ───────────────────────────────────────
+function renderPackages() {
+  const grid = document.getElementById('packages-grid');
+  if (!packages.length) {
+    grid.innerHTML = '<div class="pkg-no-items">אין חבילות מוגדרות</div>';
+    return;
+  }
+  const BKG_COLORS = { youtube:'#FF0000', vimeo:'#1AB7EA', instagram:'#E1306C', kuula:'#6366F1', matterport:'#FF5A1F', link:'#6B7280' };
+  const BKG_LABELS = { youtube:'🎬 YouTube', vimeo:'🎬 Vimeo', instagram:'📱 Instagram', kuula:'🌐 360°', matterport:'🏠 3D', link:'🔗 קישור' };
+
+  grid.innerHTML = packages.map(p => {
+    // Collect all examples from this package's services
+    const allExamples = (p.services||[]).flatMap(sName => {
+      const svc = _bkgFindSvc(sName);
+      return (svc?.examples||[]).map(ex => ({ ...ex, svcId: svc.id, svcName: svc.name }));
+    });
+    const photos = allExamples.filter(e => e.type === 'photo');
+    const media  = [...new Map(allExamples.filter(e => e.type!=='photo').map(e => [e.type+'_'+e.svcId, e])).values()];
+    let exPreview = '';
+    if (allExamples.length) {
+      // Group by service for viewer buttons
+      const svcIds = [...new Set(allExamples.map(e=>e.svcId).filter(Boolean))];
+      exPreview = `<div style="margin-top:10px;border:1.5px dashed rgba(255,255,255,0.35);border-radius:8px;overflow:hidden;">`;
+      if (photos.length) {
+        exPreview += `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(0,0,0,0.15);">`;
+        photos.slice(0,4).forEach(ph => {
+          exPreview += `<div style="aspect-ratio:1;background:url('${ph.url}') center/cover;cursor:pointer;" onclick="event.preventDefault();event.stopPropagation();openBkgExViewer('${ph.svcId}')"></div>`;
+        });
+        if (photos.length>4) exPreview += `<div style="aspect-ratio:1;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">+${photos.length-4}</div>`;
+        exPreview += `</div>`;
+      }
+      if (media.length) {
+        exPreview += `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px 4px;">`;
+        media.forEach(m => {
+          const c = BKG_COLORS[m.type]||'#6B7280';
+          exPreview += `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${c}28;color:${c};font-weight:600;cursor:pointer;" onclick="event.preventDefault();event.stopPropagation();openBkgExViewer('${m.svcId}')">${BKG_LABELS[m.type]||m.type}</span>`;
+        });
+        exPreview += `</div>`;
+      }
+      exPreview += `<div style="font-size:11px;color:rgba(255,255,255,0.6);padding:3px 8px;border-top:1px solid rgba(255,255,255,0.15);text-align:center;background:rgba(0,0,0,0.1);">📎 ${allExamples.length} דוגמ${allExamples.length===1?'ה':'אות'} · לחץ לצפייה</div>`;
+      exPreview += `</div>`;
+    }
+    return `
+    <label class="pkg-option">
+      <input type="radio" name="package" value="${p.id}" onchange="selectPackage('${p.id}')">
+      <div class="pkg-card" style="--pkg-color:${p.color||'#F97316'}">
+        <div class="pkg-check">✓</div>
+        <div class="pkg-name">${p.name}</div>
+        <div class="pkg-price">₪${p.price.toLocaleString('he-IL')}<span> + מע"מ /צילום</span></div>
+        <div class="pkg-duration">⏱ ${fmtDur(p.duration)}</div>
+        <div class="pkg-services">${(p.services||[]).map(s => `<div class="pkg-service">${s}</div>`).join('')}</div>
+        ${exPreview}
+      </div>
+    </label>`;
+  }).join('');
+}
+
+function fmtDur(min) {
+  if (!min) return '—';
+  const h = Math.floor(min/60), m = min % 60;
+  return h ? (h + ' שע\'' + (m ? ' ' + m + ' דק\'' : '')) : min + ' דק\'';
 }
 
 function selectPackage(id) {
   selectedPackageId = id;
+  updatePricePreview();
 }
 
-// ══════════════════════════════════════════════════
-//  CLIENT TYPE TOGGLE
-// ══════════════════════════════════════════════════
-function toggleClientType(type) {
-  const existingSec = document.getElementById('existing-section');
-  const newSec = document.getElementById('new-section');
-  if (type === 'existing') {
-    existingSec.classList.remove('hidden');
-    newSec.classList.add('hidden');
-    foundClientId = null;
-  } else {
-    existingSec.classList.add('hidden');
-    newSec.classList.remove('hidden');
-    foundClientId = null;
+// ── PRICE PREVIEW ──────────────────────────────────
+const VAT_RATE = 0.18;
+
+function updatePricePreview() {
+  const prev = document.getElementById('price-preview');
+  if (!selectedPackageId) { prev.classList.remove('show'); return; }
+  const pkg = packages.find(p => p.id === selectedPackageId);
+  if (!pkg) return;
+  const base  = pkg.price;
+  const vat   = Math.round(base * VAT_RATE);
+  const total = base + vat;
+  document.getElementById('price-preview-base').textContent  = '₪' + base.toLocaleString('he-IL');
+  document.getElementById('price-preview-vat').textContent   = '₪' + vat.toLocaleString('he-IL');
+  document.getElementById('price-preview-total').textContent = '₪' + total.toLocaleString('he-IL');
+  prev.classList.add('show');
+}
+
+// ── WIZARD NAVIGATION ──────────────────────────────
+function goStep(n) {
+  if (n > currentStep && !validateStep(currentStep)) return;
+  document.getElementById('panel-' + currentStep).classList.remove('active');
+  document.getElementById('panel-' + n).classList.add('active');
+
+  // Update stepper
+  for (let i = 1; i <= 3; i++) {
+    const ind = document.getElementById('step-ind-' + i);
+    const num = document.getElementById('step-num-' + i);
+    ind.classList.remove('active','done');
+    if (i < n)       { ind.classList.add('done');   num.textContent = '✓'; }
+    else if (i === n) { ind.classList.add('active'); num.textContent = i;  }
+    else              { num.textContent = i; }
   }
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ══════════════════════════════════════════════════
-//  EXISTING CLIENT LOOKUP
-// ══════════════════════════════════════════════════
+function validateStep(step) {
+  if (step === 1) {
+    const isExisting = document.getElementById('type-existing').checked;
+    if (isExisting) {
+      if (!foundClientId) {
+        document.getElementById('lookup-input').classList.add('error');
+        shake(document.getElementById('lookup-input'));
+        return false;
+      }
+    } else {
+      const first = document.getElementById('cust-first').value.trim();
+      const last  = document.getElementById('cust-last').value.trim();
+      const phone = document.getElementById('cust-phone').value.trim();
+      let ok = true;
+      ['cust-first','cust-last','cust-phone'].forEach(id => {
+        const el = document.getElementById(id);
+        const empty = !el.value.trim();
+        el.classList.toggle('error', empty);
+        if (empty) ok = false;
+      });
+      if (!ok) { shake(document.querySelector('#panel-1 .form-input.error')); return false; }
+    }
+  }
+  if (step === 2) {
+    const address = document.getElementById('prop-address').value.trim();
+    const city    = document.getElementById('prop-city').value.trim();
+    ['prop-address','prop-city'].forEach(id => {
+      document.getElementById(id).classList.toggle('error', !document.getElementById(id).value.trim());
+    });
+    if (!address || !city) { shake(document.querySelector('#panel-2 .form-input.error')); return false; }
+  }
+  return true;
+}
+
+function shake(el) {
+  if (!el) return;
+  el.style.animation = 'none';
+  el.scrollIntoView({ behavior:'smooth', block:'center' });
+  el.focus();
+}
+
+// ── CLIENT TYPE ────────────────────────────────────
+function toggleClientType(type) {
+  document.getElementById('existing-section').classList.toggle('hidden', type !== 'existing');
+  document.getElementById('new-section').classList.toggle('hidden', type === 'existing');
+  foundClientId = null;
+}
+
 function lookupClient() {
-  const query = document.getElementById('lookup-input').value.trim().toLowerCase();
-  const resultEl = document.getElementById('lookup-result');
-  if (!query) return;
-
+  const q = document.getElementById('lookup-input').value.trim().toLowerCase();
+  const res = document.getElementById('lookup-result');
+  if (!q) return;
   let customers = [];
-  try {
-    const saved = localStorage.getItem('photoDesk_store');
-    if (saved) customers = JSON.parse(saved).customers || [];
-  } catch(e) {}
-
-  const match = customers.find(c =>
-    c.email.toLowerCase() === query ||
-    c.phone.replace(/[-\s]/g,'') === query.replace(/[-\s]/g,'')
+  try { customers = JSON.parse(localStorage.getItem('photoDesk_store') || '{}').customers || []; } catch(e) {}
+  const m = customers.find(c =>
+    (c.email||'').toLowerCase() === q ||
+    (c.phone||'').replace(/[-\s]/g,'') === q.replace(/[-\s]/g,'')
   );
-
-  if (match) {
-    foundClientId = match.id;
-    resultEl.className = 'lookup-result found';
-    const safeLabel = document.createElement('span');
-    safeLabel.textContent = `✓ נמצא: ${match.first} ${match.last} — ${match.company || match.email}`;
-    resultEl.innerHTML = '';
-    resultEl.appendChild(safeLabel);
+  if (m) {
+    foundClientId = m.id;
+    res.className = 'lookup-result found';
+    res.textContent = `✓ נמצא: ${m.first} ${m.last}${m.company ? ' — ' + m.company : ''}`;
   } else {
     foundClientId = null;
-    // Auto-switch to new client
-    switchToNew();
-    resultEl.className = 'lookup-result not-found';
-    resultEl.style.display = 'block';
-    resultEl.textContent = 'לא נמצא לקוח — עברנו למילוי פרטים חדשים';
+    document.getElementById('type-new').checked = true;
+    toggleClientType('new');
+    res.className = 'lookup-result not-found';
+    res.style.display = 'block';
+    res.textContent = 'לא נמצא לקוח — מלא פרטים חדשים';
   }
 }
 
 function clearLookup() {
   foundClientId = null;
-  const resultEl = document.getElementById('lookup-result');
-  resultEl.className = 'lookup-result';
-  resultEl.innerHTML = '';
+  const r = document.getElementById('lookup-result');
+  r.className = 'lookup-result';
+  r.innerHTML = '';
 }
 
-function switchToNew() {
-  document.getElementById('type-new').checked = true;
-  toggleClientType('new');
-  return false;
-}
-
-// ══════════════════════════════════════════════════
-//  SUBMIT
-// ══════════════════════════════════════════════════
-async function submitBooking(e) {
-  e.preventDefault();
-
-  const isExisting = document.getElementById('type-existing').checked;
-
-  // ── Visual validation helpers ──────────────────
-  function markError(id, show) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.classList.toggle('error', show);
-  }
-  function scrollToFirst(ids) {
-    for (const id of ids) {
-      const el = document.getElementById(id);
-      if (el && el.classList.contains('error')) {
-        el.scrollIntoView({ behavior:'smooth', block:'center' });
-        el.focus();
-        return;
-      }
-    }
-  }
-
-  let hasErrors = false;
-
-  // Package required
+// ── REVIEW ─────────────────────────────────────────
+function buildReview() {
+  if (!validateStep(3)) return;
   if (!selectedPackageId) {
     document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
-    document.getElementById('packages-grid').style.outline = '2px solid var(--red)';
-    document.getElementById('packages-grid').style.borderRadius = '8px';
-    setTimeout(() => { document.getElementById('packages-grid').style.outline = ''; }, 2500);
     return;
   }
+  const pkg = packages.find(p => p.id === selectedPackageId);
+  const pt  = selectedPropType ? PROPERTY_TYPES.find(p => p.id === selectedPropType) : null;
+  const isEx = document.getElementById('type-existing').checked;
+  const name = isEx ? '(לקוח קיים)'
+    : (document.getElementById('cust-first').value.trim() + ' ' + document.getElementById('cust-last').value.trim());
+  const addr = document.getElementById('prop-address').value.trim() + ', ' + document.getElementById('prop-city').value.trim();
+  const dateFlex = { exact:'תאריך קבוע', 'flexible-week':'תוך שבוע', 'flexible-2weeks':'תוך שבועיים', asap:'מוקדם ככל האפשר' };
+  const dateVal = document.getElementById('shoot-date').value;
+  const flex = document.getElementById('shoot-flexibility').value;
+  const times = getSelectedTimeSlots();
 
-  // Property required fields
-  const address = document.getElementById('prop-address').value.trim();
-  const city    = document.getElementById('prop-city').value.trim();
-  markError('prop-address', !address);
-  markError('prop-city',    !city);
-  if (!address || !city) hasErrors = true;
+  const base  = pkg.price;
+  const vat   = Math.round(base * VAT_RATE);
+  const total = base + vat;
+  const priceStr = `₪${base.toLocaleString('he-IL')} + מע"מ ₪${vat.toLocaleString('he-IL')} = ₪${total.toLocaleString('he-IL')} סה"כ`;
 
-  // Client data
-  let clientData = null;
-  if (isExisting) {
-    if (!foundClientId) {
-      document.getElementById('lookup-input').classList.add('error');
-      hasErrors = true;
-    } else {
-      clientData = { id: foundClientId, isExisting: true };
-    }
-  } else {
-    const first = document.getElementById('cust-first').value.trim();
-    const last  = document.getElementById('cust-last').value.trim();
-    const phone = document.getElementById('cust-phone').value.trim();
-    markError('cust-first', !first);
-    markError('cust-last',  !last);
-    markError('cust-phone', !phone);
-    if (!first || !last || !phone) {
-      hasErrors = true;
-    } else {
-      clientData = {
-        id: 'C' + Date.now(),
-        isExisting: false,
-        first, last, phone,
+  const dateDisplay = dateVal
+    ? new Date(dateVal + 'T12:00').toLocaleDateString('he-IL', {day:'2-digit', month:'long', year:'numeric'})
+    : dateFlex[flex] || flex;
+
+  const rows = [
+    ['לקוח', name],
+    ['נכס', addr],
+    ['סוג נכס', pt ? pt.name : 'לא נבחר'],
+    ['חבילה', pkg.name],
+    ['מחיר', priceStr],
+    ['תאריך', dateDisplay],
+    ...(times.length ? [['שעות מועדפות', times.join(' · ')]] : []),
+  ];
+
+  document.getElementById('review-body').innerHTML = rows.map(([k,v]) =>
+    `<div class="review-row"><span class="review-key">${k}</span><span class="review-val">${v}</span></div>`
+  ).join('');
+  document.getElementById('review-card').style.display = 'block';
+  document.getElementById('submit-section').style.display = 'block';
+  document.getElementById('btn-review').style.display = 'none';
+  document.getElementById('review-card').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+// ── SUBMIT ─────────────────────────────────────────
+async function submitBooking() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ שולח...';
+
+  const isEx = document.getElementById('type-existing').checked;
+  const pkg  = packages.find(p => p.id === selectedPackageId);
+  const pt   = selectedPropType ? PROPERTY_TYPES.find(p => p.id === selectedPropType) : null;
+
+  const clientData = isEx
+    ? { id: foundClientId, isExisting: true }
+    : {
+        id: 'C' + Date.now(), isExisting: false,
+        first:   document.getElementById('cust-first').value.trim(),
+        last:    document.getElementById('cust-last').value.trim(),
+        phone:   document.getElementById('cust-phone').value.trim(),
         email:   document.getElementById('cust-email').value.trim(),
-        company: document.getElementById('cust-company').value.trim().replace(/\s+/g,' '),
+        company: document.getElementById('cust-company').value.trim(),
         listings: 0
       };
-    }
-  }
 
-  if (hasErrors) {
-    scrollToFirst(['prop-address','prop-city','cust-first','cust-last','cust-phone','lookup-input']);
-    return;
-  }
+  const finalPrice = pt ? Math.round(pkg.price * pt.mult / 50) * 50 : pkg.price;
 
-  // Find package
-  const pkg = packages.find(p => p.id === selectedPackageId);
-  if (!pkg) { alert('חבילה לא נמצאה, נסה שנית'); return; }
-
-  // Build booking object — numeric fields converted properly
   const booking = {
     id: 'B' + Date.now(),
     createdAt: new Date().toISOString(),
     client: clientData,
     property: {
-      address,
-      city,
+      address:      document.getElementById('prop-address').value.trim(),
+      city:         document.getElementById('prop-city').value.trim(),
       neighborhood: document.getElementById('prop-neighborhood').value.trim(),
+      type:         pt ? pt.name : '',
       rooms:  +document.getElementById('prop-rooms').value  || 0,
       baths:  +document.getElementById('prop-baths').value  || 0,
       floor:  +document.getElementById('prop-floor').value  || 0,
@@ -871,72 +1406,91 @@ async function submitBooking(e) {
       year:   +document.getElementById('prop-year').value   || 0,
       notes:  document.getElementById('prop-notes').value.trim(),
     },
-    package: { id: selectedPackageId, name: pkg.name },
-    shootDate:    document.getElementById('shoot-date').value,
-    flexibility:  document.getElementById('shoot-flexibility').value,
+    package: { id: selectedPackageId, name: pkg.name, price: finalPrice },
+    shootDate:      document.getElementById('shoot-date').value,
+    flexibility:    document.getElementById('shoot-flexibility').value,
+    preferredTimes: getSelectedTimeSlots(),
     status: 'pending'
   };
 
-  // Save to Firestore (primary — syncs to photographer in real time)
   try {
     await db.collection('bookings').doc(booking.id).set(booking);
   } catch(err) {
-    console.error('Firestore save failed', err);
+    btn.disabled = false;
+    btn.textContent = '✅ שלח הזמנה';
     alert('שגיאה בשמירת ההזמנה. בדוק חיבור אינטרנט ונסה שנית.');
     return;
   }
 
-  // Save to localStorage (local fallback)
   try {
-    const existing = JSON.parse(localStorage.getItem('photoDesk_pending') || '[]');
-    existing.push(booking);
-    localStorage.setItem('photoDesk_pending', JSON.stringify(existing));
-  } catch(err) { /* silent */ }
+    const ex = JSON.parse(localStorage.getItem('photoDesk_pending') || '[]');
+    ex.push(booking);
+    localStorage.setItem('photoDesk_pending', JSON.stringify(ex));
+  } catch(_) {}
 
-  // Send email notification via Formsubmit.co (fire-and-forget)
+  // Email
   try {
-    const clientName = clientData.isExisting
-      ? (clientData.first + ' ' + (clientData.last || '')).trim()
-      : (clientData.first + ' ' + clientData.last).trim();
-    const emailBody = [
-      '📸 הזמנה חדשה התקבלה ב-PhotoDesk',
-      '',
-      '🆔 מספר הזמנה: ' + booking.id,
-      '👤 לקוח: ' + clientName + (clientData.company ? ' / ' + clientData.company : ''),
-      '📞 טלפון: ' + (clientData.phone || '—'),
-      '📦 חבילה: ' + booking.package.name,
-      '🏠 כתובת: ' + booking.property.address + ', ' + booking.property.city,
-      '📐 שטח: ' + (booking.property.area || '—') + ' מ"ר | חדרים: ' + (booking.property.rooms || '—'),
-      '📅 תאריך מועדף: ' + (booking.shootDate || 'גמיש'),
-      '📝 הערות: ' + (booking.property.notes || '—'),
-    ].join('\n');
-
+    const name = clientData.isExisting ? '(לקוח קיים)' : (clientData.first + ' ' + clientData.last);
     fetch('https://formsubmit.co/ajax/edmontdoron@gmail.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
       body: JSON.stringify({
-        _subject: '📸 הזמנה חדשה – ' + clientName + ' | ' + booking.property.city,
+        _subject: '📸 הזמנה חדשה – ' + name + ' | ' + booking.property.city,
         _template: 'box',
-        message: emailBody,
         booking_id: booking.id,
-        client: clientName,
+        client: name,
         phone: clientData.phone || '',
-        package: booking.package.name,
+        package: pkg.name,
+        price: '₪' + finalPrice.toLocaleString('he-IL'),
+        property_type: pt ? pt.name : '—',
         address: booking.property.address + ', ' + booking.property.city,
-        shoot_date: booking.shootDate || 'גמיש',
+        shoot_date: booking.shootDate || booking.flexibility,
+        preferred_times: booking.preferredTimes.length ? booking.preferredTimes.join(', ') : '—',
+        notes: booking.property.notes || '—',
       })
-    }).catch(() => {}); // silent fail — booking is already saved
+    }).catch(()=>{});
   } catch(_) {}
 
   // Show success
-  document.getElementById('booking-form').classList.add('hidden');
-  const success = document.getElementById('success-screen');
-  success.classList.add('show');
+  document.getElementById('form-container').classList.add('hidden');
+  const s = document.getElementById('success-screen');
+  s.classList.add('show');
   document.getElementById('order-ref').textContent = booking.id;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const settings = loadSettings();
+  const phone = (settings.phone || '').replace(/[^0-9]/g,'');
+  if (phone) {
+    const clientName  = clientData.isExisting ? '(לקוח קיים)' : (clientData.first + ' ' + clientData.last);
+    const dateDisplay = booking.shootDate
+      ? new Date(booking.shootDate + 'T12:00').toLocaleDateString('he-IL', {day:'2-digit', month:'long', year:'numeric'})
+      : { exact:'תאריך קבוע', 'flexible-week':'תוך שבוע', 'flexible-2weeks':'תוך שבועיים', asap:'מוקדם ככל האפשר' }[booking.flexibility] || booking.flexibility;
+    const timesLine   = booking.preferredTimes?.length ? `\nשעות מועדפות: ${booking.preferredTimes.join(', ')}` : '';
+    const crmLink     = window.location.href.replace(/\/[^/]*$/, '/photodesk.html');
+    const waText = encodeURIComponent(
+      `📸 הזמנה חדשה!\n` +
+      `לקוח: ${clientName}\n` +
+      `נכס: ${booking.property.address}, ${booking.property.city}\n` +
+      `חבילה: ${booking.package.name} · ₪${booking.package.price.toLocaleString('he-IL')}\n` +
+      `תאריך: ${dateDisplay}${timesLine}\n` +
+      `מס' הזמנה: ${booking.id}\n` +
+      `🔗 ${crmLink}`
+    );
+    const waPhone = phone.startsWith('972') ? phone : '972' + phone.replace(/^0/, '');
+    document.getElementById('success-wa').href = `https://wa.me/${waPhone}?text=${waText}`;
+  } else {
+    document.getElementById('success-wa').style.display = 'none';
+  }
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
-// ── INIT ──────────────────────────────────────────
+function toggleTimeSlot(btn) {
+  btn.classList.toggle('selected');
+}
+
+function getSelectedTimeSlots() {
+  return Array.from(document.querySelectorAll('.time-slot.selected'))
+    .map(b => b.dataset.val);
+}
+
 renderPackages();
 </script>
 </body>

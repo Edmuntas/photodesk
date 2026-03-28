@@ -1,0 +1,24 @@
+# Secrets & credentials
+.env
+credentials.json
+token.json
+
+# Temporary files (always regenerated)
+.tmp/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Output folders (generated files)
+grok_output/
+
+# Test photos (large binary files, not for version control)
+grok_cleaner_test_photos/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
