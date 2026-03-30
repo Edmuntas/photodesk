@@ -324,6 +324,12 @@
     transition: box-shadow 0.15s, transform 0.15s;
   }
   .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+  .stat-card.active-filter {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(249,115,22,0.25), var(--shadow);
+    background: var(--accent-light);
+  }
+  .stat-card.active-filter::before { background: var(--accent); height: 4px; }
 
   .stat-card::before {
     content: '';
@@ -2159,22 +2165,22 @@
     <!-- ════════════════ LISTINGS PAGE ════════════════ -->
     <div class="page" id="page-listings">
       <div class="stats-row" style="grid-template-columns: repeat(5,1fr)">
-        <div class="stat-card" style="--accent-color: var(--accent)">
+        <div class="stat-card" id="statcard-all" style="--accent-color: var(--accent); cursor:pointer;" onclick="filterByStatCard('')">
           <div class="stat-label">סה"כ נכסים</div>
           <div class="stat-value" id="stat-total">22</div>
           <div class="stat-sub">מאז תמיד</div>
         </div>
-        <div class="stat-card" style="--accent-color: var(--amber)">
+        <div class="stat-card" id="statcard-pending" style="--accent-color: var(--amber); cursor:pointer;" onclick="filterByStatCard('ממתין למסירה')">
           <div class="stat-label">ממתין למסירה</div>
           <div class="stat-value" id="stat-pending" style="color:var(--amber)">18</div>
           <div class="stat-sub">ממתין לעיבוד</div>
         </div>
-        <div class="stat-card" style="--accent-color: var(--green)">
+        <div class="stat-card" id="statcard-delivered" style="--accent-color: var(--green); cursor:pointer;" onclick="filterByStatCard('נמסר')">
           <div class="stat-label">נמסר</div>
           <div class="stat-value" id="stat-delivered" style="color:var(--green)">4</div>
           <div class="stat-sub">צילומים שהושלמו</div>
         </div>
-        <div class="stat-card" style="--accent-color: var(--blue)">
+        <div class="stat-card" id="statcard-month" style="--accent-color: var(--blue); cursor:pointer;" onclick="filterByStatCard('__month__')">
           <div class="stat-label">החודש</div>
           <div class="stat-value" id="stat-month" style="color:var(--blue)">0</div>
           <div class="stat-sub" id="stat-month-sub">—</div>
@@ -3257,7 +3263,22 @@ function renderDashUpcoming() {
 function renderListings() {
   let list = store.listings;
   if (filterStatus) list = list.filter(l => l.status === filterStatus);
+  if (_statCardFilter === '__month__') {
+    const _months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+    const _now = new Date();
+    const _mo = _months[_now.getMonth()], _yr = String(_now.getFullYear());
+    list = list.filter(l => l.created && l.created.includes(_mo) && l.created.includes(_yr));
+  }
   if (searchQuery) list = list.filter(l => l.address.includes(searchQuery) || l.city.includes(searchQuery));
+
+  // Highlight active stat card
+  ['statcard-all','statcard-pending','statcard-delivered','statcard-month'].forEach(id => {
+    document.getElementById(id)?.classList.remove('active-filter');
+  });
+  if (_statCardFilter === '') document.getElementById('statcard-all')?.classList.add('active-filter');
+  else if (_statCardFilter === 'ממתין למסירה') document.getElementById('statcard-pending')?.classList.add('active-filter');
+  else if (_statCardFilter === 'נמסר') document.getElementById('statcard-delivered')?.classList.add('active-filter');
+  else if (_statCardFilter === '__month__') document.getElementById('statcard-month')?.classList.add('active-filter');
 
   const pending = store.listings.filter(l => l.status === 'ממתין למסירה').length;
   const delivered = store.listings.filter(l => l.status === 'נמסר').length;
@@ -3375,6 +3396,14 @@ function badgeClass(status) {
 }
 
 function filterByStatus(val) { filterStatus = val; renderListings(); }
+
+let _statCardFilter = ''; // '' | 'ממתין למסירה' | 'נמסר' | '__month__'
+function filterByStatCard(val) {
+  // Toggle: click same card again → clear
+  _statCardFilter = (_statCardFilter === val) ? '' : val;
+  filterStatus = (_statCardFilter && _statCardFilter !== '__month__') ? _statCardFilter : '';
+  renderListings();
+}
 function handleSearch(val) { searchQuery = val; renderListings(); }
 
 // Toggle individual delivery flag directly from the table row
