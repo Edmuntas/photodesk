@@ -2130,7 +2130,7 @@
           <div class="form-row" style="margin-top:12px;">
             <div class="form-group">
               <label class="form-label">שם העסק</label>
-              <input class="form-input" id="settings-business-name" placeholder="Sisa Aero Photography">
+              <input class="form-input" id="settings-business-name" placeholder="Edmont RE media">
             </div>
             <div class="form-group">
               <label class="form-label">שם הצלם</label>
@@ -2669,7 +2669,7 @@ const store = {
     { day:'שבת',   enabled:false, start:'09:00', end:'17:00' },
   ],
   settings: {
-    businessName: 'Sisa Aero Photography',
+    businessName: 'Edmont RE media',
     photographerName: 'דורון',
     email: 'edmontdoron@gmail.com',
     phone: '',
@@ -4780,7 +4780,7 @@ function openCustomer(id) {
   // Quick action buttons
   const phone = c.phone.replace(/[-\s]/g, '');
   document.getElementById('cp-call-btn').href = 'tel:' + c.phone;
-  const waMsg = encodeURIComponent(`שלום ${c.first}, אני צלם הנדל"ן דורון מ-Sisa Aero Photography 📷\nאשמח לעמוד לשירותך!`);
+  const waMsg = encodeURIComponent(`שלום ${c.first}, אני צלם הנדל"ן דורון מ-Edmont RE media 📷\nאשמח לעמוד לשירותך!`);
   document.getElementById('cp-wa-btn').href   = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + waMsg;
 
   // Stats
@@ -4873,7 +4873,7 @@ function saveCustomerInfo() {
   document.getElementById('cp-company').textContent = [currentCustomer.company, currentCustomer.email].filter(Boolean).join(' · ');
   document.getElementById('cp-call-btn').href = 'tel:' + currentCustomer.phone;
   const phone = currentCustomer.phone.replace(/[-\s]/g, '');
-  const waMsg2 = encodeURIComponent(`שלום ${currentCustomer.first}, אני צלם הנדל"ן דורון מ-Sisa Aero Photography 📷\nאשמח לעמוד לשירותך!`);
+  const waMsg2 = encodeURIComponent(`שלום ${currentCustomer.first}, אני צלם הנדל"ן דורון מ-Edmont RE media 📷\nאשמח לעמוד לשירותך!`);
   document.getElementById('cp-wa-btn').href = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + waMsg2;
   saveStore();
   renderCustomers();
@@ -4944,7 +4944,7 @@ function whatsappShareLink() {
   const link = document.getElementById('share-link-input').value;
   const text = encodeURIComponent(
     'שלום 👋\nלהזמנת צילום נדל"ן מ-' +
-    (store.settings.businessName || 'Sisa Aero Photography') +
+    (store.settings.businessName || 'Edmont RE media') +
     ', אנא מלא את הטופס הבא:\n' + link
   );
   // Use customer phone for a reliable direct WA link; fall back to share URL
@@ -5558,7 +5558,7 @@ function approveBooking(id) {
   // WhatsApp confirmation to client
   const phone = b.client.phone || '';
   if (phone) {
-    const bizName = store.settings?.businessName || 'Sisa Aero Photography';
+    const bizName = store.settings?.businessName || 'Edmont RE media';
     const clientName = b.client.first ? `${b.client.first}` : '';
     const address = `${b.property.address}, ${b.property.city}`;
     const msg = encodeURIComponent(
