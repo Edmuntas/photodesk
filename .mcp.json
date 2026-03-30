@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "ux": {
+      "command": "npx",
+      "args": ["-y", "ux-mcp-server"]
+    },
+    "ui-expert": {
+      "command": "npx",
+      "args": ["-y", "ui-expert-mcp"]
+    },
+    "metis": {
+      "command": "npx",
+      "args": ["-y", "metis-mcp-server"]
+    },
+    "web-ui-copy": {
+      "command": "npx",
+      "args": ["-y", "web-ui-copy-mcp"]
+    }
+  }
+}

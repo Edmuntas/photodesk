@@ -1778,6 +1778,194 @@
   .sidebar-overlay { display: none !important; }
   .mobile-menu-btn { display: none !important; }
 }
+
+/* ── DASHBOARD ──────────────────────────────────── */
+.dash-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) { .dash-layout { grid-template-columns: 1fr; } }
+
+.dash-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+@media (max-width: 700px) { .dash-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--kpi-color, var(--accent));
+}
+.kpi-icon { font-size: 22px; margin-bottom: 10px; }
+.kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.kpi-value { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -0.5px; }
+.kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+.kpi-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; margin-top: 5px; }
+.kpi-trend.up { color: var(--green); }
+.kpi-trend.neutral { color: var(--text-dim); }
+
+.dash-section-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dash-section-title a {
+  margin-right: auto; font-size: 11px; font-weight: 600;
+  color: var(--accent); text-decoration: none; cursor: pointer;
+}
+.dash-section-title a:hover { text-decoration: underline; }
+
+/* Pipeline status rows */
+.status-pipeline {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.pipeline-row {
+  display: flex;
+  align-items: center;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.pipeline-row:last-child { border-bottom: none; }
+.pipeline-row:hover { background: var(--surface2); }
+.pipeline-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.pipeline-status-name { font-size: 13px; font-weight: 500; flex: 1; }
+.pipeline-bar-wrap { width: 80px; height: 5px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+.pipeline-bar { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+.pipeline-count { font-size: 13px; font-weight: 700; color: var(--text); min-width: 24px; text-align: left; }
+
+/* Recent orders list */
+.recent-order-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.recent-order-item:last-child { border-bottom: none; }
+.recent-order-item:hover { background: var(--surface2); }
+.ro-avatar {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.ro-address { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ro-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.ro-right { text-align: left; flex-shrink: 0; }
+.ro-price { font-size: 13px; font-weight: 700; color: var(--text); }
+.ro-date { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+/* Mini calendar sidebar */
+.mini-cal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.mini-cal-header {
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mini-cal-title { font-size: 13px; font-weight: 700; }
+.mini-cal-nav { display: flex; gap: 4px; }
+.mini-cal-nav button {
+  width: 24px; height: 24px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface);
+  cursor: pointer; font-size: 11px; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s;
+}
+.mini-cal-nav button:hover { background: var(--surface3); }
+.mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  padding: 8px 10px;
+}
+.mini-cal-day-label {
+  text-align: center; font-size: 9px; font-weight: 700;
+  color: var(--text-dim); letter-spacing: 0.3px;
+  padding: 2px 0 4px;
+}
+.mini-cal-cell {
+  aspect-ratio: 1; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+  color: var(--text);
+}
+.mini-cal-cell:hover { background: var(--surface2); }
+.mini-cal-cell.other-month { color: var(--text-dim); }
+.mini-cal-cell.today {
+  background: var(--accent-glow);
+  color: var(--accent); font-weight: 700;
+  border: 1px solid rgba(249,115,22,0.3);
+}
+.mini-cal-cell.has-shoot::after {
+  content: '';
+  position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--accent);
+}
+.mini-cal-cell.today.has-shoot::after { background: #fff; }
+
+/* Upcoming shoots */
+.upcoming-shoot {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.upcoming-shoot:last-child { border-bottom: none; }
+.upcoming-shoot:hover { background: var(--surface2); }
+.us-date-badge {
+  width: 36px; flex-shrink: 0; text-align: center;
+  background: var(--accent-light);
+  border: 1px solid rgba(249,115,22,0.2);
+  border-radius: 8px; padding: 4px 0;
+}
+.us-date-day { font-size: 16px; font-weight: 800; color: var(--accent); line-height: 1; }
+.us-date-mon { font-size: 9px; font-weight: 600; color: var(--accent); opacity: 0.75; text-transform: uppercase; }
+.us-address { font-size: 12px; font-weight: 600; line-height: 1.4; }
+.us-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.us-empty { text-align: center; padding: 20px 14px; font-size: 12px; color: var(--text-dim); }
 </style>
 <!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -1824,7 +2012,10 @@
 
   <div class="nav-group">
     <div class="nav-label">ראשי</div>
-    <div class="nav-item active" onclick="navigate('listings')">
+    <div class="nav-item active" onclick="navigate('dashboard')">
+      <span class="icon">⚡</span><span class="nav-text">דאשבורד</span>
+    </div>
+    <div class="nav-item" onclick="navigate('listings')">
       <span class="icon">🏠</span><span class="nav-text">נכסים</span>
       <span class="nav-badge" id="listings-badge">22</span>
     </div>
@@ -1890,7 +2081,7 @@
   <!-- TOPBAR -->
   <div class="topbar">
     <button class="mobile-menu-btn" onclick="openMobileMenu()" style="display:none;">☰</button>
-    <div class="page-title" id="page-title">נכסים</div>
+    <div class="page-title" id="page-title">דאשבורד</div>
     <div class="topbar-actions">
       <div class="search-box">
         <span>🔍</span>
@@ -1908,8 +2099,52 @@
   <!-- CONTENT -->
   <div class="content">
 
+    <!-- ════════════════ DASHBOARD PAGE ════════════════ -->
+    <div class="page active" id="page-dashboard">
+      <!-- KPI row -->
+      <div class="dash-kpi-row" id="dash-kpi-row"></div>
+      <!-- Main layout -->
+      <div class="dash-layout">
+        <!-- LEFT: orders pipeline + recent -->
+        <div>
+          <div class="dash-section-title">
+            <span>🔄 צינור הזמנות</span>
+            <a onclick="navigate('orders')">כל ההזמנות ←</a>
+          </div>
+          <div class="status-pipeline" id="dash-pipeline"></div>
+
+          <div class="dash-section-title" style="margin-top:20px;">
+            <span>🕐 הזמנות אחרונות</span>
+            <a onclick="navigate('listings')">כל הנכסים ←</a>
+          </div>
+          <div class="status-pipeline" id="dash-recent-orders"></div>
+        </div>
+        <!-- RIGHT: mini calendar + upcoming -->
+        <div>
+          <div class="dash-section-title">
+            <span>📅 לוח שנה</span>
+          </div>
+          <div class="mini-cal-card">
+            <div class="mini-cal-header">
+              <span class="mini-cal-title" id="dash-cal-title"></span>
+              <div class="mini-cal-nav">
+                <button onclick="dashCalNav(-1)">›</button>
+                <button onclick="dashCalNav(1)">‹</button>
+              </div>
+            </div>
+            <div class="mini-cal-grid" id="dash-cal-grid"></div>
+          </div>
+
+          <div class="dash-section-title">
+            <span>📸 צילומים קרובים</span>
+          </div>
+          <div class="mini-cal-card" id="dash-upcoming"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- ════════════════ LISTINGS PAGE ════════════════ -->
-    <div class="page active" id="page-listings">
+    <div class="page" id="page-listings">
       <div class="stats-row" style="grid-template-columns: repeat(5,1fr)">
         <div class="stat-card" style="--accent-color: var(--accent)">
           <div class="stat-label">סה"כ נכסים</div>
@@ -2025,7 +2260,10 @@
 
     <!-- Mobile bottom navigation -->
     <nav class="mobile-nav" id="mobile-nav">
-      <button class="mobile-nav-item active" id="mn-listings" onclick="navigate('listings');updateMobileNav('listings')">
+      <button class="mobile-nav-item active" id="mn-dashboard" onclick="navigate('dashboard');updateMobileNav('dashboard')">
+        <span class="mn-icon">⚡</span>דאשבורד
+      </button>
+      <button class="mobile-nav-item" id="mn-listings" onclick="navigate('listings');updateMobileNav('listings')">
         <span class="mn-icon">🏠</span>נכסים
       </button>
       <button class="mobile-nav-item" id="mn-orders" onclick="navigate('orders');updateMobileNav('orders')">
@@ -2696,6 +2934,7 @@ let calDate = new Date();
 //  NAVIGATION
 // ══════════════════════════════════════════════════
 const pageConfig = {
+  dashboard:    { title:'דאשבורד',  btn:null },
   listings:     { title:'נכסים',    btn:'+ נכס חדש' },
   orders:       { title:'הזמנות',   btn:'+ הזמנה חדשה' },
   calendar:     { title:'יומן',     btn:'+ קבע צילום' },
@@ -2711,6 +2950,7 @@ const pageConfig = {
 function navigate(page) {
   // 'schedule' was a legacy alias — map to correct page name
   if (page === 'schedule') page = 'availability';
+  if (!page) page = 'dashboard';
   if (!pageConfig[page] || !document.getElementById('page-' + page)) return;
   currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2737,7 +2977,8 @@ function primaryAction() {
 }
 
 function renderPage(page) {
-  if (page === 'listings') renderListings();
+  if (page === 'dashboard') renderDashboard();
+  else if (page === 'listings') renderListings();
   else if (page === 'orders') renderOrders();
   else if (page === 'customers') renderCustomers();
   else if (page === 'packages') renderPackages();
@@ -2749,6 +2990,231 @@ function renderPage(page) {
   else if (page === 'promotions')  renderPromotions();
   updateMobileNav(page);
   closeMobileMenu();
+}
+
+// ── DASHBOARD ─────────────────────────────────────
+let _dashCalOffset = 0; // months from today
+
+function renderDashboard() {
+  renderDashKPIs();
+  renderDashPipeline();
+  renderDashRecentOrders();
+  renderDashCalendar();
+  renderDashUpcoming();
+}
+
+function renderDashKPIs() {
+  const now = new Date();
+  const _mo = now.toLocaleString('he-IL', { month: 'long' });
+  const _yr = now.getFullYear().toString();
+
+  // Helper: get price for listing
+  const getPrice = l => {
+    if (l.price) return l.price;
+    const pkg = store.packages.find(p => p.name === l.pkg || p.id === l.pkg);
+    return pkg ? (pkg.price || 0) : 0;
+  };
+
+  // KPI 1: הכנסות החודש (delivered this month)
+  const monthDelivered = store.listings.filter(l =>
+    l.status === 'נמסר' && l.created && l.created.includes(_mo) && l.created.includes(_yr)
+  );
+  const monthRevenue = monthDelivered.reduce((s, l) => s + getPrice(l), 0);
+
+  // KPI 2: הכנסות סה"כ
+  const allDelivered = store.listings.filter(l => l.status === 'נמסר');
+  const totalRevenue = allDelivered.reduce((s, l) => s + getPrice(l), 0);
+
+  // KPI 3: הזמנות פעילות (not archived, not delivered)
+  const activeStatuses = ['ממתין לאישור','מתוכנן','צולם','בעיבוד','ממתין למסירה'];
+  const activeOrders = store.listings.filter(l => activeStatuses.includes(l.status));
+
+  // KPI 4: ממתין למסירה
+  const pendingDelivery = store.listings.filter(l => l.status === 'ממתין למסירה');
+
+  const kpis = [
+    {
+      icon: '💰',
+      label: 'הכנסות החודש',
+      value: monthRevenue ? `₪${monthRevenue.toLocaleString('he-IL')}` : '₪0',
+      sub: `${monthDelivered.length} נכסים נמסרו`,
+      color: '#10B981',
+      trend: monthDelivered.length > 0 ? 'up' : 'neutral',
+      trendText: monthDelivered.length > 0 ? `+${monthDelivered.length} החודש` : 'אין עדיין'
+    },
+    {
+      icon: '📊',
+      label: 'הכנסות סה"כ',
+      value: totalRevenue ? `₪${totalRevenue.toLocaleString('he-IL')}` : '₪0',
+      sub: `${allDelivered.length} נכסים שנמסרו`,
+      color: '#3B82F6',
+      trend: 'neutral',
+      trendText: `${allDelivered.length} סה"כ`
+    },
+    {
+      icon: '🔄',
+      label: 'הזמנות פעילות',
+      value: activeOrders.length,
+      sub: 'בתהליך כרגע',
+      color: '#F97316',
+      trend: activeOrders.length > 0 ? 'up' : 'neutral',
+      trendText: `${activeOrders.length} פעילות`
+    },
+    {
+      icon: '📦',
+      label: 'ממתין למסירה',
+      value: pendingDelivery.length,
+      sub: 'מוכן לשליחה ללקוח',
+      color: '#8B5CF6',
+      trend: pendingDelivery.length > 0 ? 'up' : 'neutral',
+      trendText: pendingDelivery.length > 0 ? 'דרוש פעולה' : 'הכל נמסר ✓'
+    }
+  ];
+
+  document.getElementById('dash-kpi-row').innerHTML = kpis.map(k => `
+    <div class="kpi-card" style="--kpi-color:${k.color}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-trend ${k.trend}">${k.trend === 'up' ? '↑' : '—'} ${k.trendText}</div>
+    </div>
+  `).join('');
+}
+
+function renderDashPipeline() {
+  const statusConfig = [
+    { status: 'ממתין לאישור',  color: '#F59E0B', icon: '⏳' },
+    { status: 'מתוכנן',        color: '#8B5CF6', icon: '📅' },
+    { status: 'צולם',          color: '#F97316', icon: '📷' },
+    { status: 'בעיבוד',        color: '#3B82F6', icon: '⚙️' },
+    { status: 'ממתין למסירה',  color: '#EF4444', icon: '📦' },
+    { status: 'נמסר',          color: '#10B981', icon: '✅' },
+  ];
+  const total = store.listings.length || 1;
+  const rows = statusConfig.map(s => {
+    const count = store.listings.filter(l => l.status === s.status).length;
+    const pct = Math.round((count / total) * 100);
+    return `
+      <div class="pipeline-row" onclick="navigate('listings')">
+        <div class="pipeline-dot" style="background:${s.color}"></div>
+        <span class="pipeline-status-name">${s.icon} ${s.status}</span>
+        <div class="pipeline-bar-wrap">
+          <div class="pipeline-bar" style="width:${pct}%;background:${s.color}"></div>
+        </div>
+        <span class="pipeline-count">${count}</span>
+      </div>`;
+  }).join('');
+  document.getElementById('dash-pipeline').innerHTML = rows;
+}
+
+function renderDashRecentOrders() {
+  const getPrice = l => {
+    if (l.price) return l.price;
+    const pkg = store.packages.find(p => p.name === l.pkg || p.id === l.pkg);
+    return pkg ? (pkg.price || 0) : 0;
+  };
+  const recent = [...store.listings]
+    .sort((a, b) => (b.created || '').localeCompare(a.created || ''))
+    .slice(0, 6);
+
+  if (!recent.length) {
+    document.getElementById('dash-recent-orders').innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-dim);font-size:13px;">אין הזמנות עדיין</div>';
+    return;
+  }
+  document.getElementById('dash-recent-orders').innerHTML = recent.map(l => {
+    const price = getPrice(l);
+    const priceStr = price ? `₪${price.toLocaleString('he-IL')}` : '—';
+    return `
+      <div class="recent-order-item" onclick="openListing('${l.id}')">
+        <div class="ro-avatar">🏠</div>
+        <div style="flex:1;overflow:hidden;">
+          <div class="ro-address">${l.address}</div>
+          <div class="ro-sub">${l.city || ''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 7px;">${l.status}</span></div>
+        </div>
+        <div class="ro-right">
+          <div class="ro-price">${priceStr}</div>
+          <div class="ro-date">${l.created || ''}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderDashCalendar() {
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth() + _dashCalOffset, 1);
+  const year = target.getFullYear();
+  const month = target.getMonth();
+
+  // Hebrew month names
+  const heMonths = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  document.getElementById('dash-cal-title').textContent = `${heMonths[month]} ${year}`;
+
+  // Collect shoot dates this month
+  const shootDays = new Set();
+  store.listings.forEach(l => {
+    if (!l.shootDate) return;
+    const d = new Date(l.shootDate);
+    if (d.getFullYear() === year && d.getMonth() === month) {
+      shootDays.add(d.getDate());
+    }
+  });
+
+  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayDate = new Date();
+  const isCurrentMonth = todayDate.getFullYear() === year && todayDate.getMonth() === month;
+
+  // Day labels (Sun=0 in Israel typically shown as א)
+  const dayLabels = ['א','ב','ג','ד','ה','ו','ש'];
+  let html = dayLabels.map(d => `<div class="mini-cal-day-label">${d}</div>`).join('');
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) html += `<div class="mini-cal-cell other-month"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = isCurrentMonth && d === todayDate.getDate();
+    const hasShoot = shootDays.has(d);
+    html += `<div class="mini-cal-cell${isToday ? ' today' : ''}${hasShoot ? ' has-shoot' : ''}">${d}</div>`;
+  }
+
+  document.getElementById('dash-cal-grid').innerHTML = html;
+}
+
+function dashCalNav(dir) {
+  _dashCalOffset += dir;
+  renderDashCalendar();
+}
+
+function renderDashUpcoming() {
+  const now = new Date();
+  const upcoming = store.listings
+    .filter(l => l.shootDate && new Date(l.shootDate) >= now)
+    .sort((a, b) => new Date(a.shootDate) - new Date(b.shootDate))
+    .slice(0, 5);
+
+  const heMonths = ['ינו','פבר','מרץ','אפר','מאי','יוני','יול','אוג','ספט','אוק','נוב','דצמ'];
+
+  const el = document.getElementById('dash-upcoming');
+  if (!upcoming.length) {
+    el.innerHTML = '<div class="us-empty">📅 אין צילומים מתוכננים<br><span style="font-size:10px;">הוסף תאריך צילום לנכסים</span></div>';
+    return;
+  }
+  el.innerHTML = upcoming.map(l => {
+    const d = new Date(l.shootDate);
+    const day = d.getDate();
+    const mon = heMonths[d.getMonth()];
+    return `
+      <div class="upcoming-shoot" onclick="openListing('${l.id}')">
+        <div class="us-date-badge">
+          <div class="us-date-day">${day}</div>
+          <div class="us-date-mon">${mon}</div>
+        </div>
+        <div style="flex:1;overflow:hidden;">
+          <div class="us-address">${l.address}</div>
+          <div class="us-sub">${l.city || ''} · ${l.pkg || ''}</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════
@@ -4532,7 +4998,7 @@ function closeMobileMenu() {
 }
 
 function updateMobileNav(page) {
-  const mobileNavMap = { listings:'mn-listings', orders:'mn-orders', calendar:'mn-calendar', customers:'mn-customers' };
+  const mobileNavMap = { dashboard:'mn-dashboard', listings:'mn-listings', orders:'mn-orders', calendar:'mn-calendar', customers:'mn-customers' };
   document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
   const id = mobileNavMap[page];
   if (id) document.getElementById(id)?.classList.add('active');
@@ -5953,7 +6419,7 @@ async function _initApp() {
   saveStore();         // push local data to Firestore on first run
   migrateToCompanies();
   updateArchiveBadge();
-  renderListings();
+  navigate('dashboard');
   renderCalendar();
   updateOrdersBadge();
 

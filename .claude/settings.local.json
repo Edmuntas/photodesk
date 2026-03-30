@@ -1,4 +1,5 @@
 {
+  "enabledMcpjsonServers": ["ux", "ui-expert", "metis", "web-ui-copy"],
   "permissions": {
     "allow": [
       "Bash(git init:*)",
