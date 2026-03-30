@@ -1885,6 +1885,13 @@
 .ro-right { text-align: left; flex-shrink: 0; }
 .ro-price { font-size: 13px; font-weight: 700; color: var(--text); }
 .ro-date { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.ro-fin-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.ro-fin-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+.ro-paid    { background: rgba(16,185,129,0.15); color: #10B981; border: 1px solid rgba(16,185,129,0.3); }
+.ro-deposit { background: rgba(245,158,11,0.15); color: #F59E0B; border: 1px solid rgba(245,158,11,0.3); }
+.ro-unpaid  { background: rgba(239,68,68,0.12);  color: #EF4444; border: 1px solid rgba(239,68,68,0.25); }
+.ro-req     { background: rgba(59,130,246,0.12);  color: #3B82F6; border: 1px solid rgba(59,130,246,0.25); }
+.ro-inv     { background: rgba(139,92,246,0.12);  color: #8B5CF6; border: 1px solid rgba(139,92,246,0.25); }
 
 /* Mini calendar sidebar */
 .mini-cal-card {
@@ -2532,6 +2539,13 @@
         <input class="form-input" type="number" id="panel-payment-amount" placeholder="0">
       </div>
       <div class="form-group">
+        <label class="form-label">מסמכים כספיים</label>
+        <div style="display:flex; gap:20px; margin-top:6px; flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-payreq-sent"> 📨 נשלחה בקשת תשלום</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-invoice-sent"> 🧾 נשלחה חשבונית</label>
+        </div>
+      </div>
+      <div class="form-group">
         <label class="form-label">מה נמסר ללקוח</label>
         <div style="display:flex; gap:20px; margin-top:6px; flex-wrap:wrap;">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-deliveredphotos"> 📸 תמונות</label>
@@ -3124,12 +3138,24 @@ function renderDashRecentOrders() {
   document.getElementById('dash-recent-orders').innerHTML = recent.map(l => {
     const price = getPrice(l);
     const priceStr = price ? `₪${price.toLocaleString('he-IL')}` : '—';
+
+    // Payment badge
+    const payBadge = l.paymentStatus === 'paid'
+      ? `<span class="ro-fin-badge ro-paid">✅ שולם</span>`
+      : l.paymentStatus === 'deposit'
+      ? `<span class="ro-fin-badge ro-deposit">💰 מקדמה</span>`
+      : `<span class="ro-fin-badge ro-unpaid">💸 לא שולם</span>`;
+
+    const reqBadge    = l.payReqSent  ? `<span class="ro-fin-badge ro-req">📨 בקשת תשלום</span>` : '';
+    const invBadge    = l.invoiceSent ? `<span class="ro-fin-badge ro-inv">🧾 חשבונית</span>` : '';
+
     return `
       <div class="recent-order-item" onclick="openListing('${l.id}')">
         <div class="ro-avatar">🏠</div>
         <div style="flex:1;overflow:hidden;">
           <div class="ro-address">${l.address}</div>
           <div class="ro-sub">${l.city || ''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 7px;">${l.status}</span></div>
+          <div class="ro-fin-row">${payBadge}${reqBadge}${invBadge}</div>
         </div>
         <div class="ro-right">
           <div class="ro-price">${priceStr}</div>
@@ -3822,6 +3848,8 @@ function openListing(id) {
   document.getElementById('panel-deliveredphotos').checked    = !!l.deliveredPhotos;
   document.getElementById('panel-deliveredvideo').checked     = !!l.deliveredVideo;
   document.getElementById('panel-deliveredfloorplan').checked = !!l.deliveredFloorplan;
+  document.getElementById('panel-payreq-sent').checked  = !!l.payReqSent;
+  document.getElementById('panel-invoice-sent').checked = !!l.invoiceSent;
 
   const custSel = document.getElementById('panel-customer');
   custSel.innerHTML = '<option value="">— לא משויך —</option>' +
@@ -3884,6 +3912,8 @@ function saveListing() {
   currentListing.deliveredPhotos    = document.getElementById('panel-deliveredphotos').checked;
   currentListing.deliveredVideo     = document.getElementById('panel-deliveredvideo').checked;
   currentListing.deliveredFloorplan = document.getElementById('panel-deliveredfloorplan').checked;
+  currentListing.payReqSent  = document.getElementById('panel-payreq-sent').checked;
+  currentListing.invoiceSent = document.getElementById('panel-invoice-sent').checked;
   renderListings();
   saveStore();
   toast('הנכס נשמר', 'success');
@@ -3938,7 +3968,10 @@ function createListing() {
     customer:'', mls:'',
     created: new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'}),
     photos:0, desc:'', notes:'', agent:'',
-    shootDate: document.getElementById('new-shoot-date').value
+    shootDate: document.getElementById('new-shoot-date').value,
+    paymentStatus:'unpaid', paymentAmount:0,
+    payReqSent:false, invoiceSent:false,
+    deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false
   });
   closeModal('new-listing-modal');
   renderListings();
