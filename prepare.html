@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הכנת הנכס לצילום מקצועי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent:        #F97316;
+    --accent-dark:   #C2410C;
+    --accent-light:  #FFF7ED;
+    --accent-mid:    rgba(249,115,22,0.12);
+    --green:         #10B981;
+    --green-light:   rgba(16,185,129,0.10);
+    --blue:          #3B82F6;
+    --blue-light:    rgba(59,130,246,0.10);
+    --purple:        #8B5CF6;
+    --amber:         #F59E0B;
+    --text:          #111827;
+    --text-muted:    #6B7280;
+    --text-dim:      #9CA3AF;
+    --border:        #E5E7EB;
+    --bg:            #F8F9FB;
+    --surface:       #FFFFFF;
+    --radius:        14px;
+    --radius-sm:     9px;
+    --shadow-sm:     0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow:        0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg:     0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ────────────────────────────── */
+  .site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+  }
+  .site-logo {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .site-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .site-tag {
+    margin-right: auto;
+    font-size: 11px; font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(249,115,22,0.2);
+  }
+
+  /* ── HERO ───────────────────────────────── */
+  .hero {
+    background: linear-gradient(145deg, #f97316 0%, #c2410c 60%, #9a3412 100%);
+    color: #fff;
+    padding: 56px 24px 64px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 320px; height: 320px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -120px; left: -60px;
+    width: 280px; height: 280px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    position: relative; z-index: 1;
+    backdrop-filter: blur(4px);
+  }
+  .hero-title {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 900;
+    letter-spacing: -0.8px;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+  .hero-sub {
+    font-size: clamp(14px, 2.5vw, 17px);
+    opacity: 0.88;
+    max-width: 520px;
+    margin: 0 auto 32px;
+    line-height: 1.7;
+    position: relative; z-index: 1;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    position: relative; z-index: 1;
+    flex-wrap: wrap;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat-num { font-size: 26px; font-weight: 800; }
+  .hero-stat-lbl { font-size: 11px; opacity: 0.75; margin-top: 1px; }
+
+  /* ── CONTAINER ──────────────────────────── */
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  /* ── SECTION INTRO ──────────────────────── */
+  .section-intro {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .section-intro h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+  }
+  .section-intro p {
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── CARDS GRID ─────────────────────────── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  /* ── PREP CARD ──────────────────────────── */
+  .prep-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+  }
+  .prep-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+    border-color: rgba(249,115,22,0.2);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--surface) 0%, #fafbfc 100%);
+  }
+  .card-icon-wrap {
+    width: 44px; height: 44px;
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .card-title { font-size: 15px; font-weight: 700; }
+  .card-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .card-body { padding: 16px 20px 18px; }
+
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .check-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-weight: 700;
+  }
+
+  /* ── COLOR THEMES PER CARD ──────────────── */
+  .theme-orange .card-icon-wrap { background: var(--accent-light); }
+  .theme-orange .check-dot { background: var(--accent-light); color: var(--accent); }
+  .theme-orange .card-head { border-top: 3px solid var(--accent); }
+
+  .theme-green .card-icon-wrap { background: var(--green-light); }
+  .theme-green .check-dot { background: var(--green-light); color: var(--green); }
+  .theme-green .card-head { border-top: 3px solid var(--green); }
+
+  .theme-blue .card-icon-wrap { background: var(--blue-light); }
+  .theme-blue .check-dot { background: var(--blue-light); color: var(--blue); }
+  .theme-blue .card-head { border-top: 3px solid var(--blue); }
+
+  .theme-purple .card-icon-wrap { background: rgba(139,92,246,0.10); }
+  .theme-purple .check-dot { background: rgba(139,92,246,0.10); color: var(--purple); }
+  .theme-purple .card-head { border-top: 3px solid var(--purple); }
+
+  .theme-amber .card-icon-wrap { background: rgba(245,158,11,0.10); }
+  .theme-amber .check-dot { background: rgba(245,158,11,0.10); color: var(--amber); }
+  .theme-amber .card-head { border-top: 3px solid var(--amber); }
+
+  .theme-teal .card-icon-wrap { background: rgba(20,184,166,0.10); }
+  .theme-teal .check-dot { background: rgba(20,184,166,0.10); color: #0d9488; }
+  .theme-teal .card-head { border-top: 3px solid #14b8a6; }
+
+  /* ── DIVIDER ────────────────────────────── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0 40px;
+  }
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-divider-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ── VIRTUAL TOUR SECTION ───────────────── */
+  .vt-section {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #3730a3 100%);
+    border-radius: 18px;
+    padding: 36px 32px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+    box-shadow: 0 12px 40px rgba(55,48,163,0.25);
+  }
+  .vt-section::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .vt-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    position: relative; z-index: 1;
+  }
+  .vt-icon-wrap {
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .vt-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .vt-sub   { font-size: 13px; opacity: 0.75; line-height: 1.5; }
+
+  .vt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    position: relative; z-index: 1;
+  }
+  .vt-item {
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    transition: background 0.15s;
+  }
+  .vt-item:hover { background: rgba(255,255,255,0.16); }
+  .vt-item-icon {
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ── NOTES SECTION ──────────────────────── */
+  .notes-section {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 28px 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .notes-section::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--amber));
+  }
+  .notes-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .notes-head-icon {
+    font-size: 22px;
+  }
+  .notes-head-title {
+    font-size: 16px;
+    font-weight: 800;
+  }
+  .notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    list-style: none;
+  }
+  .notes-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  .note-num {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── CTA SECTION ────────────────────────── */
+  .cta-section {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    border-radius: 18px;
+    padding: 44px 32px;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(249,115,22,0.28);
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 240px; height: 240px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50%;
+  }
+  .cta-icon { font-size: 40px; margin-bottom: 14px; position: relative; z-index: 1; }
+  .cta-title {
+    font-size: clamp(20px, 3.5vw, 26px);
+    font-weight: 800;
+    margin-bottom: 8px;
+    position: relative; z-index: 1;
+  }
+  .cta-sub {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 28px;
+    position: relative; z-index: 1;
+  }
+  .cta-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative; z-index: 1;
+  }
+  .btn-cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: var(--accent-dark);
+    border: none;
+    border-radius: 10px;
+    padding: 13px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .btn-cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+  .btn-cta-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    border-radius: 10px;
+    padding: 13px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Heebo', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-cta-ghost:hover { background: rgba(255,255,255,0.25); }
+
+  /* ── FOOTER ─────────────────────────────── */
+  .footer {
+    text-align: center;
+    padding: 28px 20px;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  /* ── RESPONSIVE ─────────────────────────── */
+  @media (max-width: 640px) {
+    .hero { padding: 40px 20px 48px; }
+    .hero-stats { gap: 20px; }
+    .container { padding: 32px 16px 60px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .vt-section { padding: 24px 20px; }
+    .vt-grid { grid-template-columns: 1fr; }
+    .notes-section { padding: 22px 18px; }
+    .cta-section { padding: 36px 20px; }
+    .section-divider { margin: 36px 0 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="site-logo">📷</div>
+  <span class="site-name">Sisa Aero Photography</span>
+  <span class="site-tag">מדריך הכנה</span>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">📋 מדריך להכנת הנכס</div>
+  <h1 class="hero-title">הכנת הנכס<br>לצילום מקצועי</h1>
+  <p class="hero-sub">
+    כדי לקבל תוצאות ברמה הגבוהה ביותר, חשוב להכין את הנכס מראש.<br>
+    הנה מדריך קצר ופשוט שיעזור לכם להגיע לתוצאה מושלמת.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">7</div>
+      <div class="hero-stat-lbl">אזורים להכנה</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">30</div>
+      <div class="hero-stat-lbl">דקות הכנה ממוצעת</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">100%</div>
+      <div class="hero-stat-lbl">תוצאה טובה יותר</div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main class="container">
+
+  <!-- SECTION INTRO -->
+  <div class="section-intro">
+    <h2>צ'קליסט הכנה לצילום סטילס</h2>
+    <p>עברו על כל אזור בבית לפני הגעת הצלם — כל פרט קטן משפיע על התוצאה הסופית</p>
+  </div>
+
+  <!-- CARDS GRID -->
+  <div class="cards-grid">
+
+    <!-- הכנה כללית -->
+    <div class="prep-card theme-orange">
+      <div class="card-head">
+        <div class="card-icon-wrap">🏠</div>
+        <div>
+          <div class="card-title">הכנה כללית</div>
+          <div class="card-sub">בסיס לכל הבית</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="check-dot">✓</span>ניקיון יסודי של כל הבית</li>
+          <li><span class="check-dot">✓</span>סידור חפצים אישיים ופינוי עומס ובלגן</li>
+          <li><span class="check-dot">✓</span>פתיחת וילונות — כניסת אור טבעי מרבית</li>
+          <li><span class="check-dot">✓</span>החלפת נורות שרופות בכל חדר</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- סלון -->
+    <div class="prep-card theme-blue">
+      <div class="card-head">
+        <div class="card-icon-wrap">🛋️</div>
+        <div>
+          <div class="card-title">סלון</div>
+          <div class="card-sub">חדר המרכז</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="check-dot">✓</span>לסדר ספות וכריות בצורה מושלמת</li>
+          <li><span class="check-dot">✓</span>לפנות שולחנות מכל חפץ</li>
+          <li><span class="check-dot">✓</span>להסיר שלטים, מטענים וכבלים גלויים</li>
+          <li><span class="check-dot">✓</span>ליצור מראה נקי, מרווח ומוזמן</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- מטבח -->
+    <div class="prep-card theme-green">
+      <div class="card-head">
+        <div class="card-icon-wrap">🍳</div>
+        <div>
+          <div class="card-title">מטבח</div>
+          <div class="card-sub">שיש פנוי = מטבח גדול</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="check-dot">✓</span>לפנות את השיש לחלוטין</li>
+          <li><span class="check-dot">✓</span>להסתיר כלי מטבח קטנים בארונות</li>
+          <li><span class="check-dot">✓</span>לנקות משטחים ומשקפי זכוכית</li>
+          <li><span class="check-dot">✓</span>להסיר מגנטים וניירות מהמקרר</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- חדרי שינה -->
+    <div class="prep-card theme-purple">
+      <div class="card-head">
+        <div class="card-icon-wrap">🛏️</div>
+        <div>
+          <div class="card-title">חדרי שינה</div>
+          <div class="card-sub">מרחב ונקיות</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="check-dot">✓</span>לסדר מיטות בצורה מושלמת — כיסויים ישרים</li>
+          <li><span class="check-dot">✓</span>להוריד בגדים וחפצים אישיים מכל משטח</li>
+          <li><span class="check-dot">✓</span>לפנות שידות ומשטחי לילה</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- חדרי רחצה -->
+    <div class="prep-card theme-teal">
+      <div class="card-head">
+        <div class="card-icon-wrap">🚿</div>
+        <div>
+          <div class="card-title">חדרי רחצה</div>
+          <div class="card-sub">מראה מלונאי</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="check-dot">✓</span>לפנות מוצרי היגיינה מכל המשטחים</li>
+          <li><span class="check-dot">✓</span>לנקות מראות — ללא סימני טביעת אצבע</li>
+          <li><span class="check-dot">✓</span>להסיר מגבות תלויות ולהחליף בחדשות</li>
+          <li><span class="check-dot">✓</span>ליצור מראה "מלונאי" נקי ומינימליסטי</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- חוץ / מרפסת -->
+    <div class="prep-card theme-amber">
+      <div class="card-head">
+        <div class="card-icon-wrap">🌿</div>
+        <div>
+          <div class="card-title">חוץ ומרפסת</div>
+          <div class="card-sub">הרושם הראשוני</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="check-dot">✓</span>לפנות חפצים מיותרים ואביזרי אחסון</li>
+          <li><span class="check-dot">✓</span>לטאטא ולנקות את הרצפה</li>
+          <li><span class="check-dot">✓</span>לסדר ריהוט גן בצורה נאה</li>
+          <li><span class="check-dot">✓</span>לשפר מראה כללי — עציצים, דשא, כניסה</li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- /cards-grid -->
+
+  <!-- DIVIDER -->
+  <div class="section-divider">
+    <div class="section-divider-badge">🥽 סיור וירטואלי — הכנה מיוחדת</div>
+  </div>
+
+  <!-- VIRTUAL TOUR SECTION -->
+  <div class="vt-section">
+    <div class="vt-head">
+      <div class="vt-icon-wrap">🌐</div>
+      <div>
+        <div class="vt-title">הכנה לסיור וירטואלי</div>
+        <div class="vt-sub">הסיור הווירטואלי שונה מצילום רגיל — כל פרט נסרק ונשמר.<br>
+        אין אפשרות לחתוך, לחתוך או להסתיר — מה שנסרק, נראה.</div>
+      </div>
+    </div>
+    <div class="vt-grid">
+      <div class="vt-item">
+        <div class="vt-item-icon">🚪</div>
+        פתיחת כל הדלתות הפנימיות
+      </div>
+      <div class="vt-item">
+        <div class="vt-item-icon">💡</div>
+        הדלקת כל האורות בבית
+      </div>
+      <div class="vt-item">
+        <div class="vt-item-icon">✨</div>
+        סדר מושלם בכל החדרים
+      </div>
+      <div class="vt-item">
+        <div class="vt-item-icon">🐾</div>
+        פינוי חיות מחמד מהנכס
+      </div>
+      <div class="vt-item">
+        <div class="vt-item-icon">👤</div>
+        לוודא שאין אנשים בתמונה
+      </div>
+      <div class="vt-item">
+        <div class="vt-item-icon">🔒</div>
+        הסתרת מסמכים ואביזרים אישיים
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES SECTION -->
+  <div class="notes-section">
+    <div class="notes-head">
+      <span class="notes-head-icon">⚡</span>
+      <span class="notes-head-title">דגשים חשובים לזכור</span>
+    </div>
+    <ul class="notes-list">
+      <li>
+        <div class="note-num">1</div>
+        <span>לאחר תחילת הצילום <strong>לא ניתן להזיז חפצים</strong> — כל שינוי יוצר חוסר עקביות בין התמונות</span>
+      </li>
+      <li>
+        <div class="note-num">2</div>
+        <span>הסיור הווירטואלי מציג את הנכס <strong>כפי שהוא בדיוק</strong> — כל פרט, כל פינה, נראה בבירור</span>
+      </li>
+      <li>
+        <div class="note-num">3</div>
+        <span><strong>הכנה נכונה = תוצאה טובה יותר = יותר מתעניינים</strong> — זה ישירות משפיע על מהירות מכירת הנכס</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-icon">💬</div>
+    <div class="cta-title">יש לכם שאלות? אנחנו כאן בשבילכם 👇</div>
+    <div class="cta-sub">אנחנו שמחים לעזור — צרו קשר לפני הצילום לכל שאלה</div>
+    <div class="cta-buttons">
+      <a href="https://wa.me/972" class="btn-cta-primary">💬 WhatsApp</a>
+      <a href="tel:" class="btn-cta-ghost">📞 צור קשר</a>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  © 2025 Sisa Aero Photography · כל הזכויות שמורות
+</footer>
+
+</body>
+</html>

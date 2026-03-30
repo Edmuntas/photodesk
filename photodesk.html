@@ -2951,11 +2951,10 @@ function bulkSetStatus(newStatus) {
 function bulkDelete() {
   const ids = [...window._bulkSelected];
   if (!ids.length) return;
-  if (!confirm(`למחוק ${ids.length} נכסים? לא ניתן לשחזר.`)) return;
-  store.listings = store.listings.filter(l => !ids.includes(l.id));
-  saveStore();
+  if (!confirm(`להעביר ${ids.length} נכסים לארכיון? ניתן לשחזר בכל עת.`)) return;
+  ids.forEach(id => _archiveItem('listings', id));
   bulkClearSelection();
-  toast(`${ids.length} נכסים נמחקו`, 'success');
+  toast(`${ids.length} נכסים הועברו לארכיון`, 'success');
 }
 
 function bulkClearSelection() {
