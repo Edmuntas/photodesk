@@ -683,7 +683,11 @@
   .svc-card.card-hidden, .pkg-card.card-hidden { opacity:.45; }
   .svc-card.card-inactive, .pkg-card.card-inactive { border: 1.5px dashed var(--border) !important; }
   .svc-card .card-ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 14px; background:var(--surface2); border-radius:0 0 var(--radius) var(--radius); margin:10px -14px -14px; border-top:1px solid var(--border); }
-  .pkg-card .card-ctrl-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 10px; background:rgba(0,0,0,.04); border-radius:0 0 12px 12px; margin:10px -14px -14px; border-top:1px solid rgba(0,0,0,.08); }
+  .pkg-card .card-ctrl-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; background:rgba(0,0,0,.04); border-radius:0 0 12px 12px; margin:10px -14px -14px; border-top:1px solid rgba(0,0,0,.08); }
+  .pkg-card .card-ctrl-row .toggle-sw:first-child span { font-weight:700; color:var(--text); font-size:13px; }
+  .pkg-card .card-ctrl-row .toggle-sw:not(:first-child) { opacity:0.72; }
+  .pkg-card .card-ctrl-row::before { content:''; display:none; }
+  .pkg-card .card-ctrl-row .toggle-sw:nth-child(2) { border-right:1px solid var(--border); padding-right:12px; }
 
   /* ── PROMOTIONS PAGE ─────────────── */
   .promo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
@@ -716,13 +720,13 @@
     border-radius: var(--radius);
     padding: 20px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s;
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
   }
-  .pkg-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--pkg-color, var(--accent)); border-radius: var(--radius) var(--radius) 0 0; }
-  .pkg-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .pkg-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--pkg-color, var(--accent)); border-radius: var(--radius) var(--radius) 0 0; }
+  .pkg-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06); }
 
   .pkg-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; color: var(--text); }
   .pkg-price { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1; margin: 10px 0 4px; }
@@ -1419,7 +1423,10 @@
   .booking-card:hover { background: var(--bg); }
   .booking-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
   .booking-tag { font-size: 11px; background: var(--surface2); border: 1px solid var(--border); padding: 2px 9px; border-radius: 20px; color: var(--text-muted); }
-  .booking-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .booking-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+  .booking-actions .btn-primary { font-size: 13px !important; padding: 7px 16px !important; box-shadow: 0 2px 8px rgba(249,115,22,0.25); }
+  .booking-actions .btn-danger  { font-size: 13px !important; padding: 7px 12px !important; }
+  .booking-actions .btn-ghost   { font-size: 12px !important; }
 
   /* ── PIPELINE ────────────────────── */
   .pipeline-section { margin-bottom: 20px; }
@@ -1510,11 +1517,13 @@
 
   /* ── TODAY BANNER ───────────────── */
   .today-banner {
-    background: linear-gradient(135deg, var(--accent) 0%, #f05a14 100%);
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
     color: #fff;
-    padding: 12px 24px;
-    border-bottom: 1px solid rgba(255,255,255,0.15);
+    padding: 10px 24px;
+    border-bottom: 2px solid #fbbf24;
+    border-top: 1px solid rgba(255,255,255,0.1);
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(217,119,6,0.25);
   }
   .today-banner-content { display: flex; align-items: center; gap: 14px; }
   .today-banner-icon { font-size: 22px; flex-shrink: 0; }
@@ -5546,6 +5555,23 @@ function approveBooking(id) {
   saveStore();
   renderOrders();
   updateOrdersBadge();
+
+  // WhatsApp confirmation to client
+  const phone = b.client.phone || '';
+  if (phone) {
+    const bizName = store.settings?.businessName || 'Sisa Aero Photography';
+    const clientName = b.client.first ? `${b.client.first}` : '';
+    const address = `${b.property.address}, ${b.property.city}`;
+    const msg = encodeURIComponent(
+      `שלום ${clientName} 👋\n` +
+      `הזמנתך לצילום הנכס ב${address} התקבלה ואושרה ✅\n` +
+      `ניצור איתך קשר בקרוב לתיאום הזמן המדויק של הצילום.\n` +
+      `${bizName}`
+    );
+    const digits = phone.replace(/[^0-9]/g, '');
+    const waPhone = digits.startsWith('972') ? digits : '972' + digits.replace(/^0/, '');
+    window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank');
+  }
 }
 
 function rejectBooking(id) {

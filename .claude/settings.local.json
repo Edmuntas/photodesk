@@ -23,7 +23,8 @@
       "Bash(grep -n import.html /Users/edmontmac16max/photodesk/*.html)",
       "Bash(git rm:*)",
       "Bash(pip3 install:*)",
-      "Bash(python3 -m pytest tests.py -q)"
+      "Bash(python3 -m pytest tests.py -q)",
+      "Bash(git config:*)"
     ]
   }
 }
