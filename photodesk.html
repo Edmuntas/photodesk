@@ -482,31 +482,42 @@
   .deliver-icon:hover { opacity:.7; }
 
   /* ── DETAIL PANEL ───────────────── */
-  .detail-panel {
-    position: fixed;
-    top: 0; right: 0; bottom: 0;
-    width: 520px;
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: -4px 0 24px rgba(0,0,0,0.08);
-  }
-
-  .detail-panel.open { transform: translateX(0); }
-
   .panel-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.25);
+    background: rgba(0,0,0,0.55);
     z-index: 99;
     display: none;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
   }
-  .panel-overlay.open { display: block; }
+  .panel-overlay.open {
+    display: flex;
+  }
+
+  .detail-panel {
+    position: relative;
+    width: 75vw;
+    height: 82vh;
+    max-width: 1100px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.94) translateY(16px);
+    opacity: 0;
+    transition: transform 0.22s cubic-bezier(0.34,1.3,0.64,1), opacity 0.18s ease;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35), 0 4px 20px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+
+  .detail-panel.open {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 
   .panel-topbar {
     display: flex;
@@ -1624,7 +1635,7 @@
 
   .stats-row { grid-template-columns: repeat(3, 1fr) !important; }
   .pkg-grid { grid-template-columns: repeat(2, 1fr); }
-  .detail-panel { width: 420px; }
+  .detail-panel { width: 85vw; height: 86vh; }
   .modal { width: min(520px, 95vw); }
 }
 
@@ -1714,18 +1725,13 @@
   table { min-width: 540px; }
   thead th, tbody td { padding: 10px 14px; }
 
-  /* Detail panel: full screen bottom sheet */
+  /* Detail panel: full screen on mobile */
   .detail-panel {
-    width: 100% !important;
-    top: auto !important;
-    height: 92vh;
-    border-radius: 20px 20px 0 0;
+    width: 96vw !important;
+    height: 92vh !important;
+    border-radius: 14px;
     border-left: none;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
   }
-  .detail-panel.open { transform: translateY(0); }
 
   /* Modal: bottom sheet */
   .modal-bg { align-items: flex-end !important; padding-bottom: 0; }
@@ -2419,11 +2425,11 @@
   </div><!-- /content -->
 </div><!-- /main -->
 
-<!-- PANEL OVERLAY -->
-<div class="panel-overlay" id="panel-overlay" onclick="closePanel(); closeCustomerPanel();"></div>
+<!-- PANEL OVERLAY (click backdrop to close) -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel(); closeCustomerPanel();">
 
 <!-- LISTING DETAIL PANEL -->
-<div class="detail-panel" id="listing-panel">
+<div class="detail-panel" id="listing-panel" onclick="event.stopPropagation()">
   <div class="panel-topbar">
     <div>
       <div style="font-family: var(--font-display); font-size:16px;" id="panel-listing-title">פרטי נכס</div>
@@ -2607,7 +2613,7 @@
 </div>
 
 <!-- CUSTOMER PANEL -->
-<div class="detail-panel" id="customer-panel">
+<div class="detail-panel" id="customer-panel" onclick="event.stopPropagation()">
   <!-- Hero -->
   <div class="cust-panel-hero">
     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -2700,6 +2706,8 @@
     </div>
 
   </div>
+</div>
+<!-- /PANEL OVERLAY -->
 </div>
 
 <!-- NEW LISTING MODAL -->
