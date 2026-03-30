@@ -2236,6 +2236,36 @@
 
     <!-- ════════════════ ORDERS PAGE ════════════════ -->
     <div class="page" id="page-orders">
+
+      <!-- Stat cards -->
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr); margin-bottom:20px;">
+        <div class="stat-card" id="osc-all" style="--accent-color:var(--accent); cursor:pointer;" onclick="filterOrders('')">
+          <div class="stat-label">כל ההזמנות</div>
+          <div class="stat-value" id="osc-val-all">0</div>
+          <div class="stat-sub">פעילות</div>
+        </div>
+        <div class="stat-card" id="osc-approval" style="--accent-color:var(--amber); cursor:pointer;" onclick="filterOrders('ממתין לאישור')">
+          <div class="stat-label">ממתין לאישור</div>
+          <div class="stat-value" id="osc-val-approval" style="color:var(--amber)">0</div>
+          <div class="stat-sub">הזמנות חדשות</div>
+        </div>
+        <div class="stat-card" id="osc-processing" style="--accent-color:var(--blue); cursor:pointer;" onclick="filterOrders('בעיבוד')">
+          <div class="stat-label">בעיבוד</div>
+          <div class="stat-value" id="osc-val-processing" style="color:var(--blue)">0</div>
+          <div class="stat-sub">מתוכנן + צולם + בעיבוד</div>
+        </div>
+        <div class="stat-card" id="osc-pending" style="--accent-color:#EF4444; cursor:pointer;" onclick="filterOrders('ממתין למסירה')">
+          <div class="stat-label">ממתין למסירה</div>
+          <div class="stat-value" id="osc-val-pending" style="color:#EF4444">0</div>
+          <div class="stat-sub">מוכן לשליחה</div>
+        </div>
+        <div class="stat-card" id="osc-unpaid" style="--accent-color:#10B981; cursor:pointer;" onclick="filterOrders('__unpaid__')">
+          <div class="stat-label">לשולם</div>
+          <div class="stat-value" id="osc-val-unpaid" style="color:#10B981">0</div>
+          <div class="stat-sub">ממתין לתשלום</div>
+        </div>
+      </div>
+
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
         <div style="font-size:13px; color:var(--text-muted);">כל ההזמנות הפעילות — נעלמות רק לאחר מסירה</div>
         <a href="booking.html" target="_blank" class="btn btn-ghost" style="font-size:12px; text-decoration:none;">🔗 לינק להזמנה</a>
@@ -3396,6 +3426,12 @@ function badgeClass(status) {
 }
 
 function filterByStatus(val) { filterStatus = val; renderListings(); }
+
+let _ordersFilter = ''; // '' | status | '__unpaid__'
+function filterOrders(val) {
+  _ordersFilter = (_ordersFilter === val) ? '' : val;
+  renderOrders();
+}
 
 let _statCardFilter = ''; // '' | 'ממתין למסירה' | 'נמסר' | '__month__'
 function filterByStatCard(val) {
@@ -5900,16 +5936,55 @@ function renderOrders() {
   const pending  = loadPendingBookings();
   const active   = store.orders.filter(o => ORDER_PIPELINE.includes(o.status));
   const listEl   = document.getElementById('orders-list');
-  const total    = pending.length + active.length;
 
   updateOrdersBadge();
+
+  // ── Update stat card numbers ──────────────────
+  const inProcessing = active.filter(o => ['מתוכנן','צולם','בעיבוד'].includes(o.status));
+  const waitDelivery = active.filter(o => o.status === 'ממתין למסירה');
+  const unpaidOrders = active.filter(o => !o.paymentStatus || o.paymentStatus === 'unpaid');
+  const scEl = id => document.getElementById(id);
+  if (scEl('osc-val-all'))        scEl('osc-val-all').textContent       = pending.length + active.length;
+  if (scEl('osc-val-approval'))   scEl('osc-val-approval').textContent  = pending.length;
+  if (scEl('osc-val-processing')) scEl('osc-val-processing').textContent= inProcessing.length;
+  if (scEl('osc-val-pending'))    scEl('osc-val-pending').textContent   = waitDelivery.length;
+  if (scEl('osc-val-unpaid'))     scEl('osc-val-unpaid').textContent    = unpaidOrders.length;
+
+  // ── Active filter highlight ───────────────────
+  ['osc-all','osc-approval','osc-processing','osc-pending','osc-unpaid'].forEach(id => {
+    scEl(id)?.classList.remove('active-filter');
+  });
+  if      (_ordersFilter === '')               scEl('osc-all')?.classList.add('active-filter');
+  else if (_ordersFilter === 'ממתין לאישור')  scEl('osc-approval')?.classList.add('active-filter');
+  else if (_ordersFilter === 'בעיבוד')        scEl('osc-processing')?.classList.add('active-filter');
+  else if (_ordersFilter === 'ממתין למסירה')  scEl('osc-pending')?.classList.add('active-filter');
+  else if (_ordersFilter === '__unpaid__')     scEl('osc-unpaid')?.classList.add('active-filter');
+
+  // ── Apply filter ──────────────────────────────
+  let filteredPending = pending;
+  let filteredActive  = active;
+
+  if (_ordersFilter === 'ממתין לאישור') {
+    filteredActive = [];
+  } else if (_ordersFilter === 'בעיבוד') {
+    filteredPending = [];
+    filteredActive  = active.filter(o => ['מתוכנן','צולם','בעיבוד'].includes(o.status));
+  } else if (_ordersFilter === 'ממתין למסירה') {
+    filteredPending = [];
+    filteredActive  = active.filter(o => o.status === 'ממתין למסירה');
+  } else if (_ordersFilter === '__unpaid__') {
+    filteredPending = pending.filter(() => true); // pending are always unpaid
+    filteredActive  = active.filter(o => !o.paymentStatus || o.paymentStatus === 'unpaid');
+  }
+
+  const total = filteredPending.length + filteredActive.length;
 
   if (!total) {
     listEl.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">📋</div>
-        <div class="empty-title">אין הזמנות פעילות</div>
-        <div class="empty-sub">שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן</div>
+        <div class="empty-title">${_ordersFilter ? 'אין הזמנות בקטגוריה זו' : 'אין הזמנות פעילות'}</div>
+        <div class="empty-sub">${_ordersFilter ? 'נסה לבחור קטגוריה אחרת' : 'שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן'}</div>
       </div>`;
     return;
   }
@@ -5919,14 +5994,14 @@ function renderOrders() {
   let html = '';
 
   // ── Section 1: pending approvals ──────────────
-  if (pending.length) {
+  if (filteredPending.length) {
     html += `<div class="pipeline-section">
       <div class="table-wrap">
         <div class="table-header">
           <span class="table-title">ממתין לאישור</span>
-          <span class="table-count">${pending.length}</span>
+          <span class="table-count">${filteredPending.length}</span>
         </div>`;
-    html += pending.map(b => {
+    html += filteredPending.map(b => {
       const p = b.property;
       const cl = b.client.isExisting
         ? (store.customers.find(c => c.id === b.client.id) || {first:'?', last:''})
@@ -5962,7 +6037,7 @@ function renderOrders() {
 
   // ── Section 2: active listings by status ──────
   STATUSES.forEach(status => {
-    const group = active.filter(l => l.status === status);
+    const group = filteredActive.filter(l => l.status === status);
     if (!group.length) return;
 
     const nextStatus = { 'מתוכנן':'צולם', 'צולם':'בעיבוד', 'בעיבוד':'ממתין למסירה', 'ממתין למסירה':'נמסר' };
