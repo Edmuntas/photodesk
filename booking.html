@@ -399,7 +399,7 @@
   .ptype-option input:checked + .ptype-label .ptype-name { color: var(--accent); }
 
   /* ── PACKAGES ────────────────────── */
-  .packages-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 
   .pkg-option { position: relative; cursor: pointer; }
   .pkg-option input { position: absolute; opacity: 0; width: 0; height: 0; }
@@ -1126,7 +1126,7 @@ function loadSettings() {
 // ── INIT ───────────────────────────────────────────
 (function init() {
   const s = loadSettings();
-  if (s.businessName) document.getElementById('header-business').textContent = s.businessName;
+  document.getElementById('header-business').textContent = s.businessName || 'Edmont RE media';
   renderPropTypes();
   renderPackages();
 })();
@@ -1278,7 +1278,7 @@ function validateStep(step) {
         if (empty) ok = false;
       });
       const emailEl = document.getElementById('cust-email');
-      const emailInvalid = !email || !email.includes('@');
+      const emailInvalid = !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       emailEl.classList.toggle('error', emailInvalid);
       if (emailInvalid) ok = false;
       if (!ok) { shake(document.querySelector('#panel-1 .form-input.error')); return false; }
@@ -1291,6 +1291,19 @@ function validateStep(step) {
       document.getElementById(id).classList.toggle('error', !document.getElementById(id).value.trim());
     });
     if (!address || !city) { shake(document.querySelector('#panel-2 .form-input.error')); return false; }
+  }
+  if (step === 3) {
+    if (!selectedPackageId) {
+      document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
+      return false;
+    }
+    const dateEl = document.getElementById('shoot-date');
+    if (!dateEl.value) { dateEl.classList.add('error'); dateEl.scrollIntoView({ behavior:'smooth', block:'center' }); return false; }
+    if (new Date(dateEl.value) < new Date(new Date().toDateString())) {
+      dateEl.classList.add('error');
+      dateEl.scrollIntoView({ behavior:'smooth', block:'center' });
+      return false;
+    }
   }
   return true;
 }
@@ -1315,9 +1328,10 @@ function lookupClient() {
   if (!q) return;
   let customers = [];
   try { customers = JSON.parse(localStorage.getItem('photoDesk_store') || '{}').customers || []; } catch(e) {}
+  const normPhone = s => s.replace(/[^\d]/g,'').slice(-9);
   const m = customers.find(c =>
     (c.email||'').toLowerCase() === q ||
-    (c.phone||'').replace(/[-\s]/g,'') === q.replace(/[-\s]/g,'')
+    normPhone(c.phone||'') === normPhone(q)
   );
   if (m) {
     foundClientId = m.id;
@@ -1354,9 +1368,11 @@ function buildReview() {
     }
     return;
   }
-  // BUG #3 FIX: require date selection
+  // Require valid future date selection
   const shootDateEl = document.getElementById('shoot-date');
-  if (!shootDateEl.value) {
+  const shootDateVal = shootDateEl.value;
+  const isPastDate = shootDateVal && new Date(shootDateVal) < new Date(new Date().toDateString());
+  if (!shootDateVal || isPastDate) {
     shootDateEl.classList.add('error');
     shootDateEl.scrollIntoView({ behavior:'smooth', block:'center' });
     shootDateEl.focus();
@@ -1424,7 +1440,7 @@ async function submitBooking() {
         listings: 0
       };
 
-  const finalPrice = pt ? Math.round(pkg.price * pt.mult / 50) * 50 : pkg.price;
+  const finalPrice = pt ? Math.round(pkg.price * pt.mult) : pkg.price;
 
   const booking = {
     id: 'B' + Date.now(),
@@ -1454,7 +1470,10 @@ async function submitBooking() {
   } catch(err) {
     btn.disabled = false;
     btn.textContent = '✅ שלח הזמנה';
-    alert('שגיאה בשמירת ההזמנה. בדוק חיבור אינטרנט ונסה שנית.');
+    const msg = err.code === 'permission-denied' ? 'שגיאת הרשאות — פנה לבעל האתר'
+              : err.code === 'unavailable'        ? 'בעיית רשת — בדוק חיבור אינטרנט ונסה שנית'
+              : 'שגיאה בשמירת ההזמנה — נסה שנית';
+    alert(msg);
     return;
   }
 

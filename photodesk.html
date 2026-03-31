@@ -1834,6 +1834,10 @@
   align-items: start;
 }
 @media (max-width: 900px) { .dash-layout { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .stats-row[style*="repeat(5"] { grid-template-columns: repeat(2, 1fr) !important; }
+}
 
 .dash-kpi-row {
   display: grid;
@@ -2659,7 +2663,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">סכום שהתקבל (₪)</label>
-        <input class="form-input" type="number" id="panel-payment-amount" placeholder="0">
+        <input class="form-input" type="number" id="panel-payment-amount" placeholder="0" min="0" step="1">
       </div>
       <div class="form-group">
         <label class="form-label">מסמכים כספיים</label>
@@ -3130,7 +3134,9 @@ function openNewListingModal() {
       `<option value="${h(p.id)}">${h(p.name)} — ₪${(p.price||0).toLocaleString('he-IL')} · ${fmtD(p.duration)}</option>`
     ).join('');
   } else {
-    sel.innerHTML = '<option value="">אין חבילות — הוסף בהגדרות</option>';
+    toast('הוסף חבילות תחילה בעמוד חבילות', 'error');
+    navigate('packages');
+    return;
   }
   openModal('new-listing-modal');
 }
@@ -3557,7 +3563,7 @@ function renderListings() {
         <div class="listing-thumb">
           <div class="thumb-img">${l.photoUrls && l.photoUrls[0] ? `<img src="${l.photoUrls[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : '🏠'}</div>
           <div>
-            <div class="thumb-address">${l.address}</div>
+            <div class="thumb-address">${h(l.address)}</div>
             <div class="thumb-sub">${h(l.city)}${l.state ? ' · ' + h(l.state) : ''} · ${l.beds} חד' · ${l.photos||0} תמונות</div>
           </div>
         </div>
@@ -3877,8 +3883,8 @@ function openInvoice(id) {
     </div>
     <div class="meta-box">
       <div class="meta-label">נכס</div>
-      <div class="meta-val">${l.address}</div>
-      <div class="meta-sub">${l.city || ''}</div>
+      <div class="meta-val">${h(l.address)}</div>
+      <div class="meta-sub">${h(l.city || '')}</div>
     </div>
     <div class="meta-box">
       <div class="meta-label">סטטוס</div>
@@ -4572,12 +4578,12 @@ function renderPackages() {
         : '<span class="vis-badge active">✓ פעיל</span>';
     const activePromo = _getActivePromoForPackage(p.id);
     const promoBadge = activePromo
-      ? `<span class="vis-badge featured" title="${activePromo.name}">🏷️ ${activePromo.discount_type==='pct' ? activePromo.discount_value+'%' : '₪'+activePromo.discount_value} הנחה</span>`
+      ? `<span class="vis-badge featured" title="${h(activePromo.name)}">🏷️ ${activePromo.discount_type==='pct' ? activePromo.discount_value+'%' : '₪'+activePromo.discount_value} הנחה</span>`
       : '';
     return `
     <div class="pkg-card ${dimClass}" style="--pkg-color:${p.color}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
-        <div class="pkg-name">${p.name}</div>
+        <div class="pkg-name">${h(p.name)}</div>
         <div style="display:flex;gap:4px;align-items:center;margin-right:auto;padding-right:8px;">
           ${statusBadge} ${promoBadge}
           <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();editPackage('${p.id}')">ערוך</button>
@@ -4642,7 +4648,7 @@ function _openPkgModal(p) {
       <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid ${included.has(s.name)?'var(--accent)':'var(--border)'};background:${included.has(s.name)?'var(--accent-light)':'var(--surface2)'};transition:all .15s;" id="svc-row-${s.id}">
         <input type="checkbox" id="mpkg-svc-${s.id}" value="${s.name}" ${included.has(s.name)?'checked':''} onchange="_toggleSvcRow('${s.id}',this)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0;" />
         <span style="font-size:18px;">${s.icon||'🎯'}</span>
-        <span style="font-size:13px;font-weight:500;">${s.name}</span>
+        <span style="font-size:13px;font-weight:500;">${h(s.name)}</span>
         <span style="font-size:11px;color:var(--text-muted);margin-right:auto;">${s.category==='addon'?'תוספת':'ראשי'}</span>
       </label>`).join('');
   } else {
@@ -4742,8 +4748,8 @@ function renderServices() {
         <button class="svc-btn del" onclick="deleteService('${s.id}')">מחק</button>
       </div>
       <div class="svc-card-icon">${s.icon || '🎯'}</div>
-      <div class="svc-card-name">${s.name}</div>
-      <div class="svc-card-desc">${s.description || ''}</div>
+      <div class="svc-card-name">${h(s.name)}</div>
+      <div class="svc-card-desc">${h(s.description || '')}</div>
       ${s.deliverables ? `
         <div class="svc-deliverables">
           <div class="svc-deliverables-label">מה מקבלים</div>
@@ -5247,7 +5253,7 @@ function _renderCalSidebar() {
     return `<div class="shoot-item js-open-listing" style="border-right-color:${color};cursor:pointer;" data-listing-id="${h(l.id)}">
       <div class="shoot-time">${dateLabel}</div>
       <div style="flex:1;">
-        <div class="shoot-address">${l.address}</div>
+        <div class="shoot-address">${h(l.address)}</div>
         <div class="shoot-pkg" style="display:flex;align-items:center;gap:6px;margin-top:2px;">
           <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span>
           <span>${h(l.pkg)}</span>
@@ -5277,7 +5283,7 @@ function openDayPanel(year, month, day) {
     return `<div class="day-listing-row" onclick="closeDayPanel();openListing('${h(l.id)}')">
       <span class="day-listing-dot" style="background:${color}"></span>
       <div class="day-listing-info">
-        <div class="day-listing-addr">${l.address}</div>
+        <div class="day-listing-addr">${h(l.address)}</div>
         <div class="day-listing-sub">${h(l.pkg)} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span></div>
       </div>
       <span style="font-size:18px;color:var(--text-dim);">›</span>
@@ -5466,7 +5472,7 @@ function renderTodayBanner() {
     <div class="today-banner-icon">📸</div>
     <div>
       <div class="today-banner-label">יש לך צילום היום</div>
-      <div class="today-banner-main">${s.address}${s.city ? ' · ' + s.city : ''} · ${hhmm}</div>
+      <div class="today-banner-main">${h(s.address)}${s.city ? ' · ' + h(s.city) : ''} · ${hhmm}</div>
     </div>
     ${extra}
     <div class="today-banner-actions">
@@ -5590,7 +5596,7 @@ function openCustomer(id) {
     ? active.map(l => `
         <div class="cust-listing-row" onclick="openListingFromCustomer('${h(l.id)}')">
           <div style="flex:1;">
-            <div class="cust-listing-addr">${l.address}</div>
+            <div class="cust-listing-addr">${h(l.address)}</div>
             <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)}</div>
           </div>
           <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
@@ -5603,7 +5609,7 @@ function openCustomer(id) {
     ? delivered.map(l => `
         <div class="cust-listing-row" onclick="openListingFromCustomer('${h(l.id)}')">
           <div style="flex:1;">
-            <div class="cust-listing-addr">${l.address}</div>
+            <div class="cust-listing-addr">${h(l.address)}</div>
             <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)} · ${l.created}</div>
           </div>
           <span style="font-size:13px; font-weight:600; color:var(--accent);">
@@ -5975,19 +5981,19 @@ function renderPromotions() {
     const startFmt = pr.start_date ? new Date(pr.start_date).toLocaleDateString('he-IL') : 'ללא הגבלה';
     const endFmt   = pr.end_date   ? new Date(pr.end_date).toLocaleDateString('he-IL')   : 'ללא הגבלה';
     const pkgNames = pr.applicable_packages?.length
-      ? pr.applicable_packages.map(id => store.packages.find(p=>p.id===id)?.name||id).join(', ')
+      ? pr.applicable_packages.map(id => h(store.packages.find(p=>p.id===id)?.name||id)).join(', ')
       : 'כל החבילות';
     const svcNames = pr.applicable_services?.length
-      ? pr.applicable_services.map(id => store.services.find(s=>s.id===id)?.name||id).join(', ')
+      ? pr.applicable_services.map(id => h(store.services.find(s=>s.id===id)?.name||id)).join(', ')
       : 'כל השירותים';
     return `
     <div class="promo-card ${st==='live'?'promo-active':''} ${st==='expired'?'promo-expired':''}">
       <div class="promo-card-header">
-        <div class="promo-card-name">${pr.name}</div>
+        <div class="promo-card-name">${h(pr.name)}</div>
         ${badgeMap[st]}
       </div>
       <div class="promo-discount">${discStr}</div>
-      ${pr.description ? `<div class="promo-desc">${pr.description}</div>` : ''}
+      ${pr.description ? `<div class="promo-desc">${h(pr.description)}</div>` : ''}
       <div class="promo-dates">
         <span>📅 מ: ${startFmt}</span>
         <span>עד: ${endFmt}</span>
@@ -6062,12 +6068,12 @@ function _renderPromoTargetSelectors(pr) {
   document.getElementById('mpromo-packages').innerHTML = store.packages.map(p => `
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0;">
       <input type="checkbox" value="${p.id}" ${selPkgs.includes(p.id)?'checked':''} style="accent-color:var(--accent);">
-      <span>${p.name}</span>
+      <span>${h(p.name)}</span>
     </label>`).join('') || '<div style="font-size:12px;color:var(--text-muted);">אין חבילות</div>';
   document.getElementById('mpromo-services').innerHTML = store.services.map(s => `
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0;">
       <input type="checkbox" value="${s.id}" ${selSvcs.includes(s.id)?'checked':''} style="accent-color:var(--accent);">
-      <span>${s.icon||''} ${s.name}</span>
+      <span>${h(s.icon||'')} ${h(s.name)}</span>
     </label>`).join('') || '<div style="font-size:12px;color:var(--text-muted);">אין שירותים</div>';
 }
 
@@ -6144,7 +6150,8 @@ function _syncListingToOrder(l) {
   const o = store.orders.find(x => x.id === l.id);
   if (!o) return;
   o.address = l.address; o.city = l.city || '';
-  o.pkg = l.pkg || ''; o.status = l.status;
+  o.pkg = l.pkg || ''; o.pkgId = l.pkgId || ''; o.price = l.price || 0;
+  o.status = l.status;
   o.customer = l.customer || ''; o.beds = l.beds || 0;
   o.shootDate = l.shootDate || '';
   o.paymentStatus = l.paymentStatus || 'unpaid';
@@ -6256,7 +6263,7 @@ function renderOrders() {
       return `
         <div class="booking-card">
           <div>
-            <div style="font-weight:600; font-size:14px;">${p.address}, ${p.city}</div>
+            <div style="font-weight:600; font-size:14px;">${h(p.address)}, ${h(p.city)}</div>
             <div class="booking-meta">
               <span class="badge badge-pending">ממתין לאישור</span>
               <span class="booking-tag">👤 ${name.trim()}</span>
@@ -6411,6 +6418,7 @@ function approveBooking(id) {
 
   // Also create an order entry (independent from listing)
   _ensureOrder(store.listings[0]);
+  _syncListingToOrder(store.listings[0]);
 
   // Remove from pending
   savePendingBookings(pending.filter(x => x.id !== id));
@@ -6705,7 +6713,7 @@ function _renderArchivePanel(type, items) {
   const expiringSoon = items.filter(x => toMs(x.deletedAt) > 0 && toMs(x.deletedAt) < cutoff90 + 7 * 24 * 60 * 60 * 1000).length;
 
   let html = `<div class="archive-cleanup-bar">
-    <span>🗄️ ${total} פריטים בארכיון${expiringSoon ? ` · <strong>${expiringSoon} פגים עוד 7 ימים</strong>` : ''}</span>
+    <span>🗄️ ${total} פריטים בארכיון${expiringSoon ? ` · <strong>${expiringSoon} פגים בעוד 7 ימים</strong>` : ''}</span>
     <span style="color:var(--text-dim);">מחיקה אוטומטית לאחר 90 יום מהארכיון</span>
   </div>`;
   items.sort((a,b) => toMs(b.deletedAt) - toMs(a.deletedAt)).forEach(item => {
