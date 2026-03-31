@@ -1043,7 +1043,7 @@ const PROPERTY_TYPES = [
   { id:'other',  icon:'🏘️', name:'אחר',             mult:1.0 },
 ];
 
-const packages = loadPackages();
+let packages = loadPackages();
 let selectedPackageId = null;
 let selectedPropType = null;
 let foundClientId = null;
@@ -1528,6 +1528,25 @@ function getSelectedTimeSlots() {
 }
 
 renderPackages();
+
+// NH-5: Firestore fallback if localStorage had no packages
+(function() {
+  try {
+    const saved = localStorage.getItem('photoDesk_store');
+    const hasLocal = saved && JSON.parse(saved)?.packages?.length;
+    if (!hasLocal) {
+      db.collection('store').doc('data').get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.packages && data.packages.length) {
+            packages = data.packages.filter(p => p.is_active !== false && p.is_visible !== false);
+            if (currentStep === 1) renderPackages();
+          }
+        }
+      }).catch(() => {});
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>

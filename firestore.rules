@@ -22,7 +22,9 @@ service cloud.firestore {
     }
 
     match /store/{docId} {
-      allow read, write: if isOwner();
+      // Public config (packages, services, schedule) is readable by booking form
+      allow read: if docId == 'data' || isOwner();
+      allow write: if isOwner();
     }
 
     // ── Архив ─────────────────────────────────────────────────────────────

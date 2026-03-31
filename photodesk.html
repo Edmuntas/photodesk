@@ -2333,9 +2333,9 @@
           <div class="stat-value" id="osc-val-pending" style="color:#EF4444">0</div>
           <div class="stat-sub">מוכן לשליחה</div>
         </div>
-        <div class="stat-card" id="osc-unpaid" style="--accent-color:#10B981; cursor:pointer;" onclick="filterOrders('__unpaid__')">
+        <div class="stat-card" id="osc-unpaid" style="--accent-color:#EF4444; cursor:pointer;" onclick="filterOrders('__unpaid__')">
           <div class="stat-label">לשולם</div>
-          <div class="stat-value" id="osc-val-unpaid" style="color:#10B981">0</div>
+          <div class="stat-value" id="osc-val-unpaid" style="color:#EF4444">0</div>
           <div class="stat-sub">ממתין לתשלום</div>
         </div>
       </div>
@@ -2456,11 +2456,11 @@
         <div class="schedule-grid" id="schedule-grid"></div>
         <div style="margin-top:20px;">
           <div class="section-title">אזור זמן</div>
-          <select class="form-select" style="max-width:260px;">
-            <option selected>Asia/Jerusalem (IDT)</option>
-            <option>America/New_York (EDT)</option>
-            <option>America/Los_Angeles (PDT)</option>
-            <option>Europe/London (GMT)</option>
+          <select class="form-select" id="avail-timezone" style="max-width:260px;" onchange="store.settings.timezone=this.value; saveStore();">
+            <option value="Asia/Jerusalem">Asia/Jerusalem (IDT)</option>
+            <option value="America/New_York">America/New_York (EDT)</option>
+            <option value="America/Los_Angeles">America/Los_Angeles (PDT)</option>
+            <option value="Europe/London">Europe/London (GMT)</option>
           </select>
         </div>
       </div>
@@ -2852,9 +2852,7 @@
     <div class="form-group">
       <label class="form-label">חבילה</label>
       <select class="form-select" id="new-package">
-        <option>חבילה בסיסית — ₪800 · 90 דק'</option>
-        <option>חבילה פרמיום — ₪1,200 · 3 שעות</option>
-        <option>חבילה אינסופית — ₪2,000 · 4 שעות</option>
+        <option value="">טוען חבילות...</option>
       </select>
     </div>
     <div class="form-group">
@@ -2865,6 +2863,7 @@
       <label class="form-label">סטטוס</label>
       <select class="form-select" id="new-status">
         <option>מתוכנן</option>
+        <option>ממתין לאישור</option>
         <option>ממתין למסירה</option>
         <option>צולם</option>
         <option>בעיבוד</option>
@@ -3107,8 +3106,28 @@ function navigate(page) {
   renderPage(page);
 }
 
+function openNewListingModal() {
+  const sel = document.getElementById('new-package');
+  const active = store.packages.filter(p => p.is_active !== false);
+  if (active.length) {
+    const fmtD = min => {
+      if (!min) return '';
+      const hh = Math.floor(min/60), mm = min % 60;
+      const hStr = hh === 1 ? 'שעה' : hh > 1 ? hh + ' שע\'' : '';
+      const mStr = mm ? mm + ' דק\'' : '';
+      return hStr && mStr ? hStr + ' ' + mStr : hStr || mStr || min + ' דק\'';
+    };
+    sel.innerHTML = active.map(p =>
+      `<option value="${h(p.id)}">${h(p.name)} — ₪${(p.price||0).toLocaleString('he-IL')} · ${fmtD(p.duration)}</option>`
+    ).join('');
+  } else {
+    sel.innerHTML = '<option value="">אין חבילות — הוסף בהגדרות</option>';
+  }
+  openModal('new-listing-modal');
+}
+
 function primaryAction() {
-  if (currentPage === 'listings')      openModal('new-listing-modal');
+  if (currentPage === 'listings')      openNewListingModal();
   else if (currentPage === 'customers')  openModal('new-customer-modal');
   else if (currentPage === 'orders')     openShareLinkModal();
   else if (currentPage === 'packages')   addPackage();
@@ -3339,8 +3358,8 @@ function renderDashRecentOrders() {
       <div class="recent-order-item js-open-listing" data-listing-id="${h(l.id)}">
         <div class="ro-avatar">🏠</div>
         <div style="flex:1;overflow:hidden;">
-          <div class="ro-address">${l.address}</div>
-          <div class="ro-sub">${l.city || ''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 7px;">${h(l.status)}</span></div>
+          <div class="ro-address">${h(l.address)}</div>
+          <div class="ro-sub">${h(l.city || '')} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 7px;">${h(l.status)}</span></div>
           <div class="ro-fin-row">${payBadge}${reqBadge}${invBadge}</div>
         </div>
         <div class="ro-right">
@@ -3424,8 +3443,8 @@ function renderDashUpcoming() {
           <div class="us-date-mon">${mon}</div>
         </div>
         <div style="flex:1;overflow:hidden;">
-          <div class="us-address">${l.address}</div>
-          <div class="us-sub">${l.city || ''} · ${l.pkg || ''}</div>
+          <div class="us-address">${h(l.address)}</div>
+          <div class="us-sub">${h(l.city || '')} · ${h(l.pkg || '')}</div>
         </div>
       </div>`;
   }).join('');
@@ -3571,7 +3590,7 @@ function badgeClass(status) {
   return m[status] || 'badge-pending';
 }
 
-function filterByStatus(val) { filterStatus = val; renderListings(); }
+function filterByStatus(val) { filterStatus = val; _statCardFilter = val || ''; renderListings(); }
 
 let _ordersFilter = ''; // '' | status | '__unpaid__'
 function filterOrders(val) {
@@ -3731,7 +3750,7 @@ function renderKanban(list) {
         </div>
         ${cards.length ? cards.map(l => `
           <div class="kanban-card js-open-listing" data-listing-id="${h(l.id)}">
-            <div class="kanban-card-addr">${l.address}</div>
+            <div class="kanban-card-addr">${h(l.address)}</div>
             <div class="kanban-card-meta">
               ${l.city ? `📍 ${h(l.city)}` : ''}
               ${l.beds ? ` · ${l.beds} חד'` : ''}
@@ -4208,12 +4227,9 @@ function createListing() {
   const addr = document.getElementById('new-address').value;
   if (!addr) { toast('נא להזין כתובת', 'error'); return; }
   const id = 'L' + Date.now();
-  const pkgRaw = document.getElementById('new-package').value;
-  let pkg = pkgRaw.split('—')[0].trim();
-  const pkgExists = store.packages.some(p => p.name === pkg);
-  if (!pkgExists && store.packages.length) {
-    pkg = store.packages[0].name;
-  }
+  const selPkgId = document.getElementById('new-package').value;
+  const selPkg = store.packages.find(p => p.id === selPkgId);
+  const pkg = selPkg ? selPkg.name : '';
   store.listings.unshift({
     id, address: addr,
     city: document.getElementById('new-city').value,
@@ -4221,7 +4237,8 @@ function createListing() {
     zip:'', beds: +document.getElementById('new-beds').value||0,
     baths: +document.getElementById('new-baths').value||0,
     stories:1, area:0, lot:0, year:0,
-    pkg, status: document.getElementById('new-status').value,
+    pkg, pkgId: selPkg?.id || '', price: selPkg?.price || 0,
+    status: document.getElementById('new-status').value,
     customer:'', mls:'',
     created: new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'}),
     photos:0, desc:'', notes:'', agent:'',
@@ -4554,7 +4571,7 @@ function renderPackages() {
         </div>
       </div>
       <div class="pkg-price">₪${p.price.toLocaleString('he-IL')}<span> /צילום</span></div>
-      <div class="pkg-duration">⏱ ${p.duration >= 60 ? Math.floor(p.duration/60) + ' שעות' + (p.duration%60 ? ' ' + p.duration%60 + ' דק\'' : '') : p.duration + ' דק\''}</div>
+      <div class="pkg-duration">⏱ ${p.duration >= 60 ? (Math.floor(p.duration/60) === 1 ? 'שעה' : Math.floor(p.duration/60) + ' שעות') + (p.duration%60 ? ' ' + p.duration%60 + ' דק\'' : '') : p.duration + ' דק\''}</div>
       <div class="pkg-services">${p.services.map(s => `<span class="pkg-service-tag" onclick="showSvcTagPopup('${s.replace(/'/g,"\\'")}',event)" title="לחץ לפרטים">${s}</span>`).join('')}</div>
       ${p.addons && p.addons.length ? `<div style="font-size:11px;color:var(--text-dim);margin-top:10px;">תוספות: ${p.addons.join(', ')}</div>` : ''}
       <div class="card-ctrl-row">
@@ -5090,6 +5107,8 @@ function openLightbox(src) {
 //  AVAILABILITY
 // ══════════════════════════════════════════════════
 function renderSchedule() {
+  const tzSel = document.getElementById('avail-timezone');
+  if (tzSel && store.settings?.timezone) tzSel.value = store.settings.timezone;
   document.getElementById('schedule-grid').innerHTML = store.schedule.map((s, i) => {
     const timeInputs = s.enabled
       ? '<input type="time" value="' + s.start + '" style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text);font-size:12px;outline:none;" onchange="store.schedule[' + i + '].start=this.value"><span>–</span><input type="time" value="' + s.end + '" style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text);font-size:12px;outline:none;" onchange="store.schedule[' + i + '].end=this.value">'
@@ -6341,6 +6360,8 @@ function approveBooking(id) {
     lot: 0,
     year: +p.year || 0,
     pkg: b.package.name,
+    pkgId: b.package.id || '',
+    price: b.package.price || 0,
     status: 'מתוכנן',
     customer: customerId,
     mls: '',
@@ -6349,7 +6370,14 @@ function approveBooking(id) {
     desc: '',
     notes: p.notes || '',
     agent: '',
-    shootDate: b.shootDate || ''
+    shootDate: b.shootDate || '',
+    paymentStatus: 'unpaid',
+    paymentAmount: 0,
+    payReqSent: false,
+    invoiceSent: false,
+    deliveredPhotos: false,
+    deliveredVideo: false,
+    deliveredFloorplan: false
   });
 
   // Also create an order entry (independent from listing)
