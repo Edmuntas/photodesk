@@ -683,6 +683,15 @@
 
   .schedule-day { font-size: 13px; font-weight: 600; }
   .schedule-day.off { color: var(--text-dim); }
+  @media (max-width: 480px) {
+    .schedule-row { grid-template-columns: 36px 1fr; gap: 8px; }
+    .schedule-day .day-full { display: none; }
+    .schedule-day .day-short { display: inline; }
+  }
+  @media (min-width: 481px) {
+    .schedule-day .day-full { display: inline; }
+    .schedule-day .day-short { display: none; }
+  }
 
   .schedule-time { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
 
@@ -3076,7 +3085,7 @@ let calDate = new Date();
 const pageConfig = {
   dashboard:    { title:'דאשבורד',  btn:null },
   listings:     { title:'נכסים',    btn:'+ נכס חדש' },
-  orders:       { title:'הזמנות',   btn:'+ הזמנה חדשה' },
+  orders:       { title:'הזמנות',   btn:'🔗 שלח לינק הזמנה' },
   calendar:     { title:'יומן',     btn:'+ קבע צילום' },
   customers:    { title:'לקוחות',   btn:'+ הוסף לקוח' },
   packages:     { title:'חבילות',   btn:'+ חבילה חדשה' },
@@ -3608,7 +3617,11 @@ function filterByStatCard(val) {
 let _searchTimer = null;
 function handleSearch(val) {
   clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(() => { searchQuery = val; renderListings(); }, 200);
+  _searchTimer = setTimeout(() => {
+    searchQuery = val;
+    if (currentPage === 'customers') { customersSearch = val; renderCustomers(); }
+    else renderListings();
+  }, 200);
 }
 
 function _matchSearch(l, q) {
@@ -4190,6 +4203,7 @@ function saveListing() {
   currentListing.deliveredFloorplan = document.getElementById('panel-deliveredfloorplan').checked;
   currentListing.payReqSent  = document.getElementById('panel-payreq-sent').checked;
   currentListing.invoiceSent = document.getElementById('panel-invoice-sent').checked;
+  _syncListingToOrder(currentListing);
   renderListings();
   saveStore();
   toast('הנכס נשמר', 'success');
@@ -5115,7 +5129,7 @@ function renderSchedule() {
       : '<span style="color:var(--text-dim);font-size:12px;">יום מנוחה</span>';
     return `
     <div class="schedule-row">
-      <div class="schedule-day ${!s.enabled?'off':''}">${s.day}</div>
+      <div class="schedule-day ${!s.enabled?'off':''}"><span class="day-full">${s.day}</span><span class="day-short">${s.day.charAt(0)}'</span></div>
       <div class="schedule-time">
         <label class="toggle">
           <input type="checkbox" ${s.enabled?'checked':''} onchange="toggleDay(${i},this.checked)">
@@ -6124,6 +6138,21 @@ function _ensureOrder(l) {
   return o;
 }
 
+// Sync listing changes into existing order entry (reverse of _syncOrderToListing)
+function _syncListingToOrder(l) {
+  if (!store.orders) return;
+  const o = store.orders.find(x => x.id === l.id);
+  if (!o) return;
+  o.address = l.address; o.city = l.city || '';
+  o.pkg = l.pkg || ''; o.status = l.status;
+  o.customer = l.customer || ''; o.beds = l.beds || 0;
+  o.shootDate = l.shootDate || '';
+  o.paymentStatus = l.paymentStatus || 'unpaid';
+  o.deliveredPhotos    = !!(l.deliveredPhotos);
+  o.deliveredVideo     = !!(l.deliveredVideo);
+  o.deliveredFloorplan = !!(l.deliveredFloorplan);
+}
+
 // Sync mutable order fields back to listing (if listing still exists)
 function _syncOrderToListing(o) {
   const l = store.listings.find(x => x.id === o.id);
@@ -6549,6 +6578,8 @@ function applySidebarSettings() {
     }
   }
   if (logoSub) logoSub.textContent = s.photographerName || 'ניהול צילום נדל"ן';
+  const nameEl = document.getElementById('auth-user-name');
+  if (nameEl && s.photographerName) nameEl.textContent = s.photographerName;
 }
 
 // ══════════════════════════════════════════════════
@@ -6744,7 +6775,7 @@ auth.onAuthStateChanged(async user => {
     // Update sidebar user info
     const initials = (user.email[0] || 'U').toUpperCase();
     document.getElementById('auth-avatar').textContent    = initials;
-    document.getElementById('auth-user-name').textContent = user.email.split('@')[0];
+    document.getElementById('auth-user-name').textContent = store.settings?.photographerName || user.email.split('@')[0];
     document.getElementById('auth-user-email').textContent = user.email;
     if (!_appInited) { _appInited = true; await _initApp(); }
   } else {
