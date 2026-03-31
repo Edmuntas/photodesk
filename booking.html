@@ -478,8 +478,6 @@
   /* ── SCHEDULE ────────────────────── */
   .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-  input[type="datetime-local"] { color-scheme: light; }
-
   /* ── NAVIGATION BUTTONS ──────────── */
   .nav-btns {
     display: flex;
@@ -1097,8 +1095,8 @@ function openBkgExViewer(svcId) {
     const eu = (EMBED[ex.type] || (u=>u))(ex.url);
     if (ex.type==='youtube'||ex.type==='vimeo') body += `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;margin-bottom:10px;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
     else if (ex.type==='kuula'||ex.type==='matterport') body += `<div style="position:relative;padding-bottom:75%;height:0;overflow:hidden;border-radius:8px;margin-bottom:10px;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
-    else body += `<a href="${ex.url}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface3);border-radius:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;margin-bottom:8px;">${ex.type==='instagram'?'📱':'🔗'} ${ex.caption||ex.url}</a>`;
-    if (ex.caption) body += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">💬 ${ex.caption}</div>`;
+    else body += `<a href="${ex.url}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface3);border-radius:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;margin-bottom:8px;">${ex.type==='instagram'?'📱':'🔗'} ${h(ex.caption||ex.url)}</a>`;
+    if (ex.caption) body += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">💬 ${h(ex.caption)}</div>`;
   });
   const ov = document.createElement('div');
   ov.className = 'bkg-ex-bg';
@@ -1426,6 +1424,7 @@ async function submitBooking() {
 
   const isEx = document.getElementById('type-existing').checked;
   const pkg  = packages.find(p => p.id === selectedPackageId);
+  if (!pkg) { alert('שגיאה: חבילה לא נמצאת. אנא בחר חבילה מחדש.'); btn.disabled = false; btn.textContent = '✅ שלח הזמנה'; return; }
   const pt   = selectedPropType ? PROPERTY_TYPES.find(p => p.id === selectedPropType) : null;
 
   const clientData = isEx

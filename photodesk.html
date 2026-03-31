@@ -3780,6 +3780,10 @@ function renderKanban(list) {
       </div>`;
   });
 
+  if (!list.length) {
+    board.innerHTML = `<div style="padding:48px;text-align:center;color:var(--text-muted);font-size:14px;">אין נכסים להצגה</div>`;
+    return;
+  }
   board.innerHTML = `<div class="kanban-board">${cols.join('')}</div>`;
 }
 
@@ -3815,7 +3819,9 @@ function openInvoice(id) {
   if (!l) return;
 
   const pkg = store.packages.find(p => p.id === l.pkgId || p.name === l.pkg);
-  const price = l.price || pkg?.price || 0;
+  const basePrice = l.price || pkg?.price || 0;
+  const activePromo = pkg ? _getActivePromoForPackage(pkg.id) : null;
+  const price = activePromo ? applyPromo(basePrice, activePromo) : basePrice;
   const cust = store.customers.find(c => c.id === l.customerId || `${h(c.first)} ${h(c.last)}`.trim() === l.customer);
   const settings = store.settings || {};
   const bizName = settings.businessName || document.getElementById('logo-text')?.textContent || 'PhotoDesk';
@@ -3904,7 +3910,7 @@ function openInvoice(id) {
     </thead>
     <tbody>
       <tr>
-        <td><strong>${l.pkg || 'חבילת צילום'}</strong></td>
+        <td><strong>${h(l.pkg || 'חבילת צילום')}</strong></td>
         <td>${l.photos ? `${l.photos} תמונות` : ''} ${l.beds ? `· ${l.beds} חד'` : ''}</td>
         <td>1</td>
         <td>${price ? `₪${price.toLocaleString('he-IL')}` : '—'}</td>
@@ -4753,7 +4759,7 @@ function renderServices() {
       ${s.deliverables ? `
         <div class="svc-deliverables">
           <div class="svc-deliverables-label">מה מקבלים</div>
-          ${s.deliverables}
+          ${h(s.deliverables)}
         </div>` : ''}
       ${exCount ? _buildInlineExamplesPreview(s) : ''}
       <div class="card-ctrl-row">
@@ -6429,7 +6435,7 @@ function approveBooking(id) {
 
   // WhatsApp confirmation to client
   const phone = b.client.phone || '';
-  if (phone) {
+  if (phone && confirm(`שלח הודעת אישור ב-WhatsApp ל${b.client.first || phone}?`)) {
     const bizName = store.settings?.businessName || 'Edmont RE media';
     const clientName = b.client.first ? `${b.client.first}` : '';
     const address = `${b.property.address}, ${b.property.city}`;
