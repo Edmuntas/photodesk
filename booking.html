@@ -818,7 +818,7 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
             </div>
             <div class="form-group">
               <label class="form-label"><span class="required-star">* </span>אימייל</label>
-              <input class="form-input" type="email" id="cust-email" placeholder="dana@remax.co.il">
+              <input class="form-input" type="email" id="cust-email" placeholder="example@agency.co.il">
             </div>
           </div>
           <div class="form-group">
@@ -1209,7 +1209,9 @@ function renderPackages() {
 function fmtDur(min) {
   if (!min) return '—';
   const h = Math.floor(min/60), m = min % 60;
-  return h ? (h + ' שע\'' + (m ? ' ' + m + ' דק\'' : '')) : min + ' דק\'';
+  const hStr = h === 1 ? 'שעה' : h > 1 ? h + ' שע\'' : '';
+  const mStr = m ? m + ' דק\'' : '';
+  return hStr && mStr ? hStr + ' ' + mStr : hStr || mStr || min + ' דק\'';
 }
 
 function selectPackage(id) {
@@ -1344,6 +1346,12 @@ function buildReview() {
   // BUG #3 FIX: require package selection
   if (!selectedPackageId) {
     document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
+    const existing = document.getElementById('pkg-error');
+    if (!existing) {
+      document.getElementById('packages-grid').insertAdjacentHTML('beforebegin',
+        '<div id="pkg-error" style="color:#EF4444;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">⚠️ נא לבחור חבילה להמשך</div>');
+      setTimeout(() => document.getElementById('pkg-error')?.remove(), 4000);
+    }
     return;
   }
   // BUG #3 FIX: require date selection

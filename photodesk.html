@@ -1096,10 +1096,11 @@
     color: var(--text-muted);
     text-align: center;
   }
-  .empty-icon { font-size: 52px; margin-bottom: 16px;
-    animation: emptyBounce 2.2s ease-in-out infinite; }
-  .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-  .empty-sub { font-size: 13px; color: var(--text-muted); max-width: 280px; line-height: 1.6; }
+  .empty-icon { font-size: 56px; margin-bottom: 16px; line-height: 1;
+    animation: emptyBounce 2s ease-in-out infinite; }
+  @keyframes emptyBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  .empty-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .empty-sub { font-size: 13px; color: var(--text-muted); max-width: 300px; line-height: 1.7; }
 
   /* ── PIPELINE STEPPER ───────────── */
   .pipeline-step {
@@ -1238,7 +1239,7 @@
   .dlv-wrap { display:flex; gap:3px; }
   .dlv-dot {
     display:inline-flex; align-items:center; justify-content:center;
-    width:24px; height:24px; border-radius:6px; font-size:12px;
+    width:28px; height:28px; border-radius:6px; font-size:15px;
     cursor:pointer; background:var(--surface3);
     opacity:0.35; transition:opacity .15s, transform .12s, box-shadow .15s;
     border:1.5px solid transparent;
@@ -1559,6 +1560,8 @@
   .row-action:hover { background: var(--surface2); color: var(--text); border-color: var(--border-focus); }
   .row-action.ra-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   .row-action.ra-primary:hover { background: #EA6D0C; }
+  .row-action.ra-del { color: #EF4444; opacity: 0.6; }
+  .row-action.ra-del:hover { opacity: 1; background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); }
 
   /* ── TODAY BANNER ───────────────── */
   .today-banner {
@@ -1595,15 +1598,7 @@
   .today-banner-close { padding: 5px 9px; opacity: 0.8; }
   .today-banner-close:hover { opacity: 1; }
 
-  /* ── EMPTY STATE ─────────────────── */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 64px 24px;
-    text-align: center;
-  }
+  /* ── EMPTY STATE BOX ─────────────── */
   .empty-state-box {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 48px 40px;
@@ -1611,15 +1606,6 @@
     box-shadow: var(--shadow-sm); max-width: 380px; width: 100%;
     animation: fadeIn 0.25s ease;
   }
-  .empty-icon { font-size: 56px; margin-bottom: 16px; line-height: 1;
-    animation: emptyBounce 2s ease-in-out infinite; }
-  @keyframes emptyBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
-  .empty-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-  .empty-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.7; max-width: 300px; }
-
   /* ── ANIM ───────────────────────── */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .page.active { animation: fadeIn 0.2s ease; }
@@ -1866,7 +1852,7 @@
   height: 4px;
   background: var(--kpi-color, var(--accent));
 }
-.kpi-icon { font-size: 26px; margin-bottom: 10px; }
+.kpi-icon { font-size: 32px; margin-bottom: 10px; }
 .kpi-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
 .kpi-value { font-size: 32px; font-weight: 800; color: var(--kpi-color, var(--accent)); line-height: 1; letter-spacing: -1px; }
 .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
@@ -2239,6 +2225,7 @@
               </div>
             </div>
             <div class="mini-cal-grid" id="dash-cal-grid"></div>
+            <div id="dash-cal-no-shoots" style="display:none; text-align:center; font-size:12px; color:var(--text-muted); padding:8px 0 4px;">אין צילומים מתוכננים החודש</div>
           </div>
 
           <div class="dash-section-title">
@@ -3349,7 +3336,7 @@ function renderDashRecentOrders() {
     const invBadge    = l.invoiceSent ? `<span class="ro-fin-badge ro-inv">🧾 חשבונית</span>` : '';
 
     return `
-      <div class="recent-order-item" data-listing-id="${h(l.id)}" class="js-open-listing">
+      <div class="recent-order-item js-open-listing" data-listing-id="${h(l.id)}">
         <div class="ro-avatar">🏠</div>
         <div style="flex:1;overflow:hidden;">
           <div class="ro-address">${l.address}</div>
@@ -3403,6 +3390,8 @@ function renderDashCalendar() {
   }
 
   document.getElementById('dash-cal-grid').innerHTML = html;
+  const noShootsEl = document.getElementById('dash-cal-no-shoots');
+  if (noShootsEl) noShootsEl.style.display = shootDays.size ? 'none' : '';
 }
 
 function dashCalNav(dir) {
@@ -3429,7 +3418,7 @@ function renderDashUpcoming() {
     const day = d.getDate();
     const mon = heMonths[d.getMonth()];
     return `
-      <div class="upcoming-shoot" data-listing-id="${h(l.id)}" class="js-open-listing">
+      <div class="upcoming-shoot js-open-listing" data-listing-id="${h(l.id)}">
         <div class="us-date-badge">
           <div class="us-date-day">${day}</div>
           <div class="us-date-mon">${mon}</div>
@@ -3526,13 +3515,13 @@ function renderListings() {
     return;
   }
   tbody.innerHTML = list.map(l => {
-    const cust = store.customers.find(c => c.id === l.customerId || `${h(c.first)} ${h(c.last)}`.trim() === l.customer);
+    const cust = store.customers.find(c => c.id === l.customer || c.id === l.customerId || `${c.first} ${c.last}`.trim() === l.customer);
     const phone = cust?.phone || '';
     const waPhone = phone.replace(/[^0-9]/g,'').replace(/^0/,'972');
     const waLink = phone ? `https://wa.me/${waPhone}?text=${encodeURIComponent('שלום ' + (cust?.first||'') + ', בנוגע לנכס ב' + l.address)}` : '';
     const sel = (window._bulkSelected||new Set()).has(l.id);
     return `
-    <tr data-listing-id="${h(l.id)}" class="js-open-listing" class="${sel?'row-selected':''}">
+    <tr data-listing-id="${h(l.id)}" class="js-open-listing${sel?' row-selected':''}">
       <td data-stop-propagation="1" style="padding-right:14px;">
         <input type="checkbox" ${sel?'checked':''} onchange="toggleBulkRow('${l.id}',this.checked)">
       </td>
@@ -3545,15 +3534,15 @@ function renderListings() {
           </div>
         </div>
       </td>
-      <td onclick="showStatusMenu('${l.id}', this, event)" style="cursor:pointer;" title="לחץ לשינוי סטטוס">
+      <td onclick="showStatusMenu('${h(l.id)}', this, event)" style="cursor:pointer;" title="לחץ לשינוי סטטוס">
         <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
       </td>
       <td style="font-size:12px; color:var(--text-muted)">${h(l.pkg)}</td>
       <td data-stop-propagation="1">
         <div class="dlv-wrap">
-          <span class="dlv-dot${l.deliveredPhotos?' dlv-on':''}" onclick="toggleDelivery('${l.id}','photos',this)" title="תמונות — לחץ להחלפה">📸</span>
-          <span class="dlv-dot${l.deliveredVideo?' dlv-on':''}" onclick="toggleDelivery('${l.id}','video',this)" title="וידאו — לחץ להחלפה">🎬</span>
-          <span class="dlv-dot${l.deliveredFloorplan?' dlv-on':''}" onclick="toggleDelivery('${l.id}','floorplan',this)" title="תוכנית קומה — לחץ להחלפה">📐</span>
+          <span class="dlv-dot${l.deliveredPhotos?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','photos',this)" title="תמונות — לחץ להחלפה">📸</span>
+          <span class="dlv-dot${l.deliveredVideo?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','video',this)" title="וידאו — לחץ להחלפה">🎬</span>
+          <span class="dlv-dot${l.deliveredFloorplan?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','floorplan',this)" title="תוכנית קומה — לחץ להחלפה">📐</span>
         </div>
       </td>
       <td style="font-size:12px; color:var(--text-muted)">${cust ? `${h(cust.first)} ${h(cust.last)}` : (l.customer || '—')}</td>
@@ -3561,8 +3550,8 @@ function renderListings() {
       <td class="row-actions" data-stop-propagation="1">
         ${phone ? `<a class="row-action" href="tel:${phone}" title="חייג">📞</a>` : ''}
         ${waLink ? `<a class="row-action" href="${waLink}" target="_blank" title="WhatsApp">💬</a>` : ''}
-        <span class="row-action" onclick="deleteListingInline('${l.id}')" title="מחק נכס" style="color:#EF4444;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑️</span>
-        <span class="row-action ra-primary" data-listing-id="${h(l.id)}" class="js-open-listing" title="פתח פרטים">→</span>
+        <span class="row-action ra-del" onclick="deleteListingInline('${h(l.id)}')" title="מחק נכס">🗑️</span>
+        <span class="row-action ra-primary js-open-listing" data-listing-id="${h(l.id)}" title="פתח פרטים">→</span>
       </td>
     </tr>`;
   }).join('');
@@ -3741,7 +3730,7 @@ function renderKanban(list) {
           <span class="kanban-col-count" style="background:${col.color}15; color:${col.color};">${cards.length}</span>
         </div>
         ${cards.length ? cards.map(l => `
-          <div class="kanban-card" data-listing-id="${h(l.id)}" class="js-open-listing">
+          <div class="kanban-card js-open-listing" data-listing-id="${h(l.id)}">
             <div class="kanban-card-addr">${l.address}</div>
             <div class="kanban-card-meta">
               ${l.city ? `📍 ${h(l.city)}` : ''}
@@ -4027,8 +4016,14 @@ document.addEventListener('keydown', e => {
     const overlay = document.getElementById('cmd-overlay');
     overlay.style.display === 'none' ? openCmdPalette() : closeCmdPalette();
   }
-  if (e.key === 'Escape' && document.getElementById('cmd-overlay').style.display !== 'none') {
-    closeCmdPalette();
+  if (e.key === 'Escape') {
+    if (document.getElementById('cmd-overlay').style.display !== 'none') {
+      closeCmdPalette();
+    } else if (document.getElementById('listing-panel').classList.contains('open')) {
+      closePanel();
+    } else if (document.getElementById('customer-panel')?.classList.contains('open')) {
+      closeCustomerPanel();
+    }
   }
 });
 
@@ -4056,7 +4051,7 @@ function renderPipeline(l) {
       ? `<div class="pipeline-line ${i < currentIdx ? 'done' : ''}"></div>` : '';
     return `
       <div class="pipeline-step">
-        <div class="pipeline-dot ${state}" onclick="setStatusInline('${l.id}','${step.key}',null)" title="${step.key}">
+        <div class="pipeline-dot ${state}" onclick="setStatusInline('${h(l.id)}','${h(step.key)}',null)" title="${h(step.key)}">
           <div class="pipeline-icon">${state === 'done' ? '✓' : step.icon}</div>
           <div class="pipeline-label">${step.label}</div>
         </div>
@@ -4396,7 +4391,7 @@ function renderAgentsView(companyId) {
       const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
       const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
       return `
-      <div class="customer-card" data-customer-id="${h(c.id)}" class="js-open-customer">
+      <div class="customer-card js-open-customer" data-customer-id="${h(c.id)}">
         <div class="cust-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
         <div style="flex:1;min-width:0;">
           <div class="cust-name">${h(c.first)} ${h(c.last)}</div>
@@ -4416,7 +4411,7 @@ function renderAgentsView(companyId) {
       const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
       const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
       return `
-      <div class="cust-row" data-customer-id="${h(c.id)}" class="js-open-customer">
+      <div class="cust-row js-open-customer" data-customer-id="${h(c.id)}">
         <div class="cust-row-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:600;font-size:14px;">${h(c.first)} ${h(c.last)}</div>
@@ -5216,7 +5211,7 @@ function _renderCalSidebar() {
     const isToday = d.toDateString() === todayStr;
     const color = _statusEvColor(l.status);
     const dateLabel = isToday ? 'היום' : `${d.getDate()} ${CAL_MONTHS[d.getMonth()]} ${d.getFullYear() !== today.getFullYear() ? d.getFullYear() : ''}`.trim();
-    return `<div class="shoot-item" style="border-right-color:${color};cursor:pointer;" data-listing-id="${h(l.id)}" class="js-open-listing">
+    return `<div class="shoot-item js-open-listing" style="border-right-color:${color};cursor:pointer;" data-listing-id="${h(l.id)}">
       <div class="shoot-time">${dateLabel}</div>
       <div style="flex:1;">
         <div class="shoot-address">${l.address}</div>
@@ -5246,7 +5241,7 @@ function openDayPanel(year, month, day) {
   const dateTitle = `${day} ${CAL_MONTHS[month]} ${year}`;
   const rows = listings.map(l => {
     const color = _statusEvColor(l.status);
-    return `<div class="day-listing-row" onclick="closeDayPanel();openListing('${l.id}')">
+    return `<div class="day-listing-row" onclick="closeDayPanel();openListing('${h(l.id)}')">
       <span class="day-listing-dot" style="background:${color}"></span>
       <div class="day-listing-info">
         <div class="day-listing-addr">${l.address}</div>
@@ -5560,7 +5555,7 @@ function openCustomer(id) {
   const active = custListings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל');
   document.getElementById('cp-active-list').innerHTML = active.length
     ? active.map(l => `
-        <div class="cust-listing-row" onclick="openListingFromCustomer('${l.id}')">
+        <div class="cust-listing-row" onclick="openListingFromCustomer('${h(l.id)}')">
           <div style="flex:1;">
             <div class="cust-listing-addr">${l.address}</div>
             <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)}</div>
@@ -5573,7 +5568,7 @@ function openCustomer(id) {
   const delivered = custListings.filter(l => l.status === 'נמסר');
   document.getElementById('cp-history-list').innerHTML = delivered.length
     ? delivered.map(l => `
-        <div class="cust-listing-row" onclick="openListingFromCustomer('${l.id}')">
+        <div class="cust-listing-row" onclick="openListingFromCustomer('${h(l.id)}')">
           <div style="flex:1;">
             <div class="cust-listing-addr">${l.address}</div>
             <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)} · ${l.created}</div>
@@ -6273,14 +6268,14 @@ function renderOrders() {
               <span style="font-size:11px;color:var(--text-dim);">${l.created}</span>
             </div>
             <div class="deliver-row" data-stop-propagation="1">
-              <span class="pay-badge ${payClass}" onclick="cyclePayment('${l.id}')">${payLbl}</span>
-              <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredPhotos')">📸 תמונות</span>
-              <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredVideo')">🎬 סרטון</span>
-              <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredFloorplan')">📐 תוכנית</span>
+              <span class="pay-badge ${payClass}" onclick="cyclePayment('${h(l.id)}')">${payLbl}</span>
+              <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredPhotos')">📸 תמונות</span>
+              <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredVideo')">🎬 סרטון</span>
+              <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredFloorplan')">📐 תוכנית</span>
             </div>
           </div>
           ${next ? `<div class="booking-actions" data-stop-propagation="1">
-            <button class="btn btn-primary" style="font-size:12px;" onclick="advanceStatus('${l.id}','${next}')">${nextLbl}</button>
+            <button class="btn btn-primary" style="font-size:12px;" onclick="advanceStatus('${h(l.id)}','${h(next)}')">${nextLbl}</button>
           </div>` : ''}
         </div>`;
     }).join('');
