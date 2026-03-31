@@ -226,10 +226,10 @@
   }
 
   .page-title {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 800;
     color: var(--text);
-    letter-spacing: -0.2px;
+    letter-spacing: -0.3px;
   }
 
   .topbar-actions { margin-right: auto; display: flex; align-items: center; gap: 10px; }
@@ -320,13 +320,13 @@
     padding: 20px 22px;
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
     transition: box-shadow 0.15s, transform 0.15s;
   }
-  .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+  .stat-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06); transform: translateY(-2px); }
   .stat-card.active-filter {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(249,115,22,0.25), var(--shadow);
+    box-shadow: 0 0 0 2px rgba(249,115,22,0.25), 0 4px 12px rgba(249,115,22,0.12);
     background: var(--accent-light);
   }
   .stat-card.active-filter::before { background: var(--accent); height: 4px; }
@@ -335,13 +335,13 @@
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 3px;
+    height: 4px;
     background: var(--accent-color, var(--accent));
     border-radius: var(--radius) var(--radius) 0 0;
   }
 
-  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
-  .stat-value { font-size: 30px; font-weight: 700; color: var(--text); margin: 8px 0 4px; line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; }
+  .stat-value { font-size: 32px; font-weight: 800; color: var(--accent-color, var(--text)); margin: 8px 0 4px; line-height: 1; letter-spacing: -1px; }
   .stat-sub { font-size: 11px; color: var(--text-dim); }
 
   /* ── TABLE ──────────────────────── */
@@ -376,13 +376,13 @@
   thead th {
     text-align: right;
     font-size: 11px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    font-weight: 600;
+    font-weight: 700;
     padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    border-bottom: 2px solid var(--border);
+    background: var(--surface2);
   }
 
   tbody tr {
@@ -390,7 +390,7 @@
     cursor: pointer;
     transition: background 0.1s;
   }
-  tbody tr:hover { background: #FAFAFA; }
+  tbody tr:hover { background: var(--accent-glow); }
   tbody tr:last-child { border-bottom: none; }
 
   tbody td {
@@ -444,12 +444,12 @@
     flex-shrink: 0;
   }
 
-  .badge-pending   { background: rgba(245,158,11,0.1);  color: #B45309; border: 1px solid rgba(245,158,11,0.2); }
-  .badge-delivered { background: rgba(16,185,129,0.1);  color: #059669; border: 1px solid rgba(16,185,129,0.2); }
-  .badge-processing{ background: rgba(59,130,246,0.1);  color: #1D4ED8; border: 1px solid rgba(59,130,246,0.2); }
-  .badge-cancelled { background: rgba(239,68,68,0.1);   color: #B91C1C; border: 1px solid rgba(239,68,68,0.2); }
-  .badge-scheduled { background: rgba(139,92,246,0.1);  color: #6D28D9; border: 1px solid rgba(139,92,246,0.2); }
-  .badge-shot      { background: rgba(249,115,22,0.1);  color: #C2410C; border: 1px solid rgba(249,115,22,0.2); }
+  .badge-pending   { background: rgba(245,158,11,0.14);  color: #92400E; border: 1px solid rgba(245,158,11,0.35); }
+  .badge-delivered { background: rgba(16,185,129,0.14);  color: #065F46; border: 1px solid rgba(16,185,129,0.35); }
+  .badge-processing{ background: rgba(59,130,246,0.14);  color: #1E40AF; border: 1px solid rgba(59,130,246,0.35); }
+  .badge-cancelled { background: rgba(239,68,68,0.14);   color: #991B1B; border: 1px solid rgba(239,68,68,0.35); }
+  .badge-scheduled { background: rgba(139,92,246,0.14);  color: #5B21B6; border: 1px solid rgba(139,92,246,0.35); }
+  .badge-shot      { background: rgba(249,115,22,0.14);  color: #9A3412; border: 1px solid rgba(249,115,22,0.35); }
   /* ── COMPANY CARDS ──────────────── */
   .company-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:14px; }
   .company-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; cursor:pointer; transition:border-color .2s, box-shadow .2s; box-shadow:var(--shadow-sm); }
@@ -523,6 +523,12 @@
   .detail-panel.open {
     transform: scale(1) translateY(0);
     opacity: 1;
+  }
+
+  /* BUG #1+2 FIX: hide the non-open panel so it doesn't take flex space
+     and doesn't intercept backdrop clicks via stopPropagation */
+  .panel-overlay.open .detail-panel:not(.open) {
+    display: none;
   }
 
   .panel-topbar {
@@ -1090,9 +1096,10 @@
     color: var(--text-muted);
     text-align: center;
   }
-  .empty-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.5; }
-  .empty-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-  .empty-sub { font-size: 13px; }
+  .empty-icon { font-size: 52px; margin-bottom: 16px;
+    animation: emptyBounce 2.2s ease-in-out infinite; }
+  .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--text-muted); max-width: 280px; line-height: 1.6; }
 
   /* ── PIPELINE STEPPER ───────────── */
   .pipeline-step {
@@ -1141,26 +1148,32 @@
   }
   .kanban-col-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 4px 6px; border-bottom: 2px solid var(--border);
-    font-size: 12px; font-weight: 600; color: var(--text-muted);
+    padding: 0 4px 8px; border-bottom: 2px solid var(--border);
+    font-size: 12px; font-weight: 700; color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.04em;
   }
   .kanban-col-count {
-    background: var(--surface3); border-radius: 10px;
-    padding: 1px 7px; font-size: 11px;
+    background: var(--accent); color: #fff; border-radius: 10px;
+    padding: 1px 7px; font-size: 11px; font-weight: 700;
   }
   .kanban-card {
     background: var(--surface); border-radius: var(--radius-sm);
-    padding: 10px 11px; cursor: pointer;
+    padding: 11px 12px; cursor: pointer;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.15s, transform 0.1s;
+    transition: box-shadow 0.18s, transform 0.12s, border-color 0.15s;
   }
-  .kanban-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
-  .kanban-card-addr { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
-  .kanban-card-meta { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
-  .kanban-card-pkg { font-size: 10px; color: var(--text-dim); margin-top: 6px;
-    background: var(--surface2); border-radius: 4px; padding: 2px 6px; display: inline-block; }
-  .kanban-empty { text-align:center; color:var(--text-dim); font-size:12px; padding:16px 0; }
+  .kanban-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
+  .kanban-card-addr { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .kanban-card-meta { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+  .kanban-card-pkg { font-size: 10.5px; color: var(--accent); margin-top: 6px;
+    background: var(--accent-light); border-radius: 4px; padding: 2px 7px; display: inline-block;
+    font-weight: 600; }
+  .kanban-empty { text-align:center; color:var(--text-dim); font-size:12px; padding:20px 0; }
 
   /* ── BULK ACTION BAR ────────────── */
   .bulk-status-btn {
@@ -1428,22 +1441,37 @@
 
   /* ── BOOKING CARD ───────────────── */
   .booking-card {
-    padding: 16px 20px;
+    padding: 14px 18px 14px 22px;
     border-bottom: 1px solid var(--border);
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 12px;
     align-items: center;
-    transition: background 0.1s;
+    transition: background 0.12s, box-shadow 0.12s;
+    position: relative;
+  }
+  .booking-card::before {
+    content: '';
+    position: absolute;
+    right: 0; top: 6px; bottom: 6px;
+    width: 3px; border-radius: 2px;
+    background: var(--card-accent, var(--border));
+    transition: background 0.2s;
   }
   .booking-card:last-child { border-bottom: none; }
-  .booking-card:hover { background: var(--bg); }
-  .booking-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
-  .booking-tag { font-size: 11px; background: var(--surface2); border: 1px solid var(--border); padding: 2px 9px; border-radius: 20px; color: var(--text-muted); }
+  .booking-card:hover { background: var(--surface2); }
+  .booking-card .card-title { font-weight: 700; font-size: 14px; color: var(--text); }
+  .booking-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+  .booking-tag { font-size: 11px; background: var(--surface2); border: 1px solid var(--border); padding: 2px 9px; border-radius: 20px; color: var(--text-muted); font-weight: 500; }
   .booking-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
   .booking-actions .btn-primary { font-size: 13px !important; padding: 7px 16px !important; box-shadow: 0 2px 8px rgba(249,115,22,0.25); }
   .booking-actions .btn-danger  { font-size: 13px !important; padding: 7px 12px !important; }
   .booking-actions .btn-ghost   { font-size: 12px !important; }
+  .deliver-row { display: flex; gap: 14px; align-items: center; margin-top: 8px; }
+  .deliver-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 20px; cursor: pointer; user-select: none; transition: background 0.12s; }
+  .deliver-chip.done  { background: rgba(16,185,129,0.14); color: #065F46; border: 1px solid rgba(16,185,129,0.3); }
+  .deliver-chip.undone{ background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
 
   /* ── PIPELINE ────────────────────── */
   .pipeline-section { margin-bottom: 20px; }
@@ -1576,9 +1604,21 @@
     padding: 64px 24px;
     text-align: center;
   }
-  .empty-icon { font-size: 52px; margin-bottom: 16px; line-height: 1; filter: grayscale(20%); }
-  .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-  .empty-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.7; max-width: 320px; }
+  .empty-state-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 48px 40px;
+    display: flex; flex-direction: column; align-items: center;
+    box-shadow: var(--shadow-sm); max-width: 380px; width: 100%;
+    animation: fadeIn 0.25s ease;
+  }
+  .empty-icon { font-size: 56px; margin-bottom: 16px; line-height: 1;
+    animation: emptyBounce 2s ease-in-out infinite; }
+  @keyframes emptyBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  .empty-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .empty-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.7; max-width: 300px; }
 
   /* ── ANIM ───────────────────────── */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -1813,22 +1853,22 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 18px 20px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
   transition: box-shadow 0.15s, transform 0.15s;
   position: relative;
   overflow: hidden;
 }
-.kpi-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.kpi-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
 .kpi-card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
+  height: 4px;
   background: var(--kpi-color, var(--accent));
 }
-.kpi-icon { font-size: 22px; margin-bottom: 10px; }
-.kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.kpi-value { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; letter-spacing: -0.5px; }
+.kpi-icon { font-size: 26px; margin-bottom: 10px; }
+.kpi-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.kpi-value { font-size: 32px; font-weight: 800; color: var(--kpi-color, var(--accent)); line-height: 1; letter-spacing: -1px; }
 .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
 .kpi-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; margin-top: 5px; }
 .kpi-trend.up { color: var(--green); }
@@ -1963,6 +2003,45 @@
   background: var(--accent);
 }
 .mini-cal-cell.today.has-shoot::after { background: #fff; }
+
+/* Today shoots banner */
+.today-banner {
+  background: linear-gradient(135deg, var(--accent) 0%, #EA580C 100%);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.25);
+}
+.today-banner-label {
+  font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.85);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.today-banner-items { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.today-banner-item {
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  transition: background 0.15s;
+}
+.today-banner-item:hover { background: rgba(255,255,255,0.28); }
+.today-banner-addr { font-size: 12px; font-weight: 700; color: #fff; }
+.today-banner-sub { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 1px; }
+
+/* Unpaid invoices list */
+.unpaid-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.1s;
+}
+.unpaid-item:last-child { border-bottom: none; }
+.unpaid-item:hover { background: var(--surface2); }
+.unpaid-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.unpaid-addr { font-size: 13px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.unpaid-amount { font-size: 13px; font-weight: 700; color: #EF4444; flex-shrink: 0; }
+.unpaid-status-tag { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+  background: rgba(245,158,11,0.14); color: #92400E; border: 1px solid rgba(245,158,11,0.3); }
 
 /* Upcoming shoots */
 .upcoming-shoot {
@@ -2120,11 +2199,13 @@
 
     <!-- ════════════════ DASHBOARD PAGE ════════════════ -->
     <div class="page active" id="page-dashboard">
+      <!-- Today shoots banner (hidden when empty) -->
+      <div id="dash-today-bar"></div>
       <!-- KPI row -->
       <div class="dash-kpi-row" id="dash-kpi-row"></div>
       <!-- Main layout -->
       <div class="dash-layout">
-        <!-- LEFT: orders pipeline + recent -->
+        <!-- LEFT: orders pipeline + recent + unpaid -->
         <div>
           <div class="dash-section-title">
             <span>🔄 צינור הזמנות</span>
@@ -2137,6 +2218,12 @@
             <a onclick="navigate('listings')">כל הנכסים ←</a>
           </div>
           <div class="status-pipeline" id="dash-recent-orders"></div>
+
+          <div class="dash-section-title" style="margin-top:20px;" id="dash-unpaid-title">
+            <span>💸 ממתינים לתשלום</span>
+            <a onclick="navigate('listings')">כל הנכסים ←</a>
+          </div>
+          <div class="status-pipeline" id="dash-unpaid"></div>
         </div>
         <!-- RIGHT: mini calendar + upcoming -->
         <div>
@@ -2250,7 +2337,7 @@
           <div class="stat-sub">הזמנות חדשות</div>
         </div>
         <div class="stat-card" id="osc-processing" style="--accent-color:var(--blue); cursor:pointer;" onclick="filterOrders('בעיבוד')">
-          <div class="stat-label">בעיבוד</div>
+          <div class="stat-label">בביצוע</div>
           <div class="stat-value" id="osc-val-processing" style="color:var(--blue)">0</div>
           <div class="stat-sub">מתוכנן + צולם + בעיבוד</div>
         </div>
@@ -2465,7 +2552,7 @@
 <div class="panel-overlay" id="panel-overlay" onclick="closePanel(); closeCustomerPanel();">
 
 <!-- LISTING DETAIL PANEL -->
-<div class="detail-panel" id="listing-panel" onclick="event.stopPropagation()">
+<div class="detail-panel" id="listing-panel" data-stop-propagation="1">
   <div class="panel-topbar">
     <div>
       <div style="font-family: var(--font-display); font-size:16px;" id="panel-listing-title">פרטי נכס</div>
@@ -2556,9 +2643,7 @@
       <div class="form-group">
         <label class="form-label">חבילה</label>
         <select class="form-select" id="panel-package">
-          <option>חבילה בסיסית</option>
-          <option>חבילה פרמיום</option>
-          <option>חבילה אינסופית</option>
+          <option value="">— ללא חבילה —</option>
         </select>
       </div>
       <div class="form-group">
@@ -2649,7 +2734,7 @@
 </div>
 
 <!-- CUSTOMER PANEL -->
-<div class="detail-panel" id="customer-panel" onclick="event.stopPropagation()">
+<div class="detail-panel" id="customer-panel" data-stop-propagation="1">
   <!-- Hero -->
   <div class="cust-panel-hero">
     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -2901,6 +2986,17 @@ const storage = firebase.storage();
 const auth    = firebase.auth();
 
 // ══════════════════════════════════════════════════
+//  SECURITY UTILS
+// ══════════════════════════════════════════════════
+// SEC-2: escapeHtml — sanitize all user-supplied data before inserting into innerHTML
+const _esc = document.createElement('div');
+function h(str) {
+  if (str == null) return '';
+  _esc.textContent = String(str);
+  return _esc.innerHTML;
+}
+
+// ══════════════════════════════════════════════════
 //  DATA STORE
 // ══════════════════════════════════════════════════
 const store = {
@@ -3054,11 +3150,70 @@ function renderPage(page) {
 let _dashCalOffset = 0; // months from today
 
 function renderDashboard() {
+  renderDashToday();
   renderDashKPIs();
   renderDashPipeline();
   renderDashRecentOrders();
+  renderDashUnpaid();
   renderDashCalendar();
   renderDashUpcoming();
+}
+
+function renderDashToday() {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayShoots = store.listings.filter(l => l.shootDate && l.shootDate.slice(0, 10) === todayStr);
+  const el = document.getElementById('dash-today-bar');
+  if (!todayShoots.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="today-banner">
+      <div class="today-banner-label">📷 היום</div>
+      <div class="today-banner-items">
+        ${todayShoots.map(l => `
+          <div class="today-banner-item" data-listing-id="${h(l.id)}">
+            <div class="today-banner-addr">${h(l.address)}</div>
+            <div class="today-banner-sub">${h(l.city || '')} · ${h(l.pkg || '')}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderDashUnpaid() {
+  const getPrice = l => {
+    if (l.price) return l.price;
+    const pkg = store.packages.find(p => p.name === l.pkg || p.id === l.pkg);
+    return pkg ? (pkg.price || 0) : 0;
+  };
+  const unpaid = store.listings
+    .filter(l => l.paymentStatus !== 'paid' && l.status !== 'בוטל')
+    .sort((a, b) => (b.created || '').localeCompare(a.created || ''))
+    .slice(0, 5);
+
+  const titleEl = document.getElementById('dash-unpaid-title');
+  const el = document.getElementById('dash-unpaid');
+  if (!unpaid.length) {
+    if (titleEl) titleEl.style.display = 'none';
+    el.innerHTML = '';
+    return;
+  }
+  if (titleEl) titleEl.style.display = '';
+
+  const dotColor = { unpaid: '#EF4444', deposit: '#F59E0B' };
+  el.innerHTML = unpaid.map(l => {
+    const price = getPrice(l);
+    const priceStr = price ? `₪${price.toLocaleString('he-IL')}` : '—';
+    const isDeposit = l.paymentStatus === 'deposit';
+    const color = dotColor[l.paymentStatus] || dotColor.unpaid;
+    return `
+      <div class="unpaid-item" data-listing-id="${h(l.id)}">
+        <div class="unpaid-dot" style="background:${color}"></div>
+        <div style="flex:1;overflow:hidden;">
+          <div class="unpaid-addr">${h(l.address)}</div>
+          <div style="font-size:10px;color:var(--text-dim);margin-top:1px;">${h(l.city || '')} · ${h(l.status || '')}</div>
+        </div>
+        ${isDeposit ? `<span class="unpaid-status-tag">מקדמה</span>` : ''}
+        <div class="unpaid-amount">${priceStr}</div>
+      </div>`;
+  }).join('');
 }
 
 function renderDashKPIs() {
@@ -3194,11 +3349,11 @@ function renderDashRecentOrders() {
     const invBadge    = l.invoiceSent ? `<span class="ro-fin-badge ro-inv">🧾 חשבונית</span>` : '';
 
     return `
-      <div class="recent-order-item" onclick="openListing('${l.id}')">
+      <div class="recent-order-item" data-listing-id="${h(l.id)}" class="js-open-listing">
         <div class="ro-avatar">🏠</div>
         <div style="flex:1;overflow:hidden;">
           <div class="ro-address">${l.address}</div>
-          <div class="ro-sub">${l.city || ''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 7px;">${l.status}</span></div>
+          <div class="ro-sub">${l.city || ''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 7px;">${h(l.status)}</span></div>
           <div class="ro-fin-row">${payBadge}${reqBadge}${invBadge}</div>
         </div>
         <div class="ro-right">
@@ -3274,7 +3429,7 @@ function renderDashUpcoming() {
     const day = d.getDate();
     const mon = heMonths[d.getMonth()];
     return `
-      <div class="upcoming-shoot" onclick="openListing('${l.id}')">
+      <div class="upcoming-shoot" data-listing-id="${h(l.id)}" class="js-open-listing">
         <div class="us-date-badge">
           <div class="us-date-day">${day}</div>
           <div class="us-date-mon">${mon}</div>
@@ -3299,7 +3454,7 @@ function renderListings() {
     const _mo = _months[_now.getMonth()], _yr = String(_now.getFullYear());
     list = list.filter(l => l.created && l.created.includes(_mo) && l.created.includes(_yr));
   }
-  if (searchQuery) list = list.filter(l => l.address.includes(searchQuery) || l.city.includes(searchQuery));
+  if (searchQuery) list = list.filter(l => _matchSearch(l, searchQuery));
 
   // Highlight active stat card
   ['statcard-all','statcard-pending','statcard-delivered','statcard-month'].forEach(id => {
@@ -3358,25 +3513,27 @@ function renderListings() {
 
   const tbody = document.getElementById('listings-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="9" style="padding:0;">
+    tbody.innerHTML = `<tr><td colspan="9" style="padding:24px 0;">
       <div class="empty-state">
-        <div class="empty-icon">🏠</div>
-        <div class="empty-title">${store.listings.length ? 'לא נמצאו נכסים' : 'אין נכסים עדיין'}</div>
-        <div class="empty-sub">${store.listings.length ? 'נסה לשנות את סינון הסטטוס' : 'הוסף את הנכס הראשון שלך כדי להתחיל לעקוב אחרי הצילומים'}</div>
-        ${!store.listings.length ? `<button class="btn btn-primary" onclick="openModal('new-listing-modal')">+ נכס חדש</button>` : ''}
+        <div class="empty-state-box">
+          <div class="empty-icon">🏠</div>
+          <div class="empty-title">${store.listings.length ? 'לא נמצאו נכסים' : 'אין נכסים עדיין'}</div>
+          <div class="empty-sub">${store.listings.length ? 'נסה לשנות את סינון הסטטוס או לנקות את החיפוש' : 'הוסף את הנכס הראשון שלך כדי להתחיל לעקוב אחרי הצילומים'}</div>
+          ${!store.listings.length ? `<button class="btn btn-primary" onclick="openModal('new-listing-modal')">+ נכס חדש</button>` : ''}
+        </div>
       </div>
     </td></tr>`;
     return;
   }
   tbody.innerHTML = list.map(l => {
-    const cust = store.customers.find(c => c.id === l.customerId || `${c.first} ${c.last}`.trim() === l.customer);
+    const cust = store.customers.find(c => c.id === l.customerId || `${h(c.first)} ${h(c.last)}`.trim() === l.customer);
     const phone = cust?.phone || '';
     const waPhone = phone.replace(/[^0-9]/g,'').replace(/^0/,'972');
     const waLink = phone ? `https://wa.me/${waPhone}?text=${encodeURIComponent('שלום ' + (cust?.first||'') + ', בנוגע לנכס ב' + l.address)}` : '';
     const sel = (window._bulkSelected||new Set()).has(l.id);
     return `
-    <tr onclick="openListing('${l.id}')" class="${sel?'row-selected':''}">
-      <td onclick="event.stopPropagation()" style="padding-right:14px;">
+    <tr data-listing-id="${h(l.id)}" class="js-open-listing" class="${sel?'row-selected':''}">
+      <td data-stop-propagation="1" style="padding-right:14px;">
         <input type="checkbox" ${sel?'checked':''} onchange="toggleBulkRow('${l.id}',this.checked)">
       </td>
       <td>
@@ -3384,28 +3541,28 @@ function renderListings() {
           <div class="thumb-img">${l.photoUrls && l.photoUrls[0] ? `<img src="${l.photoUrls[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : '🏠'}</div>
           <div>
             <div class="thumb-address">${l.address}</div>
-            <div class="thumb-sub">${l.city}${l.state ? ' · ' + l.state : ''} · ${l.beds} חד' · ${l.photos||0} תמונות</div>
+            <div class="thumb-sub">${h(l.city)}${l.state ? ' · ' + h(l.state) : ''} · ${l.beds} חד' · ${l.photos||0} תמונות</div>
           </div>
         </div>
       </td>
       <td onclick="showStatusMenu('${l.id}', this, event)" style="cursor:pointer;" title="לחץ לשינוי סטטוס">
-        <span class="badge ${badgeClass(l.status)}">${l.status}</span>
+        <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
       </td>
-      <td style="font-size:12px; color:var(--text-muted)">${l.pkg}</td>
-      <td onclick="event.stopPropagation()">
+      <td style="font-size:12px; color:var(--text-muted)">${h(l.pkg)}</td>
+      <td data-stop-propagation="1">
         <div class="dlv-wrap">
           <span class="dlv-dot${l.deliveredPhotos?' dlv-on':''}" onclick="toggleDelivery('${l.id}','photos',this)" title="תמונות — לחץ להחלפה">📸</span>
           <span class="dlv-dot${l.deliveredVideo?' dlv-on':''}" onclick="toggleDelivery('${l.id}','video',this)" title="וידאו — לחץ להחלפה">🎬</span>
           <span class="dlv-dot${l.deliveredFloorplan?' dlv-on':''}" onclick="toggleDelivery('${l.id}','floorplan',this)" title="תוכנית קומה — לחץ להחלפה">📐</span>
         </div>
       </td>
-      <td style="font-size:12px; color:var(--text-muted)">${l.customer || '—'}</td>
+      <td style="font-size:12px; color:var(--text-muted)">${cust ? `${h(cust.first)} ${h(cust.last)}` : (l.customer || '—')}</td>
       <td style="font-size:12px; color:var(--text-muted)">${l.created}</td>
-      <td class="row-actions" onclick="event.stopPropagation()">
+      <td class="row-actions" data-stop-propagation="1">
         ${phone ? `<a class="row-action" href="tel:${phone}" title="חייג">📞</a>` : ''}
         ${waLink ? `<a class="row-action" href="${waLink}" target="_blank" title="WhatsApp">💬</a>` : ''}
         <span class="row-action" onclick="deleteListingInline('${l.id}')" title="מחק נכס" style="color:#EF4444;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑️</span>
-        <span class="row-action ra-primary" onclick="openListing('${l.id}')" title="פתח פרטים">→</span>
+        <span class="row-action ra-primary" data-listing-id="${h(l.id)}" class="js-open-listing" title="פתח פרטים">→</span>
       </td>
     </tr>`;
   }).join('');
@@ -3440,7 +3597,26 @@ function filterByStatCard(val) {
   filterStatus = (_statCardFilter && _statCardFilter !== '__month__') ? _statCardFilter : '';
   renderListings();
 }
-function handleSearch(val) { searchQuery = val; renderListings(); }
+let _searchTimer = null;
+function handleSearch(val) {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => { searchQuery = val; renderListings(); }, 200);
+}
+
+function _matchSearch(l, q) {
+  if (!q) return true;
+  const low = q.toLowerCase();
+  const custName = (() => {
+    const c = store.customers.find(x => x.id === l.customer);
+    return c ? (c.first + ' ' + c.last).toLowerCase() : '';
+  })();
+  return (l.address   || '').toLowerCase().includes(low) ||
+         (l.city      || '').toLowerCase().includes(low) ||
+         (l.status    || '').toLowerCase().includes(low) ||
+         (l.pkg       || '').toLowerCase().includes(low) ||
+         (l.notes     || '').toLowerCase().includes(low) ||
+         custName.includes(low);
+}
 
 // Toggle individual delivery flag directly from the table row
 function toggleDelivery(id, field, dotEl) {
@@ -3476,7 +3652,7 @@ function toggleSelectAll(checked) {
   const visibleIds = (() => {
     let list = store.listings;
     if (filterStatus) list = list.filter(l => l.status === filterStatus);
-    if (searchQuery) { const q = searchQuery.toLowerCase(); list = list.filter(l => (l.address||'').toLowerCase().includes(q) || (l.customer||'').toLowerCase().includes(q)); }
+    if (searchQuery) list = list.filter(l => _matchSearch(l, searchQuery));
     return list.map(l => l.id);
   })();
   if (checked) visibleIds.forEach(id => window._bulkSelected.add(id));
@@ -3565,14 +3741,14 @@ function renderKanban(list) {
           <span class="kanban-col-count" style="background:${col.color}15; color:${col.color};">${cards.length}</span>
         </div>
         ${cards.length ? cards.map(l => `
-          <div class="kanban-card" onclick="openListing('${l.id}')">
+          <div class="kanban-card" data-listing-id="${h(l.id)}" class="js-open-listing">
             <div class="kanban-card-addr">${l.address}</div>
             <div class="kanban-card-meta">
-              ${l.city ? `📍 ${l.city}` : ''}
+              ${l.city ? `📍 ${h(l.city)}` : ''}
               ${l.beds ? ` · ${l.beds} חד'` : ''}
               ${l.photos ? ` · 📸 ${l.photos}` : ''}
             </div>
-            ${l.pkg ? `<span class="kanban-card-pkg">${l.pkg}</span>` : ''}
+            ${l.pkg ? `<span class="kanban-card-pkg">${h(l.pkg)}</span>` : ''}
           </div>`).join('') : `<div class="kanban-empty">אין נכסים</div>`}
       </div>`;
   });
@@ -3613,7 +3789,7 @@ function openInvoice(id) {
 
   const pkg = store.packages.find(p => p.id === l.pkgId || p.name === l.pkg);
   const price = l.price || pkg?.price || 0;
-  const cust = store.customers.find(c => c.id === l.customerId || `${c.first} ${c.last}`.trim() === l.customer);
+  const cust = store.customers.find(c => c.id === l.customerId || `${h(c.first)} ${h(c.last)}`.trim() === l.customer);
   const settings = store.settings || {};
   const bizName = settings.businessName || document.getElementById('logo-text')?.textContent || 'PhotoDesk';
   const bizPhone = settings.phone || '';
@@ -3675,7 +3851,7 @@ function openInvoice(id) {
   <div class="meta-row">
     <div class="meta-box">
       <div class="meta-label">לקוח</div>
-      <div class="meta-val">${cust ? `${cust.first} ${cust.last}` : (l.customer || '—')}</div>
+      <div class="meta-val">${cust ? `${h(cust.first)} ${h(cust.last)}` : (l.customer || '—')}</div>
       <div class="meta-sub">${cust?.phone || ''}</div>
     </div>
     <div class="meta-box">
@@ -3685,7 +3861,7 @@ function openInvoice(id) {
     </div>
     <div class="meta-box">
       <div class="meta-label">סטטוס</div>
-      <div class="meta-val"><span class="status-pill">${l.status}</span></div>
+      <div class="meta-val"><span class="status-pill">${h(l.status)}</span></div>
       <div class="meta-sub">${l.created || ''}</div>
     </div>
   </div>
@@ -3706,7 +3882,7 @@ function openInvoice(id) {
         <td>1</td>
         <td>${price ? `₪${price.toLocaleString('he-IL')}` : '—'}</td>
       </tr>
-      ${l.notes ? `<tr><td colspan="3" style="color:#6B7280;font-size:12px;">הערות: ${l.notes}</td><td></td></tr>` : ''}
+      ${l.notes ? `<tr><td colspan="3" style="color:#6B7280;font-size:12px;">הערות: ${h(l.notes)}</td><td></td></tr>` : ''}
     </tbody>
     <tfoot>
       <tr class="total-row">
@@ -3788,13 +3964,13 @@ function renderCmdResults(q) {
       html += matches.map(l => `
         <div class="cmd-item" data-cmd-listing="${l.id}">
           <div class="cmd-item-icon">🏠</div>
-          <div class="cmd-item-label">${l.address}<div class="cmd-item-sub">${l.city||''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${l.status}</span></div></div>
+          <div class="cmd-item-label">${l.address}<div class="cmd-item-sub">${h(l.city)||''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span></div></div>
         </div>`).join('');
     }
 
     // Customers search
     const custs = store.customers.filter(c =>
-      (`${c.first} ${c.last}`).toLowerCase().includes(query) ||
+      (`${h(c.first)} ${h(c.last)}`).toLowerCase().includes(query) ||
       (c.phone||'').includes(query)
     ).slice(0, 4);
     if (custs.length) {
@@ -3802,7 +3978,7 @@ function renderCmdResults(q) {
       html += custs.map(c => `
         <div class="cmd-item" data-cmd-customer="${c.id}">
           <div class="cmd-item-icon">👤</div>
-          <div class="cmd-item-label">${c.first} ${c.last}<div class="cmd-item-sub">${c.phone||c.email||''}</div></div>
+          <div class="cmd-item-label">${h(c.first)} ${h(c.last)}<div class="cmd-item-sub">${h(c.phone||c.email||'')}</div></div>
         </div>`).join('');
     }
   }
@@ -3895,8 +4071,8 @@ function openListing(id) {
   currentListing = l;
 
   document.getElementById('panel-listing-title').textContent = l.address;
-  document.getElementById('panel-listing-sub').textContent = `${l.city}${l.state ? ' · ' + l.state : ''}`;
-  document.getElementById('panel-status-badge').innerHTML = `<span class="badge ${badgeClass(l.status)}">${l.status}</span>`;
+  document.getElementById('panel-listing-sub').textContent = `${h(l.city)}${l.state ? ' · ' + h(l.state) : ''}`;
+  document.getElementById('panel-status-badge').innerHTML = `<span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>`;
   document.getElementById('panel-address').value = l.address;
   document.getElementById('panel-city').value = l.city;
   document.getElementById('panel-state').value = l.state;
@@ -3924,9 +4100,14 @@ function openListing(id) {
   document.getElementById('panel-payreq-sent').checked  = !!l.payReqSent;
   document.getElementById('panel-invoice-sent').checked = !!l.invoiceSent;
 
+  // BUG #7 FIX: populate package dropdown dynamically from store.packages
+  const pkgSel = document.getElementById('panel-package');
+  pkgSel.innerHTML = '<option value="">— ללא חבילה —</option>' +
+    store.packages.map(p => `<option value="${p.id}" data-price="${p.price||0}" ${(l.pkgId===p.id||l.pkg===p.name)?'selected':''}>${p.name} — ₪${p.price||0}</option>`).join('');
+
   const custSel = document.getElementById('panel-customer');
   custSel.innerHTML = '<option value="">— לא משויך —</option>' +
-    store.customers.map(c => `<option value="${c.id}" ${l.customer===c.id?'selected':''}>${c.first} ${c.last}</option>`).join('');
+    store.customers.map(c => `<option value="${c.id}" ${l.customer===c.id?'selected':''}>${h(c.first)} ${h(c.last)}</option>`).join('');
 
   const photoCount = l.photos || 0;
   document.getElementById('photos-count').textContent = `${photoCount} תמונות בנכס זה`;
@@ -3979,6 +4160,14 @@ function saveListing() {
   currentListing.agent    = document.getElementById('panel-agent').value;
   currentListing.shootDate = document.getElementById('panel-shoot-date').value;
   currentListing.customer = document.getElementById('panel-customer').value;
+  // BUG #7 FIX: save package id, name, and price so revenue calculation always works
+  const pkgSelEl = document.getElementById('panel-package');
+  const selPkgOpt = pkgSelEl.options[pkgSelEl.selectedIndex];
+  if (selPkgOpt && selPkgOpt.value) {
+    currentListing.pkgId  = selPkgOpt.value;
+    currentListing.pkg    = selPkgOpt.text.split(' — ')[0];
+    currentListing.price  = parseFloat(selPkgOpt.dataset.price) || 0;
+  }
   const payRadio = document.querySelector('input[name="panel-payment"]:checked');
   currentListing.paymentStatus   = payRadio ? payRadio.value : 'unpaid';
   currentListing.paymentAmount   = +document.getElementById('panel-payment-amount').value || 0;
@@ -4128,7 +4317,7 @@ function renderCompaniesView() {
 
   if (!filtered.length) {
     document.getElementById('customers-list').innerHTML =
-      '<div class="empty-state"><div class="empty-icon">🏢</div><div class="empty-title">לא נמצאו משרדים</div></div>';
+      '<div class="empty-state"><div class="empty-state-box"><div class="empty-icon">🏢</div><div class="empty-title">לא נמצאו משרדים</div><div class="empty-sub">הוסף משרד תיווך ראשון</div></div></div>';
     return;
   }
 
@@ -4139,13 +4328,13 @@ function renderCompaniesView() {
         <div class="company-card" onclick="openCompany('${co.id}')">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
             <div class="company-icon">${(co.name||'?')[0].toUpperCase()}</div>
-            <div style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+            <div style="display:flex;gap:4px;" data-stop-propagation="1">
               <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="editCompany('${co.id}')">ערוך</button>
               <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#ef4444;" onclick="deleteCompany('${co.id}')">מחק</button>
             </div>
           </div>
-          <div class="company-name">${co.name}</div>
-          ${co.city ? `<div class="company-city">📍 ${co.city}</div>` : ''}
+          <div class="company-name">${h(co.name)}</div>
+          ${co.city ? `<div class="company-city">📍 ${h(co.city)}</div>` : ''}
           <div class="company-stats">
             <div class="company-stat"><div class="company-stat-val">${agents.length}</div><div class="company-stat-lbl">סוכנים</div></div>
             <div class="company-stat"><div class="company-stat-val" style="color:var(--accent)">₪${revenue>=1000?(revenue/1000).toFixed(0)+'K':revenue}</div><div class="company-stat-lbl">הכנסות</div></div>
@@ -4162,15 +4351,15 @@ function renderCompaniesView() {
         <div class="company-row" onclick="openCompany('${co.id}')">
           <div class="company-row-icon">${(co.name||'?')[0].toUpperCase()}</div>
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:700;font-size:14px;">${co.name}</div>
-            ${co.city ? `<div style="font-size:12px;color:var(--text-muted);">📍 ${co.city}</div>` : ''}
+            <div style="font-weight:700;font-size:14px;">${h(co.name)}</div>
+            ${co.city ? `<div style="font-size:12px;color:var(--text-muted);">📍 ${h(co.city)}</div>` : ''}
           </div>
           <div style="display:flex;gap:20px;align-items:center;font-size:13px;">
             <span><b>${agents.length}</b> סוכנים</span>
             <span style="color:var(--accent);"><b>₪${revenue>=1000?(revenue/1000).toFixed(0)+'K':revenue}</b></span>
             ${active ? `<span style="color:var(--blue);"><b>${active}</b> פעיל</span>` : ''}
           </div>
-          <div style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+          <div style="display:flex;gap:4px;" data-stop-propagation="1">
             <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="editCompany('${co.id}')">ערוך</button>
             <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;color:#ef4444;" onclick="deleteCompany('${co.id}')">מחק</button>
           </div>
@@ -4185,7 +4374,7 @@ function renderAgentsView(companyId) {
 
   document.getElementById('customers-toolbar').innerHTML = `
     <div class="agents-back" onclick="backToCompanies()">← משרדים</div>
-    <div style="font-weight:700;font-size:16px;">${co.name}</div>
+    <div style="font-weight:700;font-size:16px;">${h(co.name)}</div>
     <input class="cust-search" placeholder="חיפוש סוכן..." value="${customersSearch}"
       oninput="customersSearch=this.value; renderAgentsView('${companyId}')">
     ${_viewToggleHTML()}
@@ -4197,7 +4386,7 @@ function renderAgentsView(companyId) {
 
   if (!agents.length) {
     document.getElementById('customers-list').innerHTML =
-      '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">אין סוכנים</div></div>';
+      '<div class="empty-state"><div class="empty-state-box"><div class="empty-icon">👤</div><div class="empty-title">אין סוכנים עדיין</div><div class="empty-sub">הוסף סוכן ראשון לרשימת הלקוחות</div></div></div>';
     return;
   }
 
@@ -4207,11 +4396,11 @@ function renderAgentsView(companyId) {
       const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
       const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
       return `
-      <div class="customer-card" onclick="openCustomer('${c.id}')">
+      <div class="customer-card" data-customer-id="${h(c.id)}" class="js-open-customer">
         <div class="cust-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
         <div style="flex:1;min-width:0;">
-          <div class="cust-name">${c.first} ${c.last}</div>
-          <div class="cust-email">${c.phone||''}${c.email?' · '+c.email:''}</div>
+          <div class="cust-name">${h(c.first)} ${h(c.last)}</div>
+          <div class="cust-email">${h(c.phone)||''}${c.email?' · '+c.email:''}</div>
           ${revenue?`<div style="font-size:11px;color:var(--green);margin-top:2px;">₪${revenue.toLocaleString('he-IL')} הכנסות</div>`:''}
         </div>
         <div style="text-align:center;flex-shrink:0;">
@@ -4227,11 +4416,11 @@ function renderAgentsView(companyId) {
       const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
       const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
       return `
-      <div class="cust-row" onclick="openCustomer('${c.id}')">
+      <div class="cust-row" data-customer-id="${h(c.id)}" class="js-open-customer">
         <div class="cust-row-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:14px;">${c.first} ${c.last}</div>
-          <div style="font-size:12px;color:var(--text-muted);">${c.phone||''}${c.email?' · '+c.email:''}</div>
+          <div style="font-weight:600;font-size:14px;">${h(c.first)} ${h(c.last)}</div>
+          <div style="font-size:12px;color:var(--text-muted);">${h(c.phone)||''}${c.email?' · '+c.email:''}</div>
         </div>
         <div style="display:flex;gap:20px;align-items:center;font-size:13px;">
           <span><b>${ls.length}</b> צילומים</span>
@@ -5027,13 +5216,13 @@ function _renderCalSidebar() {
     const isToday = d.toDateString() === todayStr;
     const color = _statusEvColor(l.status);
     const dateLabel = isToday ? 'היום' : `${d.getDate()} ${CAL_MONTHS[d.getMonth()]} ${d.getFullYear() !== today.getFullYear() ? d.getFullYear() : ''}`.trim();
-    return `<div class="shoot-item" style="border-right-color:${color};cursor:pointer;" onclick="openListing('${l.id}')">
+    return `<div class="shoot-item" style="border-right-color:${color};cursor:pointer;" data-listing-id="${h(l.id)}" class="js-open-listing">
       <div class="shoot-time">${dateLabel}</div>
       <div style="flex:1;">
         <div class="shoot-address">${l.address}</div>
         <div class="shoot-pkg" style="display:flex;align-items:center;gap:6px;margin-top:2px;">
-          <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${l.status}</span>
-          <span>${l.pkg}</span>
+          <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span>
+          <span>${h(l.pkg)}</span>
         </div>
       </div>
     </div>`;
@@ -5061,7 +5250,7 @@ function openDayPanel(year, month, day) {
       <span class="day-listing-dot" style="background:${color}"></span>
       <div class="day-listing-info">
         <div class="day-listing-addr">${l.address}</div>
-        <div class="day-listing-sub">${l.pkg} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${l.status}</span></div>
+        <div class="day-listing-sub">${h(l.pkg)} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span></div>
       </div>
       <span style="font-size:18px;color:var(--text-dim);">›</span>
     </div>`;
@@ -5374,9 +5563,9 @@ function openCustomer(id) {
         <div class="cust-listing-row" onclick="openListingFromCustomer('${l.id}')">
           <div style="flex:1;">
             <div class="cust-listing-addr">${l.address}</div>
-            <div class="cust-listing-meta">${l.city} · ${l.pkg}</div>
+            <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)}</div>
           </div>
-          <span class="badge ${badgeClass(l.status)}">${l.status}</span>
+          <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
         </div>`).join('')
     : '<div style="color:var(--text-muted); font-size:13px; padding:20px 0; text-align:center;">אין נכסים פעילים</div>';
 
@@ -5387,7 +5576,7 @@ function openCustomer(id) {
         <div class="cust-listing-row" onclick="openListingFromCustomer('${l.id}')">
           <div style="flex:1;">
             <div class="cust-listing-addr">${l.address}</div>
-            <div class="cust-listing-meta">${l.city} · ${l.pkg} · ${l.created}</div>
+            <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)} · ${l.created}</div>
           </div>
           <span style="font-size:13px; font-weight:600; color:var(--accent);">
             ${pkgPriceMap[l.pkg] ? '₪' + pkgPriceMap[l.pkg].toLocaleString('he-IL') : ''}
@@ -5537,37 +5726,45 @@ function openBookingInTab() {
 //  PERSISTENCE  (Firestore subcollections + localStorage)
 // ══════════════════════════════════════════════════
 
-async function saveStore() {
-  store.lastModified = Date.now();
-  try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
-  try {
-    // Small/shared data (settings, packages, services, schedule)
-    const small = {
-      lastModified: store.lastModified,
-      settings: store.settings,
-      packages: store.packages,
-      services: store.services,
-      addons:   store.addons,
-      schedule: store.schedule,
-      orders:      store.orders || [],
-      promotions:  store.promotions || [],
-      archive:     store.archive,
-    };
-    const batch = db.batch();
-    batch.set(db.collection('store').doc('data'), small);
-    // Each listing / customer / company in its own document
-    store.listings.forEach(l =>
-      batch.set(db.collection('listings').doc(l.id), l));
-    store.customers.forEach(c =>
-      batch.set(db.collection('customers').doc(c.id), c));
-    (store.companies || []).forEach(co =>
-      batch.set(db.collection('companies').doc(co.id), co));
-    await batch.commit();
-  } catch(e) {
-    console.warn('Firestore write failed, saved locally only', e);
-    toast('שגיאת ענן — נשמר מקומית', 'warning');
+const _SAVE_DEBOUNCE_MS = 800;
+
+// Immediate localStorage snapshot + debounced Firestore write
+const saveStore = (() => {
+  let _fsTimer = null;
+  async function _flush() {
+    store.lastModified = Date.now();
+    try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
+    try {
+      const small = {
+        lastModified: store.lastModified,
+        settings: store.settings,
+        packages: store.packages,
+        services: store.services,
+        addons:   store.addons,
+        schedule: store.schedule,
+        orders:      store.orders || [],
+        promotions:  store.promotions || [],
+        archive:     store.archive,
+      };
+      const batch = db.batch();
+      batch.set(db.collection('store').doc('data'), small);
+      store.listings.forEach(l  => batch.set(db.collection('listings').doc(l.id), l));
+      store.customers.forEach(c => batch.set(db.collection('customers').doc(c.id), c));
+      (store.companies || []).forEach(co => batch.set(db.collection('companies').doc(co.id), co));
+      await batch.commit();
+    } catch(e) {
+      console.warn('Firestore write failed, saved locally only', e);
+      toast('שגיאת ענן — נשמר מקומית', 'warning');
+    }
   }
-}
+  return function saveStore() {
+    // Immediate localStorage write so data is never lost
+    try { localStorage.setItem('photoDesk_store', JSON.stringify(store)); } catch(e) {}
+    // Debounce Firestore batch write
+    clearTimeout(_fsTimer);
+    _fsTimer = setTimeout(_flush, _SAVE_DEBOUNCE_MS);
+  };
+})();
 
 // Apply only small data (settings / packages / services / schedule / archive)
 function _applySmall(parsed) {
@@ -5981,10 +6178,12 @@ function renderOrders() {
 
   if (!total) {
     listEl.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <div class="empty-title">${_ordersFilter ? 'אין הזמנות בקטגוריה זו' : 'אין הזמנות פעילות'}</div>
-        <div class="empty-sub">${_ordersFilter ? 'נסה לבחור קטגוריה אחרת' : 'שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן'}</div>
+      <div class="empty-state" style="padding:40px 20px;">
+        <div class="empty-state-box">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">${_ordersFilter ? 'אין הזמנות בקטגוריה זו' : 'אין הזמנות פעילות'}</div>
+          <div class="empty-sub">${_ordersFilter ? 'נסה לבחור קטגוריה אחרת' : 'שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן'}</div>
+        </div>
       </div>`;
     return;
   }
@@ -6059,26 +6258,28 @@ function renderOrders() {
       const nextLbl = nextLabel[l.status];
       const payLbl = {'unpaid':'💸 לא שולם','deposit':'💰 מקדמה','paid':'✅ שולם'}[l.paymentStatus||'unpaid'];
       const payClass = 'pay-' + (l.paymentStatus || 'unpaid');
+      const statusColors = { 'ממתין לאישור':'#F59E0B','מתוכנן':'#8B5CF6','צולם':'#F97316','בעיבוד':'#3B82F6','ממתין למסירה':'#EF4444','נמסר':'#10B981' };
+      const accentColor = statusColors[l.status] || 'var(--border)';
       return `
-        <div class="booking-card" onclick="openListing('${l.id}')" style="cursor:pointer;">
+        <div class="booking-card" data-listing-id="${h(l.id)}" style="cursor:pointer;--card-accent:${accentColor}">
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:600; font-size:14px;">${l.address}, ${l.city}</div>
+            <div class="card-title">${h(l.address)}, ${h(l.city)}</div>
             <div class="booking-meta">
-              <span class="badge ${badgeClass(l.status)}">${l.status}</span>
+              <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
               ${custLabel !== '—' ? `<span class="booking-tag">👤 ${custLabel}</span>` : ''}
-              <span class="booking-tag">📦 ${l.pkg}</span>
+              <span class="booking-tag">📦 ${h(l.pkg)}</span>
               ${l.shootDate ? `<span class="booking-tag">📅 ${new Date(l.shootDate).toLocaleDateString('he-IL', {day:'numeric',month:'long'})}</span>` : ''}
               ${l.beds ? `<span class="booking-tag">${l.beds} חד'</span>` : ''}
               <span style="font-size:11px;color:var(--text-dim);">${l.created}</span>
             </div>
-            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;" onclick="event.stopPropagation()">
+            <div class="deliver-row" data-stop-propagation="1">
               <span class="pay-badge ${payClass}" onclick="cyclePayment('${l.id}')">${payLbl}</span>
-              <span class="deliver-icon" onclick="toggleOrderDelivery('${l.id}','deliveredPhotos')" style="color:${l.deliveredPhotos?'var(--green)':'var(--text-dim)'}">📸 ${l.deliveredPhotos?'✓':'✗'}</span>
-              <span class="deliver-icon" onclick="toggleOrderDelivery('${l.id}','deliveredVideo')"  style="color:${l.deliveredVideo?'var(--green)':'var(--text-dim)'}">🎬 ${l.deliveredVideo?'✓':'✗'}</span>
-              <span class="deliver-icon" onclick="toggleOrderDelivery('${l.id}','deliveredFloorplan')" style="color:${l.deliveredFloorplan?'var(--green)':'var(--text-dim)'}">📐 ${l.deliveredFloorplan?'✓':'✗'}</span>
+              <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredPhotos')">📸 תמונות</span>
+              <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredVideo')">🎬 סרטון</span>
+              <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredFloorplan')">📐 תוכנית</span>
             </div>
           </div>
-          ${next ? `<div class="booking-actions" onclick="event.stopPropagation()">
+          ${next ? `<div class="booking-actions" data-stop-propagation="1">
             <button class="btn btn-primary" style="font-size:12px;" onclick="advanceStatus('${l.id}','${next}')">${nextLbl}</button>
           </div>` : ''}
         </div>`;
@@ -6197,7 +6398,7 @@ function viewBooking(id) {
   if (!b) return;
   const p = b.property;
   const c = b.client;
-  const clientStr = c.isExisting ? 'לקוח קיים' : `${c.first} ${c.last} · ${c.phone}${c.company ? ' · ' + c.company : ''}`;
+  const clientStr = c.isExisting ? 'לקוח קיים' : `${h(c.first)} ${h(c.last)} · ${c.phone}${c.company ? ' · ' + c.company : ''}`;
   // Open booking detail modal
   document.getElementById('booking-detail-id').textContent = b.id;
   document.getElementById('booking-detail-address').textContent = `${p.address}, ${p.city}${p.neighborhood ? ' ('+p.neighborhood+')' : ''}`;
@@ -6439,17 +6640,24 @@ function _renderArchivePanel(type, items) {
   }
 
   const total = items.length;
+  // BUG #8 FIX: handle both plain ms timestamps and Firestore Timestamp objects {seconds, nanoseconds}
+  const toMs = ts => {
+    if (!ts) return 0;
+    if (typeof ts === 'number') return ts;
+    if (ts.seconds) return ts.seconds * 1000;
+    return 0;
+  };
   const cutoff90 = Date.now() - 90 * 24 * 60 * 60 * 1000;
-  const expiringSoon = items.filter(x => (x.deletedAt||0) < cutoff90 + 7 * 24 * 60 * 60 * 1000).length;
+  const expiringSoon = items.filter(x => toMs(x.deletedAt) > 0 && toMs(x.deletedAt) < cutoff90 + 7 * 24 * 60 * 60 * 1000).length;
 
   let html = `<div class="archive-cleanup-bar">
     <span>🗄️ ${total} פריטים בארכיון${expiringSoon ? ` · <strong>${expiringSoon} פגים עוד 7 ימים</strong>` : ''}</span>
     <span style="color:var(--text-dim);">מחיקה אוטומטית לאחר 90 יום מהארכיון</span>
   </div>`;
-
-  items.sort((a,b) => (b.deletedAt||0) - (a.deletedAt||0)).forEach(item => {
-    const daysAgo = Math.floor((Date.now() - (item.deletedAt||0)) / 86400000);
-    const daysLeft = 90 - daysAgo;
+  items.sort((a,b) => toMs(b.deletedAt) - toMs(a.deletedAt)).forEach(item => {
+    const deletedMs = toMs(item.deletedAt);
+    const daysAgo = deletedMs ? Math.floor((Date.now() - deletedMs) / 86400000) : '?';
+    const daysLeft = typeof daysAgo === 'number' ? 90 - daysAgo : '?';
     const icon   = type === 'listings' ? '🏠' : type === 'customers' ? '👤' : '🏢';
     const title  = type === 'listings'  ? (item.address || item.id)
                  : type === 'customers' ? `${item.first||''} ${item.last||''}`
@@ -6495,6 +6703,14 @@ function renderSkeletonListings() {
 //  AUTH
 // ══════════════════════════════════════════════════
 let _appInited = false;
+
+// SEC-3: Event delegation — replaces inline onclick="openListing/openCustomer"
+document.addEventListener('click', e => {
+  const listingEl  = e.target.closest('[data-listing-id]');
+  const customerEl = e.target.closest('[data-customer-id]');
+  if (listingEl  && !e.target.closest('[data-stop-propagation]')) openListing(listingEl.dataset.listingId);
+  if (customerEl && !e.target.closest('[data-stop-propagation]')) openCustomer(customerEl.dataset.customerId);
+});
 
 auth.onAuthStateChanged(async user => {
   if (user) {

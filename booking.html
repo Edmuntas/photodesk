@@ -674,7 +674,7 @@
 
   /* ── TIME SLOTS ──────────────────── */
   .time-slots {
-    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px;
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; direction: ltr;
   }
   .time-slot {
     display: flex; flex-direction: column; align-items: center;
@@ -708,6 +708,9 @@ firebase.initializeApp({
   appId: "1:445351440545:web:14895fba95a5c9001c00e0"
 });
 const db = firebase.firestore();
+// SEC-2: XSS sanitization helper
+const _escB = document.createElement('div');
+function h(str) { if(str==null)return''; _escB.textContent=String(str); return _escB.innerHTML; }
 </script>
 </head>
 <body>
@@ -985,7 +988,6 @@ const db = firebase.firestore();
             <button type="button" class="time-slot" data-val="10:00–12:00" onclick="toggleTimeSlot(this)">☀️ בוקר<span>10:00–12:00</span></button>
             <button type="button" class="time-slot" data-val="12:00–14:00" onclick="toggleTimeSlot(this)">🕛 צהריים<span>12:00–14:00</span></button>
             <button type="button" class="time-slot" data-val="14:00–17:00" onclick="toggleTimeSlot(this)">🌤 אחר הצהריים<span>14:00–17:00</span></button>
-            <button type="button" class="time-slot" data-val="17:00–20:00" onclick="toggleTimeSlot(this)">🌆 בין ערביים<span>17:00–20:00</span></button>
           </div>
         </div>
       </div>
@@ -1102,7 +1104,7 @@ function openBkgExViewer(svcId) {
   ov.className = 'bkg-ex-bg';
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
   ov.onclick = e => { if(e.target===ov) ov.remove(); };
-  ov.innerHTML = `<div style="background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;"><div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e5e7eb;font-weight:700;font-size:14px;">${svc.icon||'🎯'} דוגמאות — ${svc.name}<button onclick="this.closest('.bkg-ex-bg').remove()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#6b7280;">✕</button></div><div style="padding:16px;">${body}</div></div>`;
+  ov.innerHTML = `<div style="background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;"><div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e5e7eb;font-weight:700;font-size:14px;">${svc.icon||'🎯'} דוגמאות — ${h(svc.name)}<button onclick="this.closest('.bkg-ex-bg').remove()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#6b7280;">✕</button></div><div style="padding:16px;">${body}</div></div>`;
   document.body.appendChild(ov);
 }
 function _bkgLightbox(src) {
@@ -1194,7 +1196,7 @@ function renderPackages() {
       <input type="radio" name="package" value="${p.id}" onchange="selectPackage('${p.id}')">
       <div class="pkg-card" style="--pkg-color:${p.color||'#F97316'}">
         <div class="pkg-check">✓</div>
-        <div class="pkg-name">${p.name}</div>
+        <div class="pkg-name">${h(p.name)}</div>
         <div class="pkg-price">₪${p.price.toLocaleString('he-IL')}<span> + מע"מ /צילום</span></div>
         <div class="pkg-duration">⏱ ${fmtDur(p.duration)}</div>
         <div class="pkg-services">${(p.services||[]).map(s => `<div class="pkg-service">${s}</div>`).join('')}</div>
@@ -1264,13 +1266,19 @@ function validateStep(step) {
       const first = document.getElementById('cust-first').value.trim();
       const last  = document.getElementById('cust-last').value.trim();
       const phone = document.getElementById('cust-phone').value.trim();
+      const email = document.getElementById('cust-email').value.trim();
       let ok = true;
+      // BUG #5 FIX: validate email along with first/last/phone
       ['cust-first','cust-last','cust-phone'].forEach(id => {
         const el = document.getElementById(id);
         const empty = !el.value.trim();
         el.classList.toggle('error', empty);
         if (empty) ok = false;
       });
+      const emailEl = document.getElementById('cust-email');
+      const emailInvalid = !email || !email.includes('@');
+      emailEl.classList.toggle('error', emailInvalid);
+      if (emailInvalid) ok = false;
       if (!ok) { shake(document.querySelector('#panel-1 .form-input.error')); return false; }
     }
   }
@@ -1333,10 +1341,20 @@ function clearLookup() {
 // ── REVIEW ─────────────────────────────────────────
 function buildReview() {
   if (!validateStep(3)) return;
+  // BUG #3 FIX: require package selection
   if (!selectedPackageId) {
     document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
     return;
   }
+  // BUG #3 FIX: require date selection
+  const shootDateEl = document.getElementById('shoot-date');
+  if (!shootDateEl.value) {
+    shootDateEl.classList.add('error');
+    shootDateEl.scrollIntoView({ behavior:'smooth', block:'center' });
+    shootDateEl.focus();
+    return;
+  }
+  shootDateEl.classList.remove('error');
   const pkg = packages.find(p => p.id === selectedPackageId);
   const pt  = selectedPropType ? PROPERTY_TYPES.find(p => p.id === selectedPropType) : null;
   const isEx = document.getElementById('type-existing').checked;
@@ -1478,7 +1496,7 @@ async function submitBooking() {
     const waText = encodeURIComponent(
       `📸 הזמנה חדשה!\n` +
       `לקוח: ${clientName}\n` +
-      `נכס: ${booking.property.address}, ${booking.property.city}\n` +
+      `נכס: ${h(booking.property.address)}, ${h(booking.property.city)}\n` +
       `חבילה: ${booking.package.name} · ₪${booking.package.price.toLocaleString('he-IL')}\n` +
       `תאריך: ${dateDisplay}${timesLine}\n` +
       `מס' הזמנה: ${booking.id}\n` +

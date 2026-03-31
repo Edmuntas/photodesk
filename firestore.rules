@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Хелпер: только залогиненный пользователь (владелец CRM) ──────────
+    function isOwner() {
+      return request.auth != null;
+    }
+
+    // ── CRM данные: listings, customers, companies, store ────────────────
+    // Только авторизованный пользователь (Дорон) может читать и писать
+    match /listings/{docId} {
+      allow read, write: if isOwner();
+    }
+
+    match /customers/{docId} {
+      allow read, write: if isOwner();
+    }
+
+    match /companies/{docId} {
+      allow read, write: if isOwner();
+    }
+
+    match /store/{docId} {
+      allow read, write: if isOwner();
+    }
+
+    // ── Архив ─────────────────────────────────────────────────────────────
+    match /archive/{docId} {
+      allow read, write: if isOwner();
+    }
+
+    // ── Заказы от клиентов (booking.html) ────────────────────────────────
+    // Клиент (без авторизации) может создать новый заказ
+    // Только владелец (авторизован) может читать, обновлять, удалять
+    match /bookings/{docId} {
+      allow create: if
+        // Обязательные поля присутствуют
+        request.resource.data.keys().hasAll(['id', 'status', 'customer']) &&
+        // Статус при создании — только 'pending'
+        request.resource.data.status == 'pending' &&
+        // Размер документа не превышает разумный предел (защита от спама)
+        request.resource.data.size() < 50;
+
+      allow read, update, delete: if isOwner();
+    }
+
+    // ── Запретить доступ ко всему остальному по умолчанию ─────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
