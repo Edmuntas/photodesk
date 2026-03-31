@@ -399,7 +399,7 @@
   .ptype-option input:checked + .ptype-label .ptype-name { color: var(--accent); }
 
   /* ── PACKAGES ────────────────────── */
-  .packages-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 
   .pkg-option { position: relative; cursor: pointer; }
   .pkg-option input { position: absolute; opacity: 0; width: 0; height: 0; }
@@ -477,8 +477,6 @@
 
   /* ── SCHEDULE ────────────────────── */
   .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  input[type="datetime-local"] { color-scheme: light; }
 
   /* ── NAVIGATION BUTTONS ──────────── */
   .nav-btns {
@@ -818,7 +816,7 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
             </div>
             <div class="form-group">
               <label class="form-label"><span class="required-star">* </span>אימייל</label>
-              <input class="form-input" type="email" id="cust-email" placeholder="dana@remax.co.il">
+              <input class="form-input" type="email" id="cust-email" placeholder="example@agency.co.il">
             </div>
           </div>
           <div class="form-group">
@@ -1043,7 +1041,7 @@ const PROPERTY_TYPES = [
   { id:'other',  icon:'🏘️', name:'אחר',             mult:1.0 },
 ];
 
-const packages = loadPackages();
+let packages = loadPackages();
 let selectedPackageId = null;
 let selectedPropType = null;
 let foundClientId = null;
@@ -1097,8 +1095,8 @@ function openBkgExViewer(svcId) {
     const eu = (EMBED[ex.type] || (u=>u))(ex.url);
     if (ex.type==='youtube'||ex.type==='vimeo') body += `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;margin-bottom:10px;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
     else if (ex.type==='kuula'||ex.type==='matterport') body += `<div style="position:relative;padding-bottom:75%;height:0;overflow:hidden;border-radius:8px;margin-bottom:10px;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
-    else body += `<a href="${ex.url}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface3);border-radius:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;margin-bottom:8px;">${ex.type==='instagram'?'📱':'🔗'} ${ex.caption||ex.url}</a>`;
-    if (ex.caption) body += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">💬 ${ex.caption}</div>`;
+    else body += `<a href="${ex.url}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface3);border-radius:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;margin-bottom:8px;">${ex.type==='instagram'?'📱':'🔗'} ${h(ex.caption||ex.url)}</a>`;
+    if (ex.caption) body += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">💬 ${h(ex.caption)}</div>`;
   });
   const ov = document.createElement('div');
   ov.className = 'bkg-ex-bg';
@@ -1126,7 +1124,7 @@ function loadSettings() {
 // ── INIT ───────────────────────────────────────────
 (function init() {
   const s = loadSettings();
-  if (s.businessName) document.getElementById('header-business').textContent = s.businessName;
+  document.getElementById('header-business').textContent = s.businessName || 'Edmont RE media';
   renderPropTypes();
   renderPackages();
 })();
@@ -1209,7 +1207,9 @@ function renderPackages() {
 function fmtDur(min) {
   if (!min) return '—';
   const h = Math.floor(min/60), m = min % 60;
-  return h ? (h + ' שע\'' + (m ? ' ' + m + ' דק\'' : '')) : min + ' דק\'';
+  const hStr = h === 1 ? 'שעה' : h > 1 ? h + ' שע\'' : '';
+  const mStr = m ? m + ' דק\'' : '';
+  return hStr && mStr ? hStr + ' ' + mStr : hStr || mStr || min + ' דק\'';
 }
 
 function selectPackage(id) {
@@ -1276,7 +1276,7 @@ function validateStep(step) {
         if (empty) ok = false;
       });
       const emailEl = document.getElementById('cust-email');
-      const emailInvalid = !email || !email.includes('@');
+      const emailInvalid = !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       emailEl.classList.toggle('error', emailInvalid);
       if (emailInvalid) ok = false;
       if (!ok) { shake(document.querySelector('#panel-1 .form-input.error')); return false; }
@@ -1289,6 +1289,19 @@ function validateStep(step) {
       document.getElementById(id).classList.toggle('error', !document.getElementById(id).value.trim());
     });
     if (!address || !city) { shake(document.querySelector('#panel-2 .form-input.error')); return false; }
+  }
+  if (step === 3) {
+    if (!selectedPackageId) {
+      document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
+      return false;
+    }
+    const dateEl = document.getElementById('shoot-date');
+    if (!dateEl.value) { dateEl.classList.add('error'); dateEl.scrollIntoView({ behavior:'smooth', block:'center' }); return false; }
+    if (new Date(dateEl.value) < new Date(new Date().toDateString())) {
+      dateEl.classList.add('error');
+      dateEl.scrollIntoView({ behavior:'smooth', block:'center' });
+      return false;
+    }
   }
   return true;
 }
@@ -1313,9 +1326,10 @@ function lookupClient() {
   if (!q) return;
   let customers = [];
   try { customers = JSON.parse(localStorage.getItem('photoDesk_store') || '{}').customers || []; } catch(e) {}
+  const normPhone = s => s.replace(/[^\d]/g,'').slice(-9);
   const m = customers.find(c =>
     (c.email||'').toLowerCase() === q ||
-    (c.phone||'').replace(/[-\s]/g,'') === q.replace(/[-\s]/g,'')
+    normPhone(c.phone||'') === normPhone(q)
   );
   if (m) {
     foundClientId = m.id;
@@ -1344,11 +1358,19 @@ function buildReview() {
   // BUG #3 FIX: require package selection
   if (!selectedPackageId) {
     document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
+    const existing = document.getElementById('pkg-error');
+    if (!existing) {
+      document.getElementById('packages-grid').insertAdjacentHTML('beforebegin',
+        '<div id="pkg-error" style="color:#EF4444;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">⚠️ נא לבחור חבילה להמשך</div>');
+      setTimeout(() => document.getElementById('pkg-error')?.remove(), 4000);
+    }
     return;
   }
-  // BUG #3 FIX: require date selection
+  // Require valid future date selection
   const shootDateEl = document.getElementById('shoot-date');
-  if (!shootDateEl.value) {
+  const shootDateVal = shootDateEl.value;
+  const isPastDate = shootDateVal && new Date(shootDateVal) < new Date(new Date().toDateString());
+  if (!shootDateVal || isPastDate) {
     shootDateEl.classList.add('error');
     shootDateEl.scrollIntoView({ behavior:'smooth', block:'center' });
     shootDateEl.focus();
@@ -1402,6 +1424,7 @@ async function submitBooking() {
 
   const isEx = document.getElementById('type-existing').checked;
   const pkg  = packages.find(p => p.id === selectedPackageId);
+  if (!pkg) { alert('שגיאה: חבילה לא נמצאת. אנא בחר חבילה מחדש.'); btn.disabled = false; btn.textContent = '✅ שלח הזמנה'; return; }
   const pt   = selectedPropType ? PROPERTY_TYPES.find(p => p.id === selectedPropType) : null;
 
   const clientData = isEx
@@ -1416,7 +1439,7 @@ async function submitBooking() {
         listings: 0
       };
 
-  const finalPrice = pt ? Math.round(pkg.price * pt.mult / 50) * 50 : pkg.price;
+  const finalPrice = pt ? Math.round(pkg.price * pt.mult) : pkg.price;
 
   const booking = {
     id: 'B' + Date.now(),
@@ -1446,7 +1469,10 @@ async function submitBooking() {
   } catch(err) {
     btn.disabled = false;
     btn.textContent = '✅ שלח הזמנה';
-    alert('שגיאה בשמירת ההזמנה. בדוק חיבור אינטרנט ונסה שנית.');
+    const msg = err.code === 'permission-denied' ? 'שגיאת הרשאות — פנה לבעל האתר'
+              : err.code === 'unavailable'        ? 'בעיית רשת — בדוק חיבור אינטרנט ונסה שנית'
+              : 'שגיאה בשמירת ההזמנה — נסה שנית';
+    alert(msg);
     return;
   }
 
@@ -1520,6 +1546,25 @@ function getSelectedTimeSlots() {
 }
 
 renderPackages();
+
+// NH-5: Firestore fallback if localStorage had no packages
+(function() {
+  try {
+    const saved = localStorage.getItem('photoDesk_store');
+    const hasLocal = saved && JSON.parse(saved)?.packages?.length;
+    if (!hasLocal) {
+      db.collection('store').doc('data').get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.packages && data.packages.length) {
+            packages = data.packages.filter(p => p.is_active !== false && p.is_visible !== false);
+            if (currentStep === 1) renderPackages();
+          }
+        }
+      }).catch(() => {});
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>

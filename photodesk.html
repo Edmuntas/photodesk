@@ -683,6 +683,15 @@
 
   .schedule-day { font-size: 13px; font-weight: 600; }
   .schedule-day.off { color: var(--text-dim); }
+  @media (max-width: 480px) {
+    .schedule-row { grid-template-columns: 36px 1fr; gap: 8px; }
+    .schedule-day .day-full { display: none; }
+    .schedule-day .day-short { display: inline; }
+  }
+  @media (min-width: 481px) {
+    .schedule-day .day-full { display: inline; }
+    .schedule-day .day-short { display: none; }
+  }
 
   .schedule-time { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
 
@@ -1096,10 +1105,11 @@
     color: var(--text-muted);
     text-align: center;
   }
-  .empty-icon { font-size: 52px; margin-bottom: 16px;
-    animation: emptyBounce 2.2s ease-in-out infinite; }
-  .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-  .empty-sub { font-size: 13px; color: var(--text-muted); max-width: 280px; line-height: 1.6; }
+  .empty-icon { font-size: 56px; margin-bottom: 16px; line-height: 1;
+    animation: emptyBounce 2s ease-in-out infinite; }
+  @keyframes emptyBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  .empty-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .empty-sub { font-size: 13px; color: var(--text-muted); max-width: 300px; line-height: 1.7; }
 
   /* ── PIPELINE STEPPER ───────────── */
   .pipeline-step {
@@ -1238,7 +1248,7 @@
   .dlv-wrap { display:flex; gap:3px; }
   .dlv-dot {
     display:inline-flex; align-items:center; justify-content:center;
-    width:24px; height:24px; border-radius:6px; font-size:12px;
+    width:28px; height:28px; border-radius:6px; font-size:15px;
     cursor:pointer; background:var(--surface3);
     opacity:0.35; transition:opacity .15s, transform .12s, box-shadow .15s;
     border:1.5px solid transparent;
@@ -1559,6 +1569,8 @@
   .row-action:hover { background: var(--surface2); color: var(--text); border-color: var(--border-focus); }
   .row-action.ra-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   .row-action.ra-primary:hover { background: #EA6D0C; }
+  .row-action.ra-del { color: #EF4444; opacity: 0.6; }
+  .row-action.ra-del:hover { opacity: 1; background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); }
 
   /* ── TODAY BANNER ───────────────── */
   .today-banner {
@@ -1595,15 +1607,7 @@
   .today-banner-close { padding: 5px 9px; opacity: 0.8; }
   .today-banner-close:hover { opacity: 1; }
 
-  /* ── EMPTY STATE ─────────────────── */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 64px 24px;
-    text-align: center;
-  }
+  /* ── EMPTY STATE BOX ─────────────── */
   .empty-state-box {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 48px 40px;
@@ -1611,15 +1615,6 @@
     box-shadow: var(--shadow-sm); max-width: 380px; width: 100%;
     animation: fadeIn 0.25s ease;
   }
-  .empty-icon { font-size: 56px; margin-bottom: 16px; line-height: 1;
-    animation: emptyBounce 2s ease-in-out infinite; }
-  @keyframes emptyBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
-  .empty-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-  .empty-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.7; max-width: 300px; }
-
   /* ── ANIM ───────────────────────── */
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .page.active { animation: fadeIn 0.2s ease; }
@@ -1839,6 +1834,10 @@
   align-items: start;
 }
 @media (max-width: 900px) { .dash-layout { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .stats-row[style*="repeat(5"] { grid-template-columns: repeat(2, 1fr) !important; }
+}
 
 .dash-kpi-row {
   display: grid;
@@ -1866,7 +1865,7 @@
   height: 4px;
   background: var(--kpi-color, var(--accent));
 }
-.kpi-icon { font-size: 26px; margin-bottom: 10px; }
+.kpi-icon { font-size: 32px; margin-bottom: 10px; }
 .kpi-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
 .kpi-value { font-size: 32px; font-weight: 800; color: var(--kpi-color, var(--accent)); line-height: 1; letter-spacing: -1px; }
 .kpi-sub { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
@@ -2239,6 +2238,7 @@
               </div>
             </div>
             <div class="mini-cal-grid" id="dash-cal-grid"></div>
+            <div id="dash-cal-no-shoots" style="display:none; text-align:center; font-size:12px; color:var(--text-muted); padding:8px 0 4px;">אין צילומים מתוכננים החודש</div>
           </div>
 
           <div class="dash-section-title">
@@ -2346,9 +2346,9 @@
           <div class="stat-value" id="osc-val-pending" style="color:#EF4444">0</div>
           <div class="stat-sub">מוכן לשליחה</div>
         </div>
-        <div class="stat-card" id="osc-unpaid" style="--accent-color:#10B981; cursor:pointer;" onclick="filterOrders('__unpaid__')">
+        <div class="stat-card" id="osc-unpaid" style="--accent-color:#EF4444; cursor:pointer;" onclick="filterOrders('__unpaid__')">
           <div class="stat-label">לשולם</div>
-          <div class="stat-value" id="osc-val-unpaid" style="color:#10B981">0</div>
+          <div class="stat-value" id="osc-val-unpaid" style="color:#EF4444">0</div>
           <div class="stat-sub">ממתין לתשלום</div>
         </div>
       </div>
@@ -2469,11 +2469,11 @@
         <div class="schedule-grid" id="schedule-grid"></div>
         <div style="margin-top:20px;">
           <div class="section-title">אזור זמן</div>
-          <select class="form-select" style="max-width:260px;">
-            <option selected>Asia/Jerusalem (IDT)</option>
-            <option>America/New_York (EDT)</option>
-            <option>America/Los_Angeles (PDT)</option>
-            <option>Europe/London (GMT)</option>
+          <select class="form-select" id="avail-timezone" style="max-width:260px;" onchange="store.settings.timezone=this.value; saveStore();">
+            <option value="Asia/Jerusalem">Asia/Jerusalem (IDT)</option>
+            <option value="America/New_York">America/New_York (EDT)</option>
+            <option value="America/Los_Angeles">America/Los_Angeles (PDT)</option>
+            <option value="Europe/London">Europe/London (GMT)</option>
           </select>
         </div>
       </div>
@@ -2663,7 +2663,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">סכום שהתקבל (₪)</label>
-        <input class="form-input" type="number" id="panel-payment-amount" placeholder="0">
+        <input class="form-input" type="number" id="panel-payment-amount" placeholder="0" min="0" step="1">
       </div>
       <div class="form-group">
         <label class="form-label">מסמכים כספיים</label>
@@ -2865,9 +2865,7 @@
     <div class="form-group">
       <label class="form-label">חבילה</label>
       <select class="form-select" id="new-package">
-        <option>חבילה בסיסית — ₪800 · 90 דק'</option>
-        <option>חבילה פרמיום — ₪1,200 · 3 שעות</option>
-        <option>חבילה אינסופית — ₪2,000 · 4 שעות</option>
+        <option value="">טוען חבילות...</option>
       </select>
     </div>
     <div class="form-group">
@@ -2878,6 +2876,7 @@
       <label class="form-label">סטטוס</label>
       <select class="form-select" id="new-status">
         <option>מתוכנן</option>
+        <option>ממתין לאישור</option>
         <option>ממתין למסירה</option>
         <option>צולם</option>
         <option>בעיבוד</option>
@@ -3090,7 +3089,7 @@ let calDate = new Date();
 const pageConfig = {
   dashboard:    { title:'דאשבורד',  btn:null },
   listings:     { title:'נכסים',    btn:'+ נכס חדש' },
-  orders:       { title:'הזמנות',   btn:'+ הזמנה חדשה' },
+  orders:       { title:'הזמנות',   btn:'🔗 שלח לינק הזמנה' },
   calendar:     { title:'יומן',     btn:'+ קבע צילום' },
   customers:    { title:'לקוחות',   btn:'+ הוסף לקוח' },
   packages:     { title:'חבילות',   btn:'+ חבילה חדשה' },
@@ -3120,8 +3119,30 @@ function navigate(page) {
   renderPage(page);
 }
 
+function openNewListingModal() {
+  const sel = document.getElementById('new-package');
+  const active = store.packages.filter(p => p.is_active !== false);
+  if (active.length) {
+    const fmtD = min => {
+      if (!min) return '';
+      const hh = Math.floor(min/60), mm = min % 60;
+      const hStr = hh === 1 ? 'שעה' : hh > 1 ? hh + ' שע\'' : '';
+      const mStr = mm ? mm + ' דק\'' : '';
+      return hStr && mStr ? hStr + ' ' + mStr : hStr || mStr || min + ' דק\'';
+    };
+    sel.innerHTML = active.map(p =>
+      `<option value="${h(p.id)}">${h(p.name)} — ₪${(p.price||0).toLocaleString('he-IL')} · ${fmtD(p.duration)}</option>`
+    ).join('');
+  } else {
+    toast('הוסף חבילות תחילה בעמוד חבילות', 'error');
+    navigate('packages');
+    return;
+  }
+  openModal('new-listing-modal');
+}
+
 function primaryAction() {
-  if (currentPage === 'listings')      openModal('new-listing-modal');
+  if (currentPage === 'listings')      openNewListingModal();
   else if (currentPage === 'customers')  openModal('new-customer-modal');
   else if (currentPage === 'orders')     openShareLinkModal();
   else if (currentPage === 'packages')   addPackage();
@@ -3349,11 +3370,11 @@ function renderDashRecentOrders() {
     const invBadge    = l.invoiceSent ? `<span class="ro-fin-badge ro-inv">🧾 חשבונית</span>` : '';
 
     return `
-      <div class="recent-order-item" data-listing-id="${h(l.id)}" class="js-open-listing">
+      <div class="recent-order-item js-open-listing" data-listing-id="${h(l.id)}">
         <div class="ro-avatar">🏠</div>
         <div style="flex:1;overflow:hidden;">
-          <div class="ro-address">${l.address}</div>
-          <div class="ro-sub">${l.city || ''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 7px;">${h(l.status)}</span></div>
+          <div class="ro-address">${h(l.address)}</div>
+          <div class="ro-sub">${h(l.city || '')} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 7px;">${h(l.status)}</span></div>
           <div class="ro-fin-row">${payBadge}${reqBadge}${invBadge}</div>
         </div>
         <div class="ro-right">
@@ -3403,6 +3424,8 @@ function renderDashCalendar() {
   }
 
   document.getElementById('dash-cal-grid').innerHTML = html;
+  const noShootsEl = document.getElementById('dash-cal-no-shoots');
+  if (noShootsEl) noShootsEl.style.display = shootDays.size ? 'none' : '';
 }
 
 function dashCalNav(dir) {
@@ -3429,14 +3452,14 @@ function renderDashUpcoming() {
     const day = d.getDate();
     const mon = heMonths[d.getMonth()];
     return `
-      <div class="upcoming-shoot" data-listing-id="${h(l.id)}" class="js-open-listing">
+      <div class="upcoming-shoot js-open-listing" data-listing-id="${h(l.id)}">
         <div class="us-date-badge">
           <div class="us-date-day">${day}</div>
           <div class="us-date-mon">${mon}</div>
         </div>
         <div style="flex:1;overflow:hidden;">
-          <div class="us-address">${l.address}</div>
-          <div class="us-sub">${l.city || ''} · ${l.pkg || ''}</div>
+          <div class="us-address">${h(l.address)}</div>
+          <div class="us-sub">${h(l.city || '')} · ${h(l.pkg || '')}</div>
         </div>
       </div>`;
   }).join('');
@@ -3526,13 +3549,13 @@ function renderListings() {
     return;
   }
   tbody.innerHTML = list.map(l => {
-    const cust = store.customers.find(c => c.id === l.customerId || `${h(c.first)} ${h(c.last)}`.trim() === l.customer);
+    const cust = store.customers.find(c => c.id === l.customer || c.id === l.customerId || `${c.first} ${c.last}`.trim() === l.customer);
     const phone = cust?.phone || '';
     const waPhone = phone.replace(/[^0-9]/g,'').replace(/^0/,'972');
     const waLink = phone ? `https://wa.me/${waPhone}?text=${encodeURIComponent('שלום ' + (cust?.first||'') + ', בנוגע לנכס ב' + l.address)}` : '';
     const sel = (window._bulkSelected||new Set()).has(l.id);
     return `
-    <tr data-listing-id="${h(l.id)}" class="js-open-listing" class="${sel?'row-selected':''}">
+    <tr data-listing-id="${h(l.id)}" class="js-open-listing${sel?' row-selected':''}">
       <td data-stop-propagation="1" style="padding-right:14px;">
         <input type="checkbox" ${sel?'checked':''} onchange="toggleBulkRow('${l.id}',this.checked)">
       </td>
@@ -3540,20 +3563,20 @@ function renderListings() {
         <div class="listing-thumb">
           <div class="thumb-img">${l.photoUrls && l.photoUrls[0] ? `<img src="${l.photoUrls[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : '🏠'}</div>
           <div>
-            <div class="thumb-address">${l.address}</div>
+            <div class="thumb-address">${h(l.address)}</div>
             <div class="thumb-sub">${h(l.city)}${l.state ? ' · ' + h(l.state) : ''} · ${l.beds} חד' · ${l.photos||0} תמונות</div>
           </div>
         </div>
       </td>
-      <td onclick="showStatusMenu('${l.id}', this, event)" style="cursor:pointer;" title="לחץ לשינוי סטטוס">
+      <td onclick="showStatusMenu('${h(l.id)}', this, event)" style="cursor:pointer;" title="לחץ לשינוי סטטוס">
         <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
       </td>
       <td style="font-size:12px; color:var(--text-muted)">${h(l.pkg)}</td>
       <td data-stop-propagation="1">
         <div class="dlv-wrap">
-          <span class="dlv-dot${l.deliveredPhotos?' dlv-on':''}" onclick="toggleDelivery('${l.id}','photos',this)" title="תמונות — לחץ להחלפה">📸</span>
-          <span class="dlv-dot${l.deliveredVideo?' dlv-on':''}" onclick="toggleDelivery('${l.id}','video',this)" title="וידאו — לחץ להחלפה">🎬</span>
-          <span class="dlv-dot${l.deliveredFloorplan?' dlv-on':''}" onclick="toggleDelivery('${l.id}','floorplan',this)" title="תוכנית קומה — לחץ להחלפה">📐</span>
+          <span class="dlv-dot${l.deliveredPhotos?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','photos',this)" title="תמונות — לחץ להחלפה">📸</span>
+          <span class="dlv-dot${l.deliveredVideo?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','video',this)" title="וידאו — לחץ להחלפה">🎬</span>
+          <span class="dlv-dot${l.deliveredFloorplan?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','floorplan',this)" title="תוכנית קומה — לחץ להחלפה">📐</span>
         </div>
       </td>
       <td style="font-size:12px; color:var(--text-muted)">${cust ? `${h(cust.first)} ${h(cust.last)}` : (l.customer || '—')}</td>
@@ -3561,8 +3584,8 @@ function renderListings() {
       <td class="row-actions" data-stop-propagation="1">
         ${phone ? `<a class="row-action" href="tel:${phone}" title="חייג">📞</a>` : ''}
         ${waLink ? `<a class="row-action" href="${waLink}" target="_blank" title="WhatsApp">💬</a>` : ''}
-        <span class="row-action" onclick="deleteListingInline('${l.id}')" title="מחק נכס" style="color:#EF4444;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑️</span>
-        <span class="row-action ra-primary" data-listing-id="${h(l.id)}" class="js-open-listing" title="פתח פרטים">→</span>
+        <span class="row-action ra-del" onclick="deleteListingInline('${h(l.id)}')" title="מחק נכס">🗑️</span>
+        <span class="row-action ra-primary js-open-listing" data-listing-id="${h(l.id)}" title="פתח פרטים">→</span>
       </td>
     </tr>`;
   }).join('');
@@ -3582,7 +3605,7 @@ function badgeClass(status) {
   return m[status] || 'badge-pending';
 }
 
-function filterByStatus(val) { filterStatus = val; renderListings(); }
+function filterByStatus(val) { filterStatus = val; _statCardFilter = val || ''; renderListings(); }
 
 let _ordersFilter = ''; // '' | status | '__unpaid__'
 function filterOrders(val) {
@@ -3600,7 +3623,11 @@ function filterByStatCard(val) {
 let _searchTimer = null;
 function handleSearch(val) {
   clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(() => { searchQuery = val; renderListings(); }, 200);
+  _searchTimer = setTimeout(() => {
+    searchQuery = val;
+    if (currentPage === 'customers') { customersSearch = val; renderCustomers(); }
+    else renderListings();
+  }, 200);
 }
 
 function _matchSearch(l, q) {
@@ -3741,8 +3768,8 @@ function renderKanban(list) {
           <span class="kanban-col-count" style="background:${col.color}15; color:${col.color};">${cards.length}</span>
         </div>
         ${cards.length ? cards.map(l => `
-          <div class="kanban-card" data-listing-id="${h(l.id)}" class="js-open-listing">
-            <div class="kanban-card-addr">${l.address}</div>
+          <div class="kanban-card js-open-listing" data-listing-id="${h(l.id)}">
+            <div class="kanban-card-addr">${h(l.address)}</div>
             <div class="kanban-card-meta">
               ${l.city ? `📍 ${h(l.city)}` : ''}
               ${l.beds ? ` · ${l.beds} חד'` : ''}
@@ -3753,6 +3780,10 @@ function renderKanban(list) {
       </div>`;
   });
 
+  if (!list.length) {
+    board.innerHTML = `<div style="padding:48px;text-align:center;color:var(--text-muted);font-size:14px;">אין נכסים להצגה</div>`;
+    return;
+  }
   board.innerHTML = `<div class="kanban-board">${cols.join('')}</div>`;
 }
 
@@ -3788,7 +3819,9 @@ function openInvoice(id) {
   if (!l) return;
 
   const pkg = store.packages.find(p => p.id === l.pkgId || p.name === l.pkg);
-  const price = l.price || pkg?.price || 0;
+  const basePrice = l.price || pkg?.price || 0;
+  const activePromo = pkg ? _getActivePromoForPackage(pkg.id) : null;
+  const price = activePromo ? applyPromo(basePrice, activePromo) : basePrice;
   const cust = store.customers.find(c => c.id === l.customerId || `${h(c.first)} ${h(c.last)}`.trim() === l.customer);
   const settings = store.settings || {};
   const bizName = settings.businessName || document.getElementById('logo-text')?.textContent || 'PhotoDesk';
@@ -3856,8 +3889,8 @@ function openInvoice(id) {
     </div>
     <div class="meta-box">
       <div class="meta-label">נכס</div>
-      <div class="meta-val">${l.address}</div>
-      <div class="meta-sub">${l.city || ''}</div>
+      <div class="meta-val">${h(l.address)}</div>
+      <div class="meta-sub">${h(l.city || '')}</div>
     </div>
     <div class="meta-box">
       <div class="meta-label">סטטוס</div>
@@ -3877,7 +3910,7 @@ function openInvoice(id) {
     </thead>
     <tbody>
       <tr>
-        <td><strong>${l.pkg || 'חבילת צילום'}</strong></td>
+        <td><strong>${h(l.pkg || 'חבילת צילום')}</strong></td>
         <td>${l.photos ? `${l.photos} תמונות` : ''} ${l.beds ? `· ${l.beds} חד'` : ''}</td>
         <td>1</td>
         <td>${price ? `₪${price.toLocaleString('he-IL')}` : '—'}</td>
@@ -4027,8 +4060,14 @@ document.addEventListener('keydown', e => {
     const overlay = document.getElementById('cmd-overlay');
     overlay.style.display === 'none' ? openCmdPalette() : closeCmdPalette();
   }
-  if (e.key === 'Escape' && document.getElementById('cmd-overlay').style.display !== 'none') {
-    closeCmdPalette();
+  if (e.key === 'Escape') {
+    if (document.getElementById('cmd-overlay').style.display !== 'none') {
+      closeCmdPalette();
+    } else if (document.getElementById('listing-panel').classList.contains('open')) {
+      closePanel();
+    } else if (document.getElementById('customer-panel')?.classList.contains('open')) {
+      closeCustomerPanel();
+    }
   }
 });
 
@@ -4056,7 +4095,7 @@ function renderPipeline(l) {
       ? `<div class="pipeline-line ${i < currentIdx ? 'done' : ''}"></div>` : '';
     return `
       <div class="pipeline-step">
-        <div class="pipeline-dot ${state}" onclick="setStatusInline('${l.id}','${step.key}',null)" title="${step.key}">
+        <div class="pipeline-dot ${state}" onclick="setStatusInline('${h(l.id)}','${h(step.key)}',null)" title="${h(step.key)}">
           <div class="pipeline-icon">${state === 'done' ? '✓' : step.icon}</div>
           <div class="pipeline-label">${step.label}</div>
         </div>
@@ -4176,6 +4215,7 @@ function saveListing() {
   currentListing.deliveredFloorplan = document.getElementById('panel-deliveredfloorplan').checked;
   currentListing.payReqSent  = document.getElementById('panel-payreq-sent').checked;
   currentListing.invoiceSent = document.getElementById('panel-invoice-sent').checked;
+  _syncListingToOrder(currentListing);
   renderListings();
   saveStore();
   toast('הנכס נשמר', 'success');
@@ -4213,12 +4253,9 @@ function createListing() {
   const addr = document.getElementById('new-address').value;
   if (!addr) { toast('נא להזין כתובת', 'error'); return; }
   const id = 'L' + Date.now();
-  const pkgRaw = document.getElementById('new-package').value;
-  let pkg = pkgRaw.split('—')[0].trim();
-  const pkgExists = store.packages.some(p => p.name === pkg);
-  if (!pkgExists && store.packages.length) {
-    pkg = store.packages[0].name;
-  }
+  const selPkgId = document.getElementById('new-package').value;
+  const selPkg = store.packages.find(p => p.id === selPkgId);
+  const pkg = selPkg ? selPkg.name : '';
   store.listings.unshift({
     id, address: addr,
     city: document.getElementById('new-city').value,
@@ -4226,7 +4263,8 @@ function createListing() {
     zip:'', beds: +document.getElementById('new-beds').value||0,
     baths: +document.getElementById('new-baths').value||0,
     stories:1, area:0, lot:0, year:0,
-    pkg, status: document.getElementById('new-status').value,
+    pkg, pkgId: selPkg?.id || '', price: selPkg?.price || 0,
+    status: document.getElementById('new-status').value,
     customer:'', mls:'',
     created: new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'}),
     photos:0, desc:'', notes:'', agent:'',
@@ -4396,7 +4434,7 @@ function renderAgentsView(companyId) {
       const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
       const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
       return `
-      <div class="customer-card" data-customer-id="${h(c.id)}" class="js-open-customer">
+      <div class="customer-card js-open-customer" data-customer-id="${h(c.id)}">
         <div class="cust-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
         <div style="flex:1;min-width:0;">
           <div class="cust-name">${h(c.first)} ${h(c.last)}</div>
@@ -4416,7 +4454,7 @@ function renderAgentsView(companyId) {
       const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
       const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
       return `
-      <div class="cust-row" data-customer-id="${h(c.id)}" class="js-open-customer">
+      <div class="cust-row js-open-customer" data-customer-id="${h(c.id)}">
         <div class="cust-row-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:600;font-size:14px;">${h(c.first)} ${h(c.last)}</div>
@@ -4546,12 +4584,12 @@ function renderPackages() {
         : '<span class="vis-badge active">✓ פעיל</span>';
     const activePromo = _getActivePromoForPackage(p.id);
     const promoBadge = activePromo
-      ? `<span class="vis-badge featured" title="${activePromo.name}">🏷️ ${activePromo.discount_type==='pct' ? activePromo.discount_value+'%' : '₪'+activePromo.discount_value} הנחה</span>`
+      ? `<span class="vis-badge featured" title="${h(activePromo.name)}">🏷️ ${activePromo.discount_type==='pct' ? activePromo.discount_value+'%' : '₪'+activePromo.discount_value} הנחה</span>`
       : '';
     return `
     <div class="pkg-card ${dimClass}" style="--pkg-color:${p.color}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
-        <div class="pkg-name">${p.name}</div>
+        <div class="pkg-name">${h(p.name)}</div>
         <div style="display:flex;gap:4px;align-items:center;margin-right:auto;padding-right:8px;">
           ${statusBadge} ${promoBadge}
           <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px;" onclick="event.stopPropagation();editPackage('${p.id}')">ערוך</button>
@@ -4559,7 +4597,7 @@ function renderPackages() {
         </div>
       </div>
       <div class="pkg-price">₪${p.price.toLocaleString('he-IL')}<span> /צילום</span></div>
-      <div class="pkg-duration">⏱ ${p.duration >= 60 ? Math.floor(p.duration/60) + ' שעות' + (p.duration%60 ? ' ' + p.duration%60 + ' דק\'' : '') : p.duration + ' דק\''}</div>
+      <div class="pkg-duration">⏱ ${p.duration >= 60 ? (Math.floor(p.duration/60) === 1 ? 'שעה' : Math.floor(p.duration/60) + ' שעות') + (p.duration%60 ? ' ' + p.duration%60 + ' דק\'' : '') : p.duration + ' דק\''}</div>
       <div class="pkg-services">${p.services.map(s => `<span class="pkg-service-tag" onclick="showSvcTagPopup('${s.replace(/'/g,"\\'")}',event)" title="לחץ לפרטים">${s}</span>`).join('')}</div>
       ${p.addons && p.addons.length ? `<div style="font-size:11px;color:var(--text-dim);margin-top:10px;">תוספות: ${p.addons.join(', ')}</div>` : ''}
       <div class="card-ctrl-row">
@@ -4616,7 +4654,7 @@ function _openPkgModal(p) {
       <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid ${included.has(s.name)?'var(--accent)':'var(--border)'};background:${included.has(s.name)?'var(--accent-light)':'var(--surface2)'};transition:all .15s;" id="svc-row-${s.id}">
         <input type="checkbox" id="mpkg-svc-${s.id}" value="${s.name}" ${included.has(s.name)?'checked':''} onchange="_toggleSvcRow('${s.id}',this)" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0;" />
         <span style="font-size:18px;">${s.icon||'🎯'}</span>
-        <span style="font-size:13px;font-weight:500;">${s.name}</span>
+        <span style="font-size:13px;font-weight:500;">${h(s.name)}</span>
         <span style="font-size:11px;color:var(--text-muted);margin-right:auto;">${s.category==='addon'?'תוספת':'ראשי'}</span>
       </label>`).join('');
   } else {
@@ -4716,12 +4754,12 @@ function renderServices() {
         <button class="svc-btn del" onclick="deleteService('${s.id}')">מחק</button>
       </div>
       <div class="svc-card-icon">${s.icon || '🎯'}</div>
-      <div class="svc-card-name">${s.name}</div>
-      <div class="svc-card-desc">${s.description || ''}</div>
+      <div class="svc-card-name">${h(s.name)}</div>
+      <div class="svc-card-desc">${h(s.description || '')}</div>
       ${s.deliverables ? `
         <div class="svc-deliverables">
           <div class="svc-deliverables-label">מה מקבלים</div>
-          ${s.deliverables}
+          ${h(s.deliverables)}
         </div>` : ''}
       ${exCount ? _buildInlineExamplesPreview(s) : ''}
       <div class="card-ctrl-row">
@@ -5095,13 +5133,15 @@ function openLightbox(src) {
 //  AVAILABILITY
 // ══════════════════════════════════════════════════
 function renderSchedule() {
+  const tzSel = document.getElementById('avail-timezone');
+  if (tzSel && store.settings?.timezone) tzSel.value = store.settings.timezone;
   document.getElementById('schedule-grid').innerHTML = store.schedule.map((s, i) => {
     const timeInputs = s.enabled
       ? '<input type="time" value="' + s.start + '" style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text);font-size:12px;outline:none;" onchange="store.schedule[' + i + '].start=this.value"><span>–</span><input type="time" value="' + s.end + '" style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text);font-size:12px;outline:none;" onchange="store.schedule[' + i + '].end=this.value">'
       : '<span style="color:var(--text-dim);font-size:12px;">יום מנוחה</span>';
     return `
     <div class="schedule-row">
-      <div class="schedule-day ${!s.enabled?'off':''}">${s.day}</div>
+      <div class="schedule-day ${!s.enabled?'off':''}"><span class="day-full">${s.day}</span><span class="day-short">${s.day.charAt(0)}'</span></div>
       <div class="schedule-time">
         <label class="toggle">
           <input type="checkbox" ${s.enabled?'checked':''} onchange="toggleDay(${i},this.checked)">
@@ -5216,10 +5256,10 @@ function _renderCalSidebar() {
     const isToday = d.toDateString() === todayStr;
     const color = _statusEvColor(l.status);
     const dateLabel = isToday ? 'היום' : `${d.getDate()} ${CAL_MONTHS[d.getMonth()]} ${d.getFullYear() !== today.getFullYear() ? d.getFullYear() : ''}`.trim();
-    return `<div class="shoot-item" style="border-right-color:${color};cursor:pointer;" data-listing-id="${h(l.id)}" class="js-open-listing">
+    return `<div class="shoot-item js-open-listing" style="border-right-color:${color};cursor:pointer;" data-listing-id="${h(l.id)}">
       <div class="shoot-time">${dateLabel}</div>
       <div style="flex:1;">
-        <div class="shoot-address">${l.address}</div>
+        <div class="shoot-address">${h(l.address)}</div>
         <div class="shoot-pkg" style="display:flex;align-items:center;gap:6px;margin-top:2px;">
           <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span>
           <span>${h(l.pkg)}</span>
@@ -5246,10 +5286,10 @@ function openDayPanel(year, month, day) {
   const dateTitle = `${day} ${CAL_MONTHS[month]} ${year}`;
   const rows = listings.map(l => {
     const color = _statusEvColor(l.status);
-    return `<div class="day-listing-row" onclick="closeDayPanel();openListing('${l.id}')">
+    return `<div class="day-listing-row" onclick="closeDayPanel();openListing('${h(l.id)}')">
       <span class="day-listing-dot" style="background:${color}"></span>
       <div class="day-listing-info">
-        <div class="day-listing-addr">${l.address}</div>
+        <div class="day-listing-addr">${h(l.address)}</div>
         <div class="day-listing-sub">${h(l.pkg)} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span></div>
       </div>
       <span style="font-size:18px;color:var(--text-dim);">›</span>
@@ -5438,7 +5478,7 @@ function renderTodayBanner() {
     <div class="today-banner-icon">📸</div>
     <div>
       <div class="today-banner-label">יש לך צילום היום</div>
-      <div class="today-banner-main">${s.address}${s.city ? ' · ' + s.city : ''} · ${hhmm}</div>
+      <div class="today-banner-main">${h(s.address)}${s.city ? ' · ' + h(s.city) : ''} · ${hhmm}</div>
     </div>
     ${extra}
     <div class="today-banner-actions">
@@ -5560,9 +5600,9 @@ function openCustomer(id) {
   const active = custListings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל');
   document.getElementById('cp-active-list').innerHTML = active.length
     ? active.map(l => `
-        <div class="cust-listing-row" onclick="openListingFromCustomer('${l.id}')">
+        <div class="cust-listing-row" onclick="openListingFromCustomer('${h(l.id)}')">
           <div style="flex:1;">
-            <div class="cust-listing-addr">${l.address}</div>
+            <div class="cust-listing-addr">${h(l.address)}</div>
             <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)}</div>
           </div>
           <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
@@ -5573,9 +5613,9 @@ function openCustomer(id) {
   const delivered = custListings.filter(l => l.status === 'נמסר');
   document.getElementById('cp-history-list').innerHTML = delivered.length
     ? delivered.map(l => `
-        <div class="cust-listing-row" onclick="openListingFromCustomer('${l.id}')">
+        <div class="cust-listing-row" onclick="openListingFromCustomer('${h(l.id)}')">
           <div style="flex:1;">
-            <div class="cust-listing-addr">${l.address}</div>
+            <div class="cust-listing-addr">${h(l.address)}</div>
             <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)} · ${l.created}</div>
           </div>
           <span style="font-size:13px; font-weight:600; color:var(--accent);">
@@ -5947,19 +5987,19 @@ function renderPromotions() {
     const startFmt = pr.start_date ? new Date(pr.start_date).toLocaleDateString('he-IL') : 'ללא הגבלה';
     const endFmt   = pr.end_date   ? new Date(pr.end_date).toLocaleDateString('he-IL')   : 'ללא הגבלה';
     const pkgNames = pr.applicable_packages?.length
-      ? pr.applicable_packages.map(id => store.packages.find(p=>p.id===id)?.name||id).join(', ')
+      ? pr.applicable_packages.map(id => h(store.packages.find(p=>p.id===id)?.name||id)).join(', ')
       : 'כל החבילות';
     const svcNames = pr.applicable_services?.length
-      ? pr.applicable_services.map(id => store.services.find(s=>s.id===id)?.name||id).join(', ')
+      ? pr.applicable_services.map(id => h(store.services.find(s=>s.id===id)?.name||id)).join(', ')
       : 'כל השירותים';
     return `
     <div class="promo-card ${st==='live'?'promo-active':''} ${st==='expired'?'promo-expired':''}">
       <div class="promo-card-header">
-        <div class="promo-card-name">${pr.name}</div>
+        <div class="promo-card-name">${h(pr.name)}</div>
         ${badgeMap[st]}
       </div>
       <div class="promo-discount">${discStr}</div>
-      ${pr.description ? `<div class="promo-desc">${pr.description}</div>` : ''}
+      ${pr.description ? `<div class="promo-desc">${h(pr.description)}</div>` : ''}
       <div class="promo-dates">
         <span>📅 מ: ${startFmt}</span>
         <span>עד: ${endFmt}</span>
@@ -6034,12 +6074,12 @@ function _renderPromoTargetSelectors(pr) {
   document.getElementById('mpromo-packages').innerHTML = store.packages.map(p => `
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0;">
       <input type="checkbox" value="${p.id}" ${selPkgs.includes(p.id)?'checked':''} style="accent-color:var(--accent);">
-      <span>${p.name}</span>
+      <span>${h(p.name)}</span>
     </label>`).join('') || '<div style="font-size:12px;color:var(--text-muted);">אין חבילות</div>';
   document.getElementById('mpromo-services').innerHTML = store.services.map(s => `
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0;">
       <input type="checkbox" value="${s.id}" ${selSvcs.includes(s.id)?'checked':''} style="accent-color:var(--accent);">
-      <span>${s.icon||''} ${s.name}</span>
+      <span>${h(s.icon||'')} ${h(s.name)}</span>
     </label>`).join('') || '<div style="font-size:12px;color:var(--text-muted);">אין שירותים</div>';
 }
 
@@ -6108,6 +6148,22 @@ function _ensureOrder(l) {
     store.orders.push(o);
   }
   return o;
+}
+
+// Sync listing changes into existing order entry (reverse of _syncOrderToListing)
+function _syncListingToOrder(l) {
+  if (!store.orders) return;
+  const o = store.orders.find(x => x.id === l.id);
+  if (!o) return;
+  o.address = l.address; o.city = l.city || '';
+  o.pkg = l.pkg || ''; o.pkgId = l.pkgId || ''; o.price = l.price || 0;
+  o.status = l.status;
+  o.customer = l.customer || ''; o.beds = l.beds || 0;
+  o.shootDate = l.shootDate || '';
+  o.paymentStatus = l.paymentStatus || 'unpaid';
+  o.deliveredPhotos    = !!(l.deliveredPhotos);
+  o.deliveredVideo     = !!(l.deliveredVideo);
+  o.deliveredFloorplan = !!(l.deliveredFloorplan);
 }
 
 // Sync mutable order fields back to listing (if listing still exists)
@@ -6213,7 +6269,7 @@ function renderOrders() {
       return `
         <div class="booking-card">
           <div>
-            <div style="font-weight:600; font-size:14px;">${p.address}, ${p.city}</div>
+            <div style="font-weight:600; font-size:14px;">${h(p.address)}, ${h(p.city)}</div>
             <div class="booking-meta">
               <span class="badge badge-pending">ממתין לאישור</span>
               <span class="booking-tag">👤 ${name.trim()}</span>
@@ -6273,14 +6329,14 @@ function renderOrders() {
               <span style="font-size:11px;color:var(--text-dim);">${l.created}</span>
             </div>
             <div class="deliver-row" data-stop-propagation="1">
-              <span class="pay-badge ${payClass}" onclick="cyclePayment('${l.id}')">${payLbl}</span>
-              <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredPhotos')">📸 תמונות</span>
-              <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredVideo')">🎬 סרטון</span>
-              <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${l.id}','deliveredFloorplan')">📐 תוכנית</span>
+              <span class="pay-badge ${payClass}" onclick="cyclePayment('${h(l.id)}')">${payLbl}</span>
+              <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredPhotos')">📸 תמונות</span>
+              <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredVideo')">🎬 סרטון</span>
+              <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredFloorplan')">📐 תוכנית</span>
             </div>
           </div>
           ${next ? `<div class="booking-actions" data-stop-propagation="1">
-            <button class="btn btn-primary" style="font-size:12px;" onclick="advanceStatus('${l.id}','${next}')">${nextLbl}</button>
+            <button class="btn btn-primary" style="font-size:12px;" onclick="advanceStatus('${h(l.id)}','${h(next)}')">${nextLbl}</button>
           </div>` : ''}
         </div>`;
     }).join('');
@@ -6346,6 +6402,8 @@ function approveBooking(id) {
     lot: 0,
     year: +p.year || 0,
     pkg: b.package.name,
+    pkgId: b.package.id || '',
+    price: b.package.price || 0,
     status: 'מתוכנן',
     customer: customerId,
     mls: '',
@@ -6354,11 +6412,19 @@ function approveBooking(id) {
     desc: '',
     notes: p.notes || '',
     agent: '',
-    shootDate: b.shootDate || ''
+    shootDate: b.shootDate || '',
+    paymentStatus: 'unpaid',
+    paymentAmount: 0,
+    payReqSent: false,
+    invoiceSent: false,
+    deliveredPhotos: false,
+    deliveredVideo: false,
+    deliveredFloorplan: false
   });
 
   // Also create an order entry (independent from listing)
   _ensureOrder(store.listings[0]);
+  _syncListingToOrder(store.listings[0]);
 
   // Remove from pending
   savePendingBookings(pending.filter(x => x.id !== id));
@@ -6369,7 +6435,7 @@ function approveBooking(id) {
 
   // WhatsApp confirmation to client
   const phone = b.client.phone || '';
-  if (phone) {
+  if (phone && confirm(`שלח הודעת אישור ב-WhatsApp ל${b.client.first || phone}?`)) {
     const bizName = store.settings?.businessName || 'Edmont RE media';
     const clientName = b.client.first ? `${b.client.first}` : '';
     const address = `${b.property.address}, ${b.property.city}`;
@@ -6526,6 +6592,8 @@ function applySidebarSettings() {
     }
   }
   if (logoSub) logoSub.textContent = s.photographerName || 'ניהול צילום נדל"ן';
+  const nameEl = document.getElementById('auth-user-name');
+  if (nameEl && s.photographerName) nameEl.textContent = s.photographerName;
 }
 
 // ══════════════════════════════════════════════════
@@ -6651,7 +6719,7 @@ function _renderArchivePanel(type, items) {
   const expiringSoon = items.filter(x => toMs(x.deletedAt) > 0 && toMs(x.deletedAt) < cutoff90 + 7 * 24 * 60 * 60 * 1000).length;
 
   let html = `<div class="archive-cleanup-bar">
-    <span>🗄️ ${total} פריטים בארכיון${expiringSoon ? ` · <strong>${expiringSoon} פגים עוד 7 ימים</strong>` : ''}</span>
+    <span>🗄️ ${total} פריטים בארכיון${expiringSoon ? ` · <strong>${expiringSoon} פגים בעוד 7 ימים</strong>` : ''}</span>
     <span style="color:var(--text-dim);">מחיקה אוטומטית לאחר 90 יום מהארכיון</span>
   </div>`;
   items.sort((a,b) => toMs(b.deletedAt) - toMs(a.deletedAt)).forEach(item => {
@@ -6721,7 +6789,7 @@ auth.onAuthStateChanged(async user => {
     // Update sidebar user info
     const initials = (user.email[0] || 'U').toUpperCase();
     document.getElementById('auth-avatar').textContent    = initials;
-    document.getElementById('auth-user-name').textContent = user.email.split('@')[0];
+    document.getElementById('auth-user-name').textContent = store.settings?.photographerName || user.email.split('@')[0];
     document.getElementById('auth-user-email').textContent = user.email;
     if (!_appInited) { _appInited = true; await _initApp(); }
   } else {
