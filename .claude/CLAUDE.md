@@ -222,20 +222,17 @@ When you encounter a recurring mistake (2-3 times):
 
 > This section is auto-updated as skills are created. Keep it current.
 
-*No skills created yet. Say "create a skill for [task]" to get started.*
+### Testing & QA
 
-<!-- Example format:
-### [Category Name]
-| Skill | Description |
-|-------|-------------|
-| `skill-name` | One-line description of what it does |
--->
+| Skill | Trigger | Description |
+|-------|---------|-------------|
+| `test-project` | «протестируй весь проект», «test», «прогони тесты» | Полный тест: Firebase backend, E2E Playwright браузер, axe-core accessibility, UX ревью, статический анализ кода. Возвращает отчёт PASS/FAIL. |
 
 ### Sub-Agents
 
 | Agent | Description |
 |-------|-------------|
-| `qa` | Тестировщик всего проекта (CRM + Grok Cleaner). Возвращает отчёт PASS/FAIL с найденными багами по severity. |
+| `qa` | Автономный тестировщик с MCP-доступом. Запускается из скилла `test-project`. Проверяет Firebase, запускает Playwright, аудит a11y, UX ревью и статический анализ. |
 
 ---
 

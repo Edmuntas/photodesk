@@ -1,5 +1,4 @@
 {
-  "enabledMcpjsonServers": ["ux", "ui-expert", "metis", "web-ui-copy"],
   "permissions": {
     "allow": [
       "Bash(git init:*)",
@@ -25,7 +24,35 @@
       "Bash(git rm:*)",
       "Bash(pip3 install:*)",
       "Bash(python3 -m pytest tests.py -q)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(node -c photodesk.html)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); mcps=d.get\\(''''mcpServers'''',{}\\); print\\(list\\(mcps.keys\\(\\)\\)\\)\")",
+      "Bash(claude mcp:*)",
+      "Bash(npm info:*)",
+      "Bash(npm view:*)",
+      "Bash(claude plugin:*)",
+      "Bash(python3 -c \"import sys,json; plugins=json.load\\(sys.stdin\\); [print\\(f''''{p[\"\"name\"\"]} \\({p[\"\"scope\"\"]}\\) — {p[\"\"status\"\"]}''''\\) for p in plugins]\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(p\\) for p in d]\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(f''''{p[\"\"id\"\"]} — enabled:{p[\"\"enabled\"\"]}''''\\) for p in d]\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(f''''  ✔ {p[\"\"id\"\"]}''''\\) for p in d]\")",
+      "Bash(gh auth:*)",
+      "Bash(ls /Users/edmontmac16max/photodesk/firebase* /Users/edmontmac16max/photodesk/firestore*)",
+      "Bash(firebase deploy:*)",
+      "Bash(node:*)",
+      "Bash(gh repo:*)",
+      "Bash(git checkout:*)",
+      "Bash(git log:*)",
+      "Bash(git merge:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "firebase",
+    "github",
+    "playwright",
+    "ux-expert",
+    "a11y",
+    "sequential-thinking",
+    "memory"
+  ]
 }

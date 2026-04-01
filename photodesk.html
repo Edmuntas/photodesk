@@ -1310,7 +1310,8 @@
   .login-sub   { font-size: 13px; color: var(--text-muted); margin-top: 4px; margin-bottom: 28px; }
   .login-card .form-group { text-align: right; margin-bottom: 14px; }
   #login-error { color: var(--red); font-size: 12px; min-height: 18px; text-align: right; margin-bottom: 10px; }
-  #login-btn { width: 100%; justify-content: center; padding: 12px; font-size: 15px; }
+  #login-btn { width: 100%; justify-content: center; padding: 12px; font-size: 15px; background: #c05208 !important; box-shadow: 0 1px 3px rgba(192,82,8,0.3) !important; }
+  #login-btn:hover { background: #a04408 !important; }
 
   /* ── SKELETON LOADING ───────────── */
   @keyframes skeleton-shimmer {
@@ -2552,7 +2553,7 @@
 <div class="panel-overlay" id="panel-overlay" onclick="closePanel(); closeCustomerPanel();">
 
 <!-- LISTING DETAIL PANEL -->
-<div class="detail-panel" id="listing-panel" data-stop-propagation="1">
+<div class="detail-panel" id="listing-panel" data-stop-propagation="1" onclick="event.stopPropagation()">
   <div class="panel-topbar">
     <div>
       <div style="font-family: var(--font-display); font-size:16px;" id="panel-listing-title">פרטי נכס</div>
@@ -2734,7 +2735,7 @@
 </div>
 
 <!-- CUSTOMER PANEL -->
-<div class="detail-panel" id="customer-panel" data-stop-propagation="1">
+<div class="detail-panel" id="customer-panel" data-stop-propagation="1" onclick="event.stopPropagation()">
   <!-- Hero -->
   <div class="cust-panel-hero">
     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -2817,11 +2818,12 @@
         <input class="form-input" type="email" id="cp-email" />
       </div>
       <div class="form-group">
-        <label class="form-label">חברה / סוכנות</label>
-        <input class="form-input" id="cp-company-input" />
+        <label class="form-label">משרד / חברה</label>
+        <select class="form-select" id="cp-company-select"></select>
       </div>
-      <div style="display:flex; gap:10px; margin-top:4px;">
+      <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
         <button class="btn btn-primary" onclick="saveCustomerInfo()">שמור שינויים</button>
+        <button class="btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;" onclick="openMergeModal()">🔀 מזג עם לקוח</button>
         <button class="btn btn-danger" onclick="deleteCustomer()">מחק לקוח</button>
       </div>
     </div>
@@ -3997,7 +3999,7 @@ function renderCmdResults(q) {
       html += matches.map(l => `
         <div class="cmd-item" data-cmd-listing="${l.id}">
           <div class="cmd-item-icon">🏠</div>
-          <div class="cmd-item-label">${l.address}<div class="cmd-item-sub">${h(l.city)||''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span></div></div>
+          <div class="cmd-item-label">${h(l.address)}<div class="cmd-item-sub">${h(l.city)||''} · <span class="badge ${badgeClass(l.status)}" style="font-size:10px;padding:1px 6px;">${h(l.status)}</span></div></div>
         </div>`).join('');
     }
 
@@ -4016,7 +4018,7 @@ function renderCmdResults(q) {
     }
   }
 
-  el.innerHTML = html || `<div class="cmd-empty">לא נמצאו תוצאות עבור "${q}"</div>`;
+  el.innerHTML = html || `<div class="cmd-empty">לא נמצאו תוצאות עבור "${h(q)}"</div>`;
 
   // Attach click handlers
   el.querySelectorAll('.cmd-item[data-cmd-action]').forEach(item => {
@@ -5584,53 +5586,126 @@ function openCustomer(id) {
   const waMsg = encodeURIComponent(`שלום ${c.first}, אני צלם הנדל"ן דורון מ-Edmont RE media 📷\nאשמח לעמוד לשירותך!`);
   document.getElementById('cp-wa-btn').href   = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + waMsg;
 
-  // Stats
+  // Stats — use actual paymentAmount
   const custListings = store.listings.filter(l => l.customer === id);
-  const pkgPriceMap  = Object.fromEntries(store.packages.map(p => [p.name, p.price]));
   const revenue      = custListings
-    .filter(l => l.status === 'נמסר')
-    .reduce((sum, l) => sum + (pkgPriceMap[l.pkg] || 0), 0);
+    .filter(l => l.status === 'נמסר' && l.paymentStatus === 'paid')
+    .reduce((sum, l) => sum + (l.paymentAmount || 0), 0);
+  const outstanding  = custListings
+    .filter(l => l.status !== 'בוטל' && l.paymentStatus !== 'paid' && (l.paymentAmount || 0) > 0)
+    .reduce((sum, l) => sum + (l.paymentAmount || 0), 0);
   const lastListing  = [...custListings].sort((a, b) => b.id.localeCompare(a.id))[0];
 
   document.getElementById('cp-stat-total').textContent   = custListings.length;
   document.getElementById('cp-stat-revenue').textContent = revenue ? '₪' + revenue.toLocaleString('he-IL') : '₪0';
   document.getElementById('cp-stat-last').textContent    = lastListing ? lastListing.created.split(' ').slice(0,2).join(' ') : '—';
 
+  // Build a listing card row using DOM (no innerHTML for dynamic data)
+  function _mkListingCard(l) {
+    const row = document.createElement('div');
+    row.className = 'cust-listing-row';
+    row.style.cursor = 'pointer';
+    row.addEventListener('click', () => openListingFromCustomer(l.id));
+
+    const left = document.createElement('div');
+    left.style.cssText = 'flex:1;min-width:0;';
+
+    const addr = document.createElement('div');
+    addr.className = 'cust-listing-addr';
+    addr.textContent = l.address + (l.city ? ', ' + l.city : '');
+
+    const meta = document.createElement('div');
+    meta.className = 'cust-listing-meta';
+    meta.style.marginTop = '3px';
+    meta.textContent = (l.pkg || '') + (l.shootDate ? ' · ' + l.shootDate : l.created ? ' · ' + l.created : '');
+
+    const payDiv = document.createElement('div');
+    payDiv.style.marginTop = '4px';
+    const paySpan = document.createElement('span');
+    paySpan.style.fontSize = '11px';
+    paySpan.style.fontWeight = '600';
+    if (l.paymentStatus === 'paid') {
+      paySpan.style.color = 'var(--green)';
+      paySpan.textContent = '✓ שולם' + (l.paymentAmount ? ' ₪' + l.paymentAmount.toLocaleString('he-IL') : '');
+    } else if (l.paymentStatus === 'commission') {
+      paySpan.style.color = 'var(--orange)';
+      paySpan.textContent = 'עמלה';
+    } else {
+      paySpan.style.color = 'var(--text-muted)';
+      paySpan.textContent = l.paymentAmount ? '₪' + l.paymentAmount.toLocaleString('he-IL') + ' 💸' : '💸 טרם שולם';
+    }
+    payDiv.appendChild(paySpan);
+    left.appendChild(addr); left.appendChild(meta); left.appendChild(payDiv);
+
+    const right = document.createElement('div');
+    right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;';
+
+    const badge = document.createElement('span');
+    badge.className = 'badge ' + badgeClass(l.status);
+    badge.textContent = l.status;
+
+    const editBtn = document.createElement('span');
+    editBtn.style.cssText = 'font-size:11px;color:var(--text-muted);cursor:pointer;';
+    editBtn.textContent = '✏️ ערוך';
+    editBtn.addEventListener('click', e => { e.stopPropagation(); openListingFromCustomer(l.id); });
+
+    right.appendChild(badge); right.appendChild(editBtn);
+    row.appendChild(left); row.appendChild(right);
+    return row;
+  }
+
   // Active listings tab
   const active = custListings.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל');
-  document.getElementById('cp-active-list').innerHTML = active.length
-    ? active.map(l => `
-        <div class="cust-listing-row" onclick="openListingFromCustomer('${h(l.id)}')">
-          <div style="flex:1;">
-            <div class="cust-listing-addr">${h(l.address)}</div>
-            <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)}</div>
-          </div>
-          <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
-        </div>`).join('')
-    : '<div style="color:var(--text-muted); font-size:13px; padding:20px 0; text-align:center;">אין נכסים פעילים</div>';
+  const activeEl = document.getElementById('cp-active-list');
+  activeEl.textContent = '';
+  if (active.length) {
+    if (outstanding > 0) {
+      const debt = document.createElement('div');
+      debt.style.cssText = 'background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#e74c3c;';
+      debt.textContent = '💸 חוב פתוח: ₪' + outstanding.toLocaleString('he-IL');
+      activeEl.appendChild(debt);
+    }
+    active.forEach(l => activeEl.appendChild(_mkListingCard(l)));
+  } else {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;';
+    empty.textContent = 'אין נכסים פעילים';
+    activeEl.appendChild(empty);
+  }
 
-  // History tab
-  const delivered = custListings.filter(l => l.status === 'נמסר');
-  document.getElementById('cp-history-list').innerHTML = delivered.length
-    ? delivered.map(l => `
-        <div class="cust-listing-row" onclick="openListingFromCustomer('${h(l.id)}')">
-          <div style="flex:1;">
-            <div class="cust-listing-addr">${h(l.address)}</div>
-            <div class="cust-listing-meta">${h(l.city)} · ${h(l.pkg)} · ${l.created}</div>
-          </div>
-          <span style="font-size:13px; font-weight:600; color:var(--accent);">
-            ${pkgPriceMap[l.pkg] ? '₪' + pkgPriceMap[l.pkg].toLocaleString('he-IL') : ''}
-          </span>
-        </div>`).join('')
-    : '<div style="color:var(--text-muted); font-size:13px; padding:20px 0; text-align:center;">אין היסטוריה עדיין</div>';
+  // History tab (נמסר + בוטל)
+  const delivered = custListings.filter(l => l.status === 'נמסר' || l.status === 'בוטל');
+  const histEl = document.getElementById('cp-history-list');
+  histEl.textContent = '';
+  if (delivered.length) {
+    delivered.forEach(l => histEl.appendChild(_mkListingCard(l)));
+  } else {
+    const empty2 = document.createElement('div');
+    empty2.style.cssText = 'color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;';
+    empty2.textContent = 'אין היסטוריה עדיין';
+    histEl.appendChild(empty2);
+  }
 
   // Notes + edit fields
-  document.getElementById('cp-notes').value          = c.notes || '';
-  document.getElementById('cp-first').value          = c.first;
-  document.getElementById('cp-last').value           = c.last;
-  document.getElementById('cp-phone').value          = c.phone;
-  document.getElementById('cp-email').value          = c.email || '';
-  document.getElementById('cp-company-input').value  = c.company || '';
+  document.getElementById('cp-notes').value = c.notes || '';
+  document.getElementById('cp-first').value = c.first;
+  document.getElementById('cp-last').value  = c.last;
+  document.getElementById('cp-phone').value = c.phone;
+  document.getElementById('cp-email').value = c.email || '';
+
+  // Populate company dropdown
+  const cpCoSel = document.getElementById('cp-company-select');
+  cpCoSel.textContent = '';
+  const noneOpt = document.createElement('option');
+  noneOpt.value = ''; noneOpt.textContent = '— ללא משרד —';
+  cpCoSel.appendChild(noneOpt);
+  (store.companies || []).forEach(co => {
+    const opt = document.createElement('option');
+    opt.value = co.id;
+    opt.textContent = co.name + (co.city ? ' — ' + co.city : '');
+    if (co.id === c.companyId || (!c.companyId && co.name === c.company)) opt.selected = true;
+    cpCoSel.appendChild(opt);
+  });
 
   switchCustomerTab('active');
   document.getElementById('customer-panel').classList.add('open');
@@ -5668,7 +5743,11 @@ function saveCustomerInfo() {
   currentCustomer.last    = document.getElementById('cp-last').value.trim();
   currentCustomer.phone   = document.getElementById('cp-phone').value.trim();
   currentCustomer.email   = document.getElementById('cp-email').value.trim();
-  currentCustomer.company = document.getElementById('cp-company-input').value.trim();
+  const coSel = document.getElementById('cp-company-select');
+  const coId  = coSel ? coSel.value : '';
+  const coObj = store.companies ? store.companies.find(c => c.id === coId) : null;
+  currentCustomer.companyId = coId;
+  currentCustomer.company   = coObj ? coObj.name : '';
   // Refresh header
   document.getElementById('cp-name').textContent    = currentCustomer.first + ' ' + currentCustomer.last;
   document.getElementById('cp-company').textContent = [currentCustomer.company, currentCustomer.email].filter(Boolean).join(' · ');
@@ -5695,6 +5774,77 @@ function deleteCustomer() {
   closeCustomerPanel();
   renderCustomers();
   toast('הלקוח הועבר לארכיון', 'success');
+}
+
+function openMergeModal() {
+  if (!currentCustomer) return;
+  document.getElementById('merge-src-name').textContent = (currentCustomer.first || '') + ' ' + (currentCustomer.last || '');
+  document.getElementById('merge-search').value = '';
+  renderMergeList('');
+  openModal('merge-modal');
+}
+
+function renderMergeList(query) {
+  const list = document.getElementById('merge-list');
+  list.innerHTML = '';
+  const q = (query || '').trim().toLowerCase();
+  const srcId = currentCustomer ? currentCustomer.id : '';
+  const candidates = (store.customers || []).filter(c =>
+    c.id !== srcId && !c._archived &&
+    (!q || (c.first + ' ' + c.last + ' ' + (c.company || '')).toLowerCase().includes(q))
+  );
+  if (!candidates.length) {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'padding:12px;color:var(--text-muted);text-align:center;font-size:13px;';
+    msg.textContent = 'לא נמצאו לקוחות';
+    list.appendChild(msg);
+    return;
+  }
+  candidates.forEach(c => {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);';
+    row.onmouseenter = () => { row.style.background = 'var(--surface3)'; };
+    row.onmouseleave = () => { row.style.background = 'var(--surface2)'; };
+    const info = document.createElement('div');
+    const name = document.createElement('div');
+    name.style.cssText = 'font-weight:600;font-size:14px;';
+    name.textContent = (c.first || '') + ' ' + (c.last || '');
+    const sub = document.createElement('div');
+    sub.style.cssText = 'font-size:12px;color:var(--text-muted);margin-top:2px;';
+    sub.textContent = [c.company, c.phone].filter(Boolean).join(' · ');
+    info.appendChild(name);
+    info.appendChild(sub);
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-primary';
+    btn.style.cssText = 'font-size:12px;padding:4px 12px;';
+    btn.textContent = 'בחר';
+    btn.onclick = () => mergeCustomers(c.id);
+    row.appendChild(info);
+    row.appendChild(btn);
+    list.appendChild(row);
+  });
+}
+
+async function mergeCustomers(targetId) {
+  if (!currentCustomer) return;
+  const srcId = currentCustomer.id;
+  const target = (store.customers || []).find(c => c.id === targetId);
+  if (!target) return;
+  const srcName = (currentCustomer.first || '') + ' ' + (currentCustomer.last || '');
+  const tgtName = (target.first || '') + ' ' + (target.last || '');
+  if (!confirm('להעביר את כל הנכסים וההיסטוריה של ' + srcName + ' אל ' + tgtName + '?\nהלקוח הנוכחי יועבר לארכיון. פעולה זו בלתי הפיכה.')) return;
+  // Transfer listings
+  (store.listings || []).forEach(l => { if (l.customer === srcId) l.customer = targetId; });
+  // Transfer orders
+  (store.orders || []).forEach(o => { if (o.customer === srcId) o.customer = targetId; });
+  // Archive source customer
+  _archiveItem('customers', srcId);
+  closeModal('merge-modal');
+  closeCustomerPanel();
+  saveStore();
+  renderCustomers();
+  toast('הלקוחות מוזגו בהצלחה', 'success');
+  setTimeout(() => openCustomer(targetId), 300);
 }
 
 function openListingFromCustomer(id) {
@@ -7002,6 +7152,19 @@ async function _initApp() {
       <button class="btn btn-ghost" onclick="closeModal('modal-agent')">ביטול</button>
       <button class="btn btn-primary" onclick="_saveAgent()">הוסף סוכן</button>
     </div>
+  </div>
+</div>
+
+<!-- MERGE CUSTOMERS MODAL -->
+<div class="modal-bg" id="merge-modal">
+  <div class="modal" style="width:480px;">
+    <div class="modal-title">🔀 מזג לקוחות<span class="modal-close" onclick="closeModal('merge-modal')">✕</span></div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;">
+      כל הנכסים והיסטוריית <strong id="merge-src-name"></strong> יועברו ללקוח הנבחר.<br>
+      הלקוח הנוכחי יועבר לארכיון. פעולה זו בלתי הפיכה.
+    </div>
+    <input class="form-input" id="merge-search" placeholder="חפש לקוח לפי שם, חברה..." oninput="renderMergeList(this.value)" style="margin-bottom:12px;" />
+    <div id="merge-list" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
   </div>
 </div>
 
