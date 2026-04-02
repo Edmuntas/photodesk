@@ -5581,7 +5581,7 @@ function openCustomer(id) {
   document.getElementById('cp-company').textContent = [c.company, c.email].filter(Boolean).join(' · ');
 
   // Quick action buttons
-  const phone = c.phone.replace(/[-\s]/g, '');
+  const phone = (c.phone || '').replace(/[-\s]/g, '');
   document.getElementById('cp-call-btn').href = 'tel:' + c.phone;
   const waMsg = encodeURIComponent(`שלום ${c.first}, אני צלם הנדל"ן דורון מ-Edmont RE media 📷\nאשמח לעמוד לשירותך!`);
   document.getElementById('cp-wa-btn').href   = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + waMsg;
@@ -5752,7 +5752,7 @@ function saveCustomerInfo() {
   document.getElementById('cp-name').textContent    = currentCustomer.first + ' ' + currentCustomer.last;
   document.getElementById('cp-company').textContent = [currentCustomer.company, currentCustomer.email].filter(Boolean).join(' · ');
   document.getElementById('cp-call-btn').href = 'tel:' + currentCustomer.phone;
-  const phone = currentCustomer.phone.replace(/[-\s]/g, '');
+  const phone = (currentCustomer.phone || '').replace(/[-\s]/g, '');
   const waMsg2 = encodeURIComponent(`שלום ${currentCustomer.first}, אני צלם הנדל"ן דורון מ-Edmont RE media 📷\nאשמח לעמוד לשירותך!`);
   document.getElementById('cp-wa-btn').href = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + waMsg2;
   saveStore();
@@ -6539,7 +6539,7 @@ function approveBooking(id) {
 
   // Create listing
   const p = b.property;
-  store.listings.unshift({
+  const newListing = {
     id: 'L' + Date.now(),
     address: p.address,
     city: p.city,
@@ -6570,11 +6570,12 @@ function approveBooking(id) {
     deliveredPhotos: false,
     deliveredVideo: false,
     deliveredFloorplan: false
-  });
+  };
+  store.listings.unshift(newListing);
 
   // Also create an order entry (independent from listing)
-  _ensureOrder(store.listings[0]);
-  _syncListingToOrder(store.listings[0]);
+  _ensureOrder(newListing);
+  _syncListingToOrder(newListing);
 
   // Remove from pending
   savePendingBookings(pending.filter(x => x.id !== id));
