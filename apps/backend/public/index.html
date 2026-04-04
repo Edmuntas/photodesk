@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumina | AI Real Estate Post-Production</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <h1>Lumina</h1>
+      </div>
+      <nav>
+        <button class="nav-btn active">Process</button>
+        <button class="nav-btn secondary" id="settingsBtn"><i class="fa-solid fa-gear"></i> Settings</button>
+      </nav>
+    </header>
+
+    <main>
+      <div class="hero">
+        <h2>Transform properties instantly.</h2>
+        <p>Advanced AI decluttering and scene staging for real estate photography.</p>
+      </div>
+
+      <div class="workspace">
+        <div class="panel upload-panel">
+          <h3>1. Upload Photos</h3>
+          <div class="drop-zone" id="dropZone">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>Drag & drop property images here</p>
+            <span class="subtext">or click to browse files (JPEG/PNG)</span>
+            <input type="file" id="fileInput" multiple accept="image/jpeg, image/png">
+            <div id="filePreviewContainer" class="preview-grid hidden"></div>
+          </div>
+        </div>
+
+        <div class="panel config-panel">
+          <h3>2. Select Mode</h3>
+          <div class="mode-selector">
+            <label class="mode-card active" data-mode="clean">
+              <input type="radio" name="mode" value="clean" checked>
+              <div class="card-icon"><i class="fa-solid fa-broom"></i></div>
+              <div class="card-content">
+                <h4>Clean & Stage</h4>
+                <p>Smart decluttering. Removes trash, messy cords, and personal items while preserving intentional design elements and furniture.</p>
+              </div>
+            </label>
+
+            <label class="mode-card" data-mode="empty">
+              <input type="radio" name="mode" value="empty">
+              <div class="card-icon"><i class="fa-solid fa-box-open"></i></div>
+              <div class="card-content">
+                <h4>Full Empty</h4>
+                <p>Removes all removable furniture and décor to show raw space. Preserves built-in fixtures, original structure, and conditions.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button id="processBtn" class="primary-btn" disabled>
+          <span>Process Photos</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <div id="resultsSection" class="results-section hidden">
+        <div class="results-header">
+          <h3>Processing Results</h3>
+          <span class="status-badge processing" id="globalStatus">Processing...</span>
+        </div>
+        
+        <div id="resultsContainer" class="results-grid">
+          <!-- Results injected via JS -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="imageModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="close-modal"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div class="comparison-slider">
+        <div class="img-wrapper before">
+          <img id="modalBeforeImg" src="" alt="Before">
+          <span class="label">Before</span>
+        </div>
+        <div class="img-wrapper after">
+          <img id="modalAfterImg" src="" alt="After">
+          <span class="label">After</span>
+        </div>
+        <div class="slider-handle">
+          <div class="slider-arrows">
+            <i class="fa-solid fa-caret-left"></i>
+            <i class="fa-solid fa-caret-right"></i>
+          </div>
+        </div>
+        <input type="range" min="0" max="100" value="50" class="slider" id="comparisonSlider">
+      </div>
+
+      <div class="metadata-panel">
+        <h4>AI Analysis Log</h4>
+        <pre id="modalJsonLog" class="json-viewer"></pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px; padding: 2rem;">
+      <button class="close-settings" style="position: absolute; top: 1rem; right: 1rem; background: transparent; color: white; border: none; font-size: 1.5rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+      
+      <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-key" style="color: var(--accent-teal);"></i> 
+        API Configuration
+      </h3>
+      
+      <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Grok AI API Key</label>
+      <input type="password" id="grokApiKeyInput" placeholder="xai-..." style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-primary); color: white; margin-bottom: 1.5rem;">
+      
+      <button id="saveSettingsBtn" class="primary-btn" style="width: 100%; justify-content: center; border-radius: 8px;">Save Settings</button>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

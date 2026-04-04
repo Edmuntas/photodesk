@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ייבוא נתונים — PhotoDesk</title>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bg:#0f1117; --card:#181d2a; --card2:#1e2435; --border:#2a3348;
+      --accent:#4d8ef0; --green:#2ecc71; --red:#e74c3c; --orange:#f39c12;
+      --text:#e2e8f4; --muted:#7986a4;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font);direction:rtl;padding:24px 28px 100px;}
+    .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
+    .page-title{font-size:22px;font-weight:700;}
+    .page-sub{color:var(--muted);font-size:13px;margin-top:5px;}
+    .badges{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    .badge{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px;color:var(--muted);}
+    .badge b{color:var(--text);}
+    .btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:var(--font);transition:opacity .18s;}
+    .btn:hover:not(:disabled){opacity:.82;}
+    .btn:disabled{opacity:.5;cursor:not-allowed;}
+    .btn-success{background:var(--green);color:#07200f;}
+    .btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--border);text-decoration:none;display:inline-block;line-height:1;}
+    .btn-sm{padding:5px 12px;font-size:12px;}
+    .btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:24px;}
+    .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+    .sec-title{font-size:16px;font-weight:600;color:var(--accent);}
+    .tbl-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;min-width:600px;}
+    th{text-align:right;padding:8px 10px;background:var(--card2);color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.03em;border-bottom:1px solid var(--border);white-space:nowrap;}
+    td{padding:3px 5px;border-bottom:1px solid rgba(42,51,72,.6);vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:rgba(77,142,240,.04);}
+    .ei{background:transparent;border:1px solid transparent;color:var(--text);font-size:13px;font-family:var(--font);padding:5px 8px;border-radius:6px;width:100%;direction:rtl;transition:border-color .15s,background .15s;}
+    .ei:hover{border-color:var(--border);background:var(--card2);}
+    .ei:focus{outline:none;border-color:var(--accent);background:var(--card2);}
+    select.ei{cursor:pointer;}
+    input[type=number].ei{text-align:center;direction:ltr;}
+    .ei::placeholder{color:var(--muted);}
+    .rn{color:var(--muted);font-size:11px;text-align:center;min-width:26px;padding:0 4px;}
+    .del-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 7px;border-radius:5px;font-size:13px;transition:color .15s;}
+    .del-btn:hover{color:var(--red);}
+    .alert{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;line-height:1.7;}
+    .alert-success{background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.3);color:var(--green);}
+    .alert-error{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.3);color:var(--red);}
+    .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(24,29,42,.96);backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;z-index:100;}
+    .bottom-bar-info{font-size:13px;color:var(--muted);}
+    .bottom-bar-info b{color:var(--text);}
+    .progress-bar{height:4px;background:var(--border);border-radius:3px;margin-top:6px;display:none;}
+    .progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .25s;}
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">📥 ייבוא נתונים מגיליון</div>
+    <div class="page-sub">ערוך, הוסף, מחק — ואז לחץ "ייבא לפיירבייס"</div>
+    <div class="badges">
+      <div class="badge">לקוחות <b id="b-cust">14</b></div>
+      <div class="badge">נכסים <b id="b-list">22</b></div>
+      <div class="badge">סה"כ <b id="b-total">36</b></div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <a href="photodesk.html" class="btn btn-ghost">← CRM</a>
+    <button class="btn btn-success" id="btn-top" onclick="importAll()">⬆ ייבא לפיירבייס</button>
+  </div>
+</div>
+
+<div id="alert-ok"  class="alert alert-success" style="display:none"></div>
+<div id="alert-err" class="alert alert-error"   style="display:none"></div>
+
+<div class="section">
+  <div class="sec-header">
+    <div class="sec-title">👤 לקוחות — <span id="lbl-cust">14</span></div>
+    <button class="btn btn-ghost btn-sm" onclick="addCust()">+ הוסף לקוח</button>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th><th>שם פרטי</th><th>שם משפחה</th><th>חברה / משרד</th><th>טלפון</th><th>אימייל</th><th></th>
+      </tr></thead>
+      <tbody id="tbody-cust"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-header">
+    <div class="sec-title">🏠 נכסים — <span id="lbl-list">22</span></div>
+    <button class="btn btn-ghost btn-sm" onclick="addList()">+ הוסף נכס</button>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th><th>כתובת</th><th>עיר</th><th>חדרים</th><th>שטח</th>
+        <th>לקוח</th><th>חבילה</th><th>מחיר ₪</th><th>תשלום</th>
+        <th>תאריך צילום</th><th>סטטוס</th><th>הערות</th><th></th>
+      </tr></thead>
+      <tbody id="tbody-list"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div>
+    <div class="bottom-bar-info">מוכן לייבא <b id="bb-total">36</b> רשומות ל-Firebase</div>
+    <div class="progress-bar" id="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+  <button class="btn btn-success" id="btn-bot" onclick="importAll()">⬆ ייבא לפיירבייס</button>
+</div>
+
+<script>
+/* eslint-disable */
+const firebaseConfig = {
+  apiKey:'AIzaSyCUrX8Lo8qS30q2E5dMSu8S96GE-RKuRmQ',
+  authDomain:'photodesk-45381.firebaseapp.com',
+  projectId:'photodesk-45381',
+  storageBucket:'photodesk-45381.firebasestorage.app',
+  messagingSenderId:'445351440545',
+  appId:'1:445351440545:web:14895fba95a5c9001c00e0'
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ─── DATA ─────────────────────────────────────────────────────────
+const CUSTOMERS = [
+  {id:'IMP_C_001',first:'אילנה', last:'',         phone:'',email:'',company:'MIP זכרון'},
+  {id:'IMP_C_002',first:'ציפי',  last:'',         phone:'',email:'',company:'MIP'},
+  {id:'IMP_C_003',first:'מיכאל', last:'ביננבאום', phone:'',email:'',company:'רימקס זכרון'},
+  {id:'IMP_C_004',first:'ענת',   last:'',         phone:'',email:'',company:'MIP'},
+  {id:'IMP_C_005',first:'קטי',   last:'',         phone:'',email:'',company:'MIP'},
+  {id:'IMP_C_006',first:'רונית', last:'',         phone:'',email:'',company:'רימקס אור עקיבא'},
+  {id:'IMP_C_007',first:'שגיא',  last:'חי',       phone:'',email:'',company:'פרטי'},
+  {id:'IMP_C_008',first:'רועי',  last:'ברקמייר',  phone:'',email:'',company:''},
+  {id:'IMP_C_009',first:'דניאל', last:'טוקרב',    phone:'',email:'',company:''},
+  {id:'IMP_C_010',first:'צחי',   last:'מימון',    phone:'',email:'',company:''},
+  {id:'IMP_C_011',first:'שירה',  last:'',         phone:'',email:'',company:'MIP'},
+  {id:'IMP_C_012',first:'רונית', last:'יריב',     phone:'',email:'',company:''},
+  {id:'IMP_C_013',first:'ביסמוט',last:'',         phone:'',email:'',company:''},
+  {id:'IMP_C_014',first:'איתן',  last:'נגע',      phone:'',email:'',company:'רימקס זכרון'},
+];
+
+const LISTINGS = [
+  {id:'IMP_L_001',address:'משאול הגן',     city:'זכרון יעקב',beds:0,area:0,  customer:'',         pkg:'חבילה בסיסית',  paymentAmount:472, paymentStatus:'paid',      status:'נמסר',        shootDate:'12/11/2025',notes:'ליד מלון אלמה | Drone Photography'},
+  {id:'IMP_L_002',address:'הגורן 13',      city:'זכרון יעקב',beds:0,area:0,  customer:'IMP_C_001',pkg:'חבילה אינסופית',paymentAmount:1038,paymentStatus:'paid',      status:'נמסר',        shootDate:'16/11/2025',notes:'Complete Koola | Kuula + Videos + Drone'},
+  {id:'IMP_L_003',address:'מאייש 3',       city:'זכרון יעקב',beds:0,area:0,  customer:'IMP_C_002',pkg:'חבילה אינסופית',paymentAmount:1510,paymentStatus:'paid',      status:'נמסר',        shootDate:'19/11/2025',notes:'Complete | Tour+Photos+Video+3D+Drone'},
+  {id:'IMP_L_004',address:'חוגלה 3',       city:'זכרון יעקב',beds:0,area:0,  customer:'IMP_C_003',pkg:'חבילה בסיסית',  paymentAmount:1038,paymentStatus:'paid',      status:'נמסר',        shootDate:'30/11/2025',notes:'Basic Kuula | Kuula + iPhone + Drone'},
+  {id:'IMP_L_005',address:'אלונים 8',      city:'זכרון יעקב',beds:0,area:160,customer:'IMP_C_004',pkg:'חבילה אינסופית',paymentAmount:1510,paymentStatus:'paid',      status:'נמסר',        shootDate:'03/12/2025',notes:'Complete | 160/250 | Tour+Photos+Video+3D+Drone'},
+  {id:'IMP_L_006',address:'הרצל 18',       city:'זכרון יעקב',beds:0,area:220,customer:'IMP_C_005',pkg:'חבילה אינסופית',paymentAmount:1510,paymentStatus:'paid',      status:'נמסר',        shootDate:'14/01/2026',notes:'Complete | 220/500 | Tour+Photos+Video+3D+Drone'},
+  {id:'IMP_L_007',address:'הרדוף 103',     city:'קיסריה',     beds:0,area:90, customer:'IMP_C_006',pkg:'חבילה בסיסית',  paymentAmount:413, paymentStatus:'paid',      status:'נמסר',        shootDate:'05/02/2026',notes:'Basic | Cottage 90m | Drone Still + Video'},
+  {id:'IMP_L_008',address:'הגורן 13',      city:'זכרון יעקב',beds:0,area:160,customer:'IMP_C_007',pkg:'חבילה בסיסית',  paymentAmount:450, paymentStatus:'paid',      status:'נמסר',        shootDate:'06/02/2026',notes:'Basic | Cottage 160m | Still + Drone'},
+  {id:'IMP_L_009',address:'השומר 13',      city:'פתח תקווה', beds:4,area:0,  customer:'IMP_C_008',pkg:'חבילה בסיסית',  paymentAmount:413, paymentStatus:'paid',      status:'נמסר',        shootDate:'12/02/2026',notes:'Basic | 4 חדרים | Still + Drone + Bonus Koola'},
+  {id:'IMP_L_010',address:'הכבירים 20',    city:'חיפה',       beds:4,area:0,  customer:'IMP_C_009',pkg:'חבילה פרמיום',  paymentAmount:472, paymentStatus:'paid',      status:'נמסר',        shootDate:'15/02/2026',notes:'Still+Videos | 4 חדרים | Drone Stills + Bonus Videos'},
+  {id:'IMP_L_011',address:'אף על פי כן 3', city:'זכרון יעקב',beds:4,area:0,  customer:'IMP_C_002',pkg:'חבילה פרמיום',  paymentAmount:1298,paymentStatus:'paid',      status:'נמסר',        shootDate:'20/02/2026',notes:'Matterport | 4 חדרים'},
+  {id:'IMP_L_012',address:'לבונה 14',      city:'אור עקיבא', beds:3,area:0,  customer:'IMP_C_006',pkg:'חבילה בסיסית',  paymentAmount:413, paymentStatus:'paid',      status:'נמסר',        shootDate:'18/02/2026',notes:'Basic | 3 חדרים | Still + Bonus Videos'},
+  {id:'IMP_L_013',address:'השיקמים 1',     city:'אור עקיבא', beds:4,area:0,  customer:'IMP_C_006',pkg:'חבילה בסיסית',  paymentAmount:413, paymentStatus:'paid',      status:'נמסר',        shootDate:'26/02/2026',notes:'Basic | 4 חדרים | Still Photos'},
+  {id:'IMP_L_014',address:'דרור 4',        city:'זכרון יעקב',beds:0,area:0,  customer:'IMP_C_013',pkg:'חבילה אינסופית',paymentAmount:0,   paymentStatus:'commission',status:'נמסר',        shootDate:'27/02/2026',notes:'Complete | Split Duplex | עמלה 20% ממכירה'},
+  {id:'IMP_L_015',address:'התקומה 2',      city:'זכרון יעקב',beds:0,area:0,  customer:'IMP_C_014',pkg:'חבילה בסיסית',  paymentAmount:0,   paymentStatus:'paid',      status:'בוטל',        shootDate:'',           notes:'Still + Drone | ביטול | נווה שרת'},
+  {id:'IMP_L_016',address:'Duplex Dreams', city:'זכרון יעקב',beds:0,area:0,  customer:'IMP_C_014',pkg:'חבילה בסיסית',  paymentAmount:0,   paymentStatus:'paid',      status:'בוטל',        shootDate:'',           notes:'Still + Drone | ביטול | הנחה 20% על 2 יחידות'},
+  {id:'IMP_L_017',address:'השיקמים 3',     city:'אור עקיבא', beds:4,area:0,  customer:'IMP_C_010',pkg:'חבילה פרמיום',  paymentAmount:413, paymentStatus:'unpaid',    status:'נמסר',        shootDate:'19/03/2026',notes:'Still + Drone | 4 חדרים | Stills + Cleaning + Koola'},
+  {id:'IMP_L_018',address:'המייסדים 62',   city:'זכרון יעקב',beds:0,area:0,  customer:'IMP_C_009',pkg:'חבילה פרמיום',  paymentAmount:472, paymentStatus:'paid',      status:'נמסר',        shootDate:'12/03/2026',notes:'Koola + Photos | Commercial | Stills + Koola'},
+  {id:'IMP_L_019',address:'גאולים 48',     city:'זכרון יעקב',beds:0,area:0,  customer:'IMP_C_011',pkg:'חבילה פרמיום',  paymentAmount:885, paymentStatus:'paid',      status:'נמסר',        shootDate:'16/03/2026',notes:'Still + Koola Cleaning | Stills + Cleaning + Koola'},
+  {id:'IMP_L_020',address:'החרמון 3',      city:'אור עקיבא', beds:0,area:0,  customer:'IMP_C_012',pkg:'חבילה פרמיום',  paymentAmount:413, paymentStatus:'paid',      status:'נמסר',        shootDate:'19/03/2026',notes:'Still + Drone + Koola | Bonus Koola Gift'},
+  {id:'IMP_L_021',address:'Cottage',       city:'',           beds:0,area:0,  customer:'',          pkg:'חבילה פרמיום',  paymentAmount:0,   paymentStatus:'unpaid',    status:'ממתין למסירה',shootDate:'',           notes:'Still + Drone + Koola Gift — חסר פרטים'},
+  {id:'IMP_L_022',address:'הר שלמה 1',    city:'אור עקיבא', beds:4,area:0,  customer:'IMP_C_012',pkg:'חבילה פרמיום',  paymentAmount:413, paymentStatus:'unpaid',    status:'ממתין למסירה',shootDate:'26/03/2026',notes:'Still + Drone + Koola Gift | 4 Rooms Floor 6'},
+];
+
+// ─── DOM HELPERS ──────────────────────────────────────────────────
+function mkTd(content) {
+  const td = document.createElement('td');
+  if(content instanceof Element) td.appendChild(content);
+  else td.textContent = content;
+  return td;
+}
+
+function mkRnTd(n) {
+  const td = document.createElement('td');
+  td.className = 'rn';
+  td.textContent = n;
+  return td;
+}
+
+function mkInput(val, placeholder, minWidth, onInput, type) {
+  const inp = document.createElement('input');
+  inp.className = 'ei';
+  if(type) inp.type = type;
+  inp.value = val != null ? val : '';
+  inp.placeholder = placeholder || '';
+  if(minWidth) inp.style.minWidth = minWidth;
+  inp.addEventListener('input', onInput);
+  return inp;
+}
+
+function mkSelect(pairs, selected, minWidth, onChange) {
+  // pairs: [{value, label}]
+  const sel = document.createElement('select');
+  sel.className = 'ei';
+  if(minWidth) sel.style.minWidth = minWidth;
+  pairs.forEach(({value, label}) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    if(value === selected) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', onChange);
+  return sel;
+}
+
+function mkDelBtn(onClick) {
+  const btn = document.createElement('button');
+  btn.className = 'del-btn';
+  btn.textContent = '✕';
+  btn.addEventListener('click', onClick);
+  return btn;
+}
+
+function custSelectPairs() {
+  const pairs = [{value:'', label:'— ללא —'}];
+  CUSTOMERS.forEach(c => {
+    const label = c.first + (c.last?' '+c.last:'') + (c.company?' ('+c.company+')':'');
+    pairs.push({value: c.id, label});
+  });
+  return pairs;
+}
+
+// ─── UPDATE COUNTERS ──────────────────────────────────────────────
+function updateCounters() {
+  const c = CUSTOMERS.length, l = LISTINGS.length, t = c+l;
+  ['b-cust','lbl-cust'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=c; });
+  ['b-list','lbl-list'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=l; });
+  ['b-total','bb-total'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=t; });
+}
+
+// ─── RENDER CUSTOMERS ────────────────────────────────────────────
+function renderCust() {
+  const tb = document.getElementById('tbody-cust');
+  tb.textContent = '';
+  CUSTOMERS.forEach((c, i) => {
+    const tr = document.createElement('tr');
+    tr.appendChild(mkRnTd(i+1));
+    tr.appendChild(mkTd(mkInput(c.first,   'שם פרטי',  null,  e => { CUSTOMERS[i].first   = e.target.value; })));
+    tr.appendChild(mkTd(mkInput(c.last,    'שם משפחה', null,  e => { CUSTOMERS[i].last    = e.target.value; })));
+    tr.appendChild(mkTd(mkInput(c.company, 'חברה / משרד', null, e => { CUSTOMERS[i].company = e.target.value; })));
+    tr.appendChild(mkTd(mkInput(c.phone,   '050-0000000', '110px', e => { CUSTOMERS[i].phone   = e.target.value; })));
+    tr.appendChild(mkTd(mkInput(c.email,   'email@example.com', '160px', e => { CUSTOMERS[i].email   = e.target.value; })));
+    tr.appendChild(mkTd(mkDelBtn(() => delCust(i))));
+    tb.appendChild(tr);
+  });
+  updateCounters();
+}
+
+// ─── RENDER LISTINGS ─────────────────────────────────────────────
+function renderList() {
+  const tb = document.getElementById('tbody-list');
+  tb.textContent = '';
+  const custPairs = custSelectPairs();
+
+  LISTINGS.forEach((l, i) => {
+    const tr = document.createElement('tr');
+    tr.appendChild(mkRnTd(i+1));
+
+    tr.appendChild(mkTd(mkInput(l.address,   'כתובת',      '112px', e => { LISTINGS[i].address = e.target.value; })));
+    tr.appendChild(mkTd(mkInput(l.city,      'עיר',         '90px',  e => { LISTINGS[i].city    = e.target.value; })));
+
+    const bedsInp = mkInput(l.beds||'', '—', '50px', e => { LISTINGS[i].beds = parseInt(e.target.value)||0; }, 'number');
+    bedsInp.min = '0';
+    tr.appendChild(mkTd(bedsInp));
+
+    const areaInp = mkInput(l.area||'', '—', '56px', e => { LISTINGS[i].area = parseInt(e.target.value)||0; }, 'number');
+    areaInp.min = '0';
+    tr.appendChild(mkTd(areaInp));
+
+    tr.appendChild(mkTd(mkSelect(custPairs, l.customer, '140px', e => { LISTINGS[i].customer = e.target.value; })));
+
+    tr.appendChild(mkTd(mkSelect([
+      {value:'חבילה בסיסית',   label:'בסיסית'},
+      {value:'חבילה פרמיום',   label:'פרמיום'},
+      {value:'חבילה אינסופית', label:'אינסופית'},
+    ], l.pkg, '98px', e => { LISTINGS[i].pkg = e.target.value; })));
+
+    const priceInp = mkInput(l.paymentAmount||0, '', '68px', e => { LISTINGS[i].paymentAmount = parseFloat(e.target.value)||0; }, 'number');
+    priceInp.min = '0';
+    priceInp.style.direction = 'ltr';
+    tr.appendChild(mkTd(priceInp));
+
+    tr.appendChild(mkTd(mkSelect([
+      {value:'paid',       label:'שולם'},
+      {value:'unpaid',     label:'טרם שולם'},
+      {value:'commission', label:'עמלה'},
+    ], l.paymentStatus, '100px', e => { LISTINGS[i].paymentStatus = e.target.value; })));
+
+    const dateInp = mkInput(l.shootDate, 'DD/MM/YYYY', '100px', e => { LISTINGS[i].shootDate = e.target.value; });
+    dateInp.style.direction = 'ltr';
+    dateInp.style.textAlign = 'left';
+    tr.appendChild(mkTd(dateInp));
+
+    tr.appendChild(mkTd(mkSelect([
+      {value:'נמסר',         label:'נמסר'},
+      {value:'ממתין למסירה', label:'ממתין למסירה'},
+      {value:'בעיבוד',       label:'בעיבוד'},
+      {value:'בוטל',         label:'בוטל'},
+    ], l.status, '112px', e => { LISTINGS[i].status = e.target.value; })));
+
+    tr.appendChild(mkTd(mkInput(l.notes, 'הערות...', '180px', e => { LISTINGS[i].notes = e.target.value; })));
+    tr.appendChild(mkTd(mkDelBtn(() => delList(i))));
+    tb.appendChild(tr);
+  });
+  updateCounters();
+}
+
+// ─── ADD / DELETE ─────────────────────────────────────────────────
+function addCust() {
+  CUSTOMERS.push({id:'IMP_C_'+Date.now(),first:'',last:'',phone:'',email:'',company:''});
+  renderCust(); renderList();
+  setTimeout(() => document.querySelector('#tbody-cust tr:last-child input').focus(), 60);
+}
+function delCust(i) {
+  if(!confirm('מחק לקוח זה?')) return;
+  CUSTOMERS.splice(i,1); renderCust(); renderList();
+}
+function addList() {
+  LISTINGS.push({id:'IMP_L_'+Date.now(),address:'',city:'',beds:0,area:0,customer:'',pkg:'חבילה בסיסית',paymentAmount:0,paymentStatus:'unpaid',status:'ממתין למסירה',shootDate:'',notes:''});
+  renderList();
+  setTimeout(() => document.querySelector('#tbody-list tr:last-child input').focus(), 60);
+}
+function delList(i) {
+  LISTINGS.splice(i,1); renderList();
+}
+
+// ─── IMPORT ───────────────────────────────────────────────────────
+async function importAll() {
+  const btns = [document.getElementById('btn-top'), document.getElementById('btn-bot')];
+  btns.forEach(b => { b.disabled=true; b.textContent='⏳ מייבא...'; });
+
+  const pb = document.getElementById('progress-bar');
+  const pf = document.getElementById('progress-fill');
+  pb.style.display='block'; pf.style.width='0%';
+  document.getElementById('alert-ok').style.display  = 'none';
+  document.getElementById('alert-err').style.display = 'none';
+
+  const total = CUSTOMERS.length + LISTINGS.length;
+  let done=0, errors=[];
+  const tick = () => { done++; pf.style.width=(done/total*100)+'%'; };
+
+  const heDate = () => {
+    const d=new Date(), m=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+    return d.getDate()+' '+m[d.getMonth()]+', '+d.getFullYear();
+  };
+
+  for (const c of CUSTOMERS) {
+    try {
+      await db.collection('customers').doc(c.id).set({
+        id:c.id, first:(c.first||'').trim(), last:(c.last||'').trim(),
+        email:(c.email||'').trim(), phone:(c.phone||'').trim(),
+        company:(c.company||'').trim(), listings:0
+      });
+    } catch(e) { errors.push('לקוח "'+c.first+'": '+e.message); }
+    tick();
+  }
+
+  const created = heDate();
+  for (const l of LISTINGS) {
+    try {
+      await db.collection('listings').doc(l.id).set({
+        id:l.id, address:(l.address||'').trim(), city:(l.city||'').trim(),
+        state:'', zip:'', beds:l.beds||0, baths:0, stories:0,
+        area:l.area||0, lot:0, year:0,
+        pkg:l.pkg||'חבילה בסיסית', status:l.status||'ממתין למסירה',
+        customer:l.customer||'', mls:'', created,
+        photos:0, desc:'', notes:(l.notes||'').trim(),
+        agent:'', shootDate:(l.shootDate||'').trim(),
+        paymentStatus:l.paymentStatus||'unpaid',
+        paymentAmount:l.paymentAmount||0,
+        deliveredPhotos: l.paymentStatus==='paid',
+        deliveredVideo:false, deliveredFloorplan:false
+      });
+    } catch(e) { errors.push('נכס "'+l.address+'": '+e.message); }
+    tick();
+  }
+
+  pf.style.width='100%';
+  btns.forEach(b => b.disabled=false);
+
+  const aok = document.getElementById('alert-ok');
+  const ae  = document.getElementById('alert-err');
+
+  if (errors.length===0) {
+    btns.forEach(b => { b.textContent='✓ יובא בהצלחה!'; b.style.background='var(--green)'; b.style.color='#07200f'; });
+    aok.style.display='block';
+    aok.textContent = '';
+
+    const line1 = document.createElement('span');
+    line1.textContent = '✅ יובאו בהצלחה ' + CUSTOMERS.length + ' לקוחות ו-' + LISTINGS.length + ' נכסים ל-Firebase.';
+    const br = document.createElement('br');
+    const link = document.createElement('a');
+    link.href = 'photodesk.html';
+    link.textContent = '→ פתח PhotoDesk CRM';
+    link.style.cssText = 'color:var(--green);font-weight:600;display:inline-block;margin-top:6px';
+
+    aok.appendChild(line1);
+    aok.appendChild(br);
+    aok.appendChild(link);
+    window.scrollTo({top:0, behavior:'smooth'});
+  } else {
+    btns.forEach(b => b.textContent='⬆ ייבא לפיירבייס');
+    ae.style.display='block';
+    ae.textContent = '';
+
+    const title = document.createElement('b');
+    title.textContent = '⚠️ ' + errors.length + ' שגיאות:';
+    ae.appendChild(title);
+    errors.forEach(err => {
+      const br = document.createElement('br');
+      const span = document.createElement('span');
+      span.textContent = '• ' + err;
+      ae.appendChild(br);
+      ae.appendChild(span);
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+renderCust();
+renderList();
+</script>
+</body>
+</html>

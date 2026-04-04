@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhotoDesk AI — Очистка фото</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F5F6FA; --surface:#FFFFFF; --surface2:#F3F4F6; --border:#E5E7EB;
+  --text:#111827; --text-muted:#6B7280; --text-dim:#9CA3AF;
+  --accent:#F97316; --accent2:#FB923C; --accent-light:#FFF7ED;
+  --accent-glow:rgba(249,115,22,0.10);
+  --green:#10B981; --green-light:rgba(16,185,129,0.10);
+  --red:#EF4444;   --red-light:rgba(239,68,68,0.10);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+  --shadow:0 4px 6px rgba(0,0,0,0.07),0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:0 10px 25px rgba(0,0,0,0.10);
+  --radius:10px; --radius-sm:7px; --font:'Heebo',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;
+     font-size:14px;-webkit-font-smoothing:antialiased;}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);
+        padding:0 20px;height:54px;display:flex;align-items:center;gap:16px;
+        flex-shrink:0;box-shadow:var(--shadow-sm);z-index:10;}
+.topbar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;}
+.logo-icon{width:30px;height:30px;background:var(--accent);border-radius:8px;
+           display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-text{font-size:15px;font-weight:700;letter-spacing:-.3px;}
+.logo-sub{font-size:11px;color:var(--accent);font-weight:600;margin-top:1px;}
+.topbar-sep{width:1px;height:22px;background:var(--border);}
+.topbar-back{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text-muted);
+             text-decoration:none;padding:5px 8px;border-radius:var(--radius-sm);
+             transition:background .15s,color .15s;}
+.topbar-back:hover{background:var(--surface2);color:var(--text);}
+.topbar-spacer{flex:1;}
+.topbar-status{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim);transition:background .3s;}
+.status-dot.online{background:var(--green);}
+.status-dot.loading{background:var(--accent);animation:pulse 1s infinite;}
+.status-dot.error{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
+     border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;
+     border:1px solid transparent;transition:all .15s;font-family:var(--font);white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-secondary{background:var(--surface);color:var(--text);border-color:var(--border);}
+.btn-secondary:hover{background:var(--surface2);}
+.btn-secondary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-danger{background:var(--red-light);color:var(--red);border-color:rgba(239,68,68,.2);}
+.btn-danger:hover{background:var(--red);color:#fff;}
+.btn-sm{padding:5px 10px;font-size:12px;}
+
+/* LAYOUT */
+.layout{flex:1;display:flex;overflow:hidden;}
+.panel-left{width:55%;min-width:480px;display:flex;flex-direction:column;
+             border-right:1px solid var(--border);overflow:hidden;}
+.panel-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+
+/* LEFT PANEL TABS */
+.left-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.left-tab{padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;
+          color:var(--text-muted);border-bottom:2px solid transparent;
+          transition:color .15s,border-color .15s;background:none;border-top:none;
+          border-left:none;border-right:none;font-family:var(--font);}
+.left-tab:hover{color:var(--text);}
+.left-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* TAB PANELS */
+.tab-panel{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.tab-panel.active{display:flex;}
+
+/* SESSION NAME BAR */
+.session-bar{padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);
+             display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.session-label{font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap;
+               text-transform:uppercase;letter-spacing:.4px;}
+.session-input{flex:1;padding:6px 10px;border-radius:var(--radius-sm);
+               border:1px solid var(--border);background:var(--surface2);
+               font-size:13px;color:var(--text);font-family:var(--font);}
+.session-input:focus{outline:none;border-color:var(--accent);background:var(--surface);}
+
+/* DROP ZONE */
+.upload-section{padding:12px 16px 0;flex-shrink:0;}
+.drop-zone{border:2px dashed var(--border);border-radius:var(--radius);background:var(--surface);
+           padding:18px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:var(--accent-light);}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.dz-icon{font-size:24px;margin-bottom:4px;display:block;}
+.dz-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.dz-sub{font-size:11px;color:var(--text-muted);}
+
+/* CONTROLS */
+.controls{padding:10px 16px;display:flex;align-items:center;gap:8px;
+          border-bottom:1px solid var(--border);background:var(--surface);
+          flex-wrap:wrap;flex-shrink:0;}
+.mode-group{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.mode-btn{padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;
+          background:var(--surface);color:var(--text-muted);
+          border:none;font-family:var(--font);transition:all .15s;}
+.mode-btn.active{background:var(--accent);color:#fff;}
+.mode-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
+.ctrl-sep{width:1px;height:22px;background:var(--border);}
+.progress-wrap{flex:1;height:6px;background:var(--surface2);border-radius:99px;
+               min-width:80px;overflow:hidden;display:none;}
+.progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .3s;width:0%;}
+
+/* QUEUE */
+.queue-wrap{flex:1;overflow-y:auto;background:var(--surface);}
+.queue-table{width:100%;border-collapse:collapse;}
+.queue-table thead th{position:sticky;top:0;z-index:2;background:var(--surface2);
+                      padding:8px 10px;text-align:left;font-size:11px;font-weight:600;
+                      color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;
+                      border-bottom:1px solid var(--border);}
+.queue-table thead th:first-child{width:36px;text-align:center;}
+.queue-table thead th:nth-child(2){width:52px;}
+.queue-table thead th:nth-child(5){width:100px;}
+.queue-table thead th:nth-child(6){width:85px;}
+.queue-table tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.queue-table tbody tr:hover{background:var(--surface2);}
+.queue-table tbody tr.selected{background:var(--accent-light);}
+.queue-table tbody tr.processing{background:rgba(249,115,22,.05);}
+.queue-table tbody td{padding:8px 10px;font-size:13px;vertical-align:middle;}
+.queue-table tbody td:first-child{text-align:center;}
+.q-thumb{width:44px;height:36px;object-fit:cover;border-radius:5px;background:var(--surface2);display:block;}
+.q-fname{font-size:12px;color:var(--text);max-width:180px;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;}
+.q-select{font-size:11px;padding:3px 6px;border-radius:5px;border:1px solid var(--border);
+          background:var(--surface2);color:var(--text);font-family:var(--font);
+          cursor:pointer;max-width:110px;width:100%;}
+.q-select:focus{outline:none;border-color:var(--accent);}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;
+       border-radius:99px;font-size:11px;font-weight:500;white-space:nowrap;}
+.badge-wait{background:var(--surface2);color:var(--text-muted);}
+.badge-proc{background:rgba(249,115,22,.12);color:var(--accent);}
+.badge-done{background:var(--green-light);color:var(--green);}
+.badge-error{background:var(--red-light);color:var(--red);}
+.empty-queue{text-align:center;padding:40px 20px;color:var(--text-muted);}
+.eq-icon{font-size:32px;margin-bottom:8px;display:block;}
+.eq-title{font-size:14px;font-weight:600;color:var(--text-dim);margin-bottom:4px;}
+
+/* SESSIONS TAB */
+.sessions-toolbar{padding:10px 16px;display:flex;align-items:center;gap:8px;
+                  border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.sessions-toolbar .tb-title{font-size:13px;font-weight:600;flex:1;}
+.sessions-list{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;
+               background:var(--bg);}
+.session-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+              padding:12px 14px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.session-card:hover{border-color:var(--accent);box-shadow:var(--shadow-sm);}
+.session-card.open{border-color:var(--accent);}
+.sc-header{display:flex;align-items:center;gap:10px;}
+.sc-icon{font-size:20px;}
+.sc-name{font-size:14px;font-weight:600;flex:1;}
+.sc-meta{font-size:11px;color:var(--text-muted);}
+.sc-arrow{font-size:12px;color:var(--text-muted);transition:transform .2s;}
+.session-card.open .sc-arrow{transform:rotate(90deg);}
+.sc-photos{display:none;margin-top:10px;
+           display:none;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;}
+.session-card.open .sc-photos{display:grid;}
+.sc-photo{border-radius:6px;overflow:hidden;cursor:pointer;position:relative;
+          aspect-ratio:4/3;background:var(--surface2);}
+.sc-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+.sc-photo:hover img{opacity:.85;}
+.sc-photo .sc-label{position:absolute;bottom:0;left:0;right:0;
+                    background:rgba(0,0,0,.55);color:#fff;font-size:9px;
+                    padding:2px 4px;text-align:center;font-weight:600;}
+.sessions-empty{text-align:center;padding:48px 20px;color:var(--text-muted);}
+.sessions-loading{text-align:center;padding:32px;color:var(--text-muted);font-size:13px;}
+
+/* RIGHT PANEL */
+.right-header{padding:12px 16px;border-bottom:1px solid var(--border);
+              display:flex;align-items:center;gap:8px;background:var(--surface);flex-shrink:0;}
+.rh-title{font-size:13px;font-weight:600;flex:1;}
+.rh-sub{font-size:11px;color:var(--text-muted);}
+.preview-wrap{flex:1;display:flex;flex-direction:column;align-items:center;
+              justify-content:center;padding:16px;overflow:hidden;gap:12px;}
+.preview-empty{text-align:center;color:var(--text-muted);}
+.pe-icon{font-size:40px;margin-bottom:8px;display:block;}
+
+/* Comparison slider */
+.comparison{position:relative;width:100%;max-height:calc(100% - 60px);
+            border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
+            cursor:ew-resize;user-select:none;}
+.comparison img{display:block;width:100%;height:100%;object-fit:contain;}
+.after-wrap{position:absolute;top:0;left:0;bottom:0;right:0;overflow:hidden;}
+.after-wrap img{position:absolute;top:0;left:0;width:100%;height:100%;}
+.div-line{position:absolute;top:0;bottom:0;width:3px;background:#fff;
+          box-shadow:0 0 8px rgba(0,0,0,.4);transform:translateX(-50%);pointer-events:none;}
+.div-handle{position:absolute;top:50%;width:36px;height:36px;border-radius:50%;
+            background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);
+            transform:translate(-50%,-50%);display:flex;align-items:center;
+            justify-content:center;font-size:14px;pointer-events:none;
+            font-weight:700;color:var(--text-muted);}
+.cmp-label{position:absolute;bottom:10px;padding:3px 8px;border-radius:5px;
+           background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:600;pointer-events:none;}
+.preview-actions{display:flex;gap:8px;flex-shrink:0;}
+
+/* COMPARISON TOOLBAR */
+.cmp-toolbar{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.cmp-btn{padding:6px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);
+         font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);
+         color:var(--text-muted);font-family:var(--font);transition:all .15s;}
+.cmp-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.cmp-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
+.cmp-icon-btn{padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
+              font-size:15px;cursor:pointer;background:var(--surface2);
+              color:var(--text-muted);line-height:1;transition:all .15s;}
+.cmp-icon-btn.active{color:var(--accent);border-color:var(--accent);background:var(--accent-light);}
+.cmp-icon-btn:hover:not(.active){color:var(--text);}
+#img-main{max-width:100%;max-height:calc(100% - 110px);object-fit:contain;
+          border-radius:var(--radius);box-shadow:var(--shadow);transition:opacity .15s;}
+
+/* PROMPT EDITOR MODAL */
+.prompt-editor-box{background:var(--surface);border-radius:var(--radius);padding:24px;
+                   width:720px;max-width:96vw;max-height:88vh;box-shadow:var(--shadow-lg);
+                   position:relative;display:flex;flex-direction:column;}
+.pe-tabs{display:flex;gap:4px;margin-bottom:14px;flex-shrink:0;}
+.pe-tab{padding:6px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);
+        font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);
+        color:var(--text-muted);font-family:var(--font);transition:all .15s;}
+.pe-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pe-body{display:flex;flex:1;gap:12px;overflow:hidden;min-height:0;}
+.pe-room-list{width:135px;flex-shrink:0;display:flex;flex-direction:column;
+              gap:2px;overflow-y:auto;border-right:1px solid var(--border);padding-right:10px;}
+.pe-room-item{padding:6px 8px;border-radius:var(--radius-sm);cursor:pointer;
+              font-size:12px;font-weight:500;color:var(--text-muted);transition:all .12s;}
+.pe-room-item:hover{background:var(--surface2);color:var(--text);}
+.pe-room-item.active{background:var(--accent-light);color:var(--accent);font-weight:600;}
+.pe-right{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+.pe-textarea{width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border);
+             background:var(--surface2);font-size:11.5px;color:var(--text);
+             font-family:'Menlo','Consolas',monospace;resize:none;line-height:1.55;
+             flex:1;min-height:0;}
+.pe-textarea:focus{outline:none;border-color:var(--accent);}
+.pe-globals{border-top:1px solid var(--border);padding-top:12px;margin-top:12px;
+            flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pe-globals .form-label{margin-bottom:4px;font-size:11px;}
+.pe-globals textarea{height:70px;flex:none;}
+
+/* LOG */
+.log-section{border-top:1px solid var(--border);flex-shrink:0;
+             max-height:130px;min-height:55px;display:flex;flex-direction:column;
+             background:var(--surface);}
+.log-header{padding:5px 12px;font-size:11px;font-weight:600;color:var(--text-muted);
+            text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);
+            display:flex;align-items:center;justify-content:space-between;}
+.log-body{flex:1;overflow-y:auto;padding:5px 12px;
+          font-size:11px;font-family:'Menlo','Consolas',monospace;line-height:1.7;color:var(--text-muted);}
+.log-ok{color:var(--green);}
+.log-err{color:var(--red);}
+.log-ai{color:var(--accent);}
+
+/* SETTINGS MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);
+               display:none;align-items:center;justify-content:center;z-index:100;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border-radius:var(--radius);padding:24px;
+           width:440px;box-shadow:var(--shadow-lg);position:relative;}
+.modal-box h3{font-size:16px;font-weight:700;margin-bottom:16px;}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;
+             font-size:20px;cursor:pointer;color:var(--text-muted);line-height:1;}
+.modal-close:hover{color:var(--text);}
+.form-row{margin-bottom:14px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);
+            margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+.form-input,.form-select{width:100%;padding:8px 10px;border-radius:var(--radius-sm);
+             border:1px solid var(--border);background:var(--surface2);
+             font-size:13px;color:var(--text);font-family:var(--font);}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--accent);background:var(--surface);}
+.form-select{cursor:pointer;}
+.form-hint{font-size:11px;color:var(--text-muted);margin-top:4px;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+
+/* SPLIT VIEW (side-by-side) */
+.split-view{display:flex;gap:8px;width:100%;flex:1;min-height:0;max-height:calc(100% - 50px);}
+.split-img-wrap{flex:1;position:relative;border-radius:var(--radius);overflow:hidden;
+                background:var(--surface2);min-height:0;display:flex;align-items:center;justify-content:center;}
+.split-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
+.split-label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+             background:rgba(0,0,0,.55);color:#fff;font-size:11px;
+             font-weight:600;padding:2px 8px;border-radius:5px;white-space:nowrap;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="topbar-logo" href="photodesk.html">
+    <div class="logo-icon">🏠</div>
+    <div><div class="logo-text">PhotoDesk</div><div class="logo-sub">AI Cleaner</div></div>
+  </a>
+  <div class="topbar-sep"></div>
+  <a class="topbar-back" href="photodesk.html">← Назад в CRM</a>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-status">
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-text">Проверка сервера...</span>
+  </div>
+  <button class="btn btn-secondary btn-sm" onclick="openPromptEditor()" style="padding:6px 10px" title="Редактор промптов">📝</button>
+  <button class="btn btn-secondary btn-sm" onclick="openSettings()" style="padding:6px 10px">⚙️</button>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="panel-left">
+
+    <!-- Tabs -->
+    <div class="left-tabs">
+      <button class="left-tab active" id="tab-btn-process"  onclick="switchTab('process')">🪄 Обработка</button>
+      <button class="left-tab"        id="tab-btn-sessions" onclick="switchTab('sessions')">📁 Сессии</button>
+    </div>
+
+    <!-- ── PROCESS TAB ── -->
+    <div class="tab-panel active" id="tab-process">
+
+      <!-- Session name -->
+      <div class="session-bar">
+        <span class="session-label">🏷 Сессия</span>
+        <input class="session-input" id="session-name" type="text" placeholder="Название папки результатов">
+      </div>
+
+      <!-- Drop zone -->
+      <div class="upload-section">
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" id="file-input" multiple accept="image/jpeg,image/png,image/webp">
+          <span class="dz-icon">🖼️</span>
+          <div class="dz-title">Перетащите фотографии сюда</div>
+          <div class="dz-sub">или нажмите для выбора · JPEG / PNG / WebP</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="mode-group">
+          <button class="mode-btn active" id="mode-empty"     onclick="setGlobalMode('empty')">🏚 Опустошить</button>
+          <button class="mode-btn"        id="mode-declutter" onclick="setGlobalMode('declutter')">🧹 Уборка</button>
+        </div>
+        <div class="ctrl-sep"></div>
+        <button class="btn btn-secondary btn-sm" id="btn-ai"      onclick="aiDetectAll()"    disabled>🤖 Авто тип</button>
+        <button class="btn btn-secondary btn-sm"                   onclick="selectAll()">Все</button>
+        <button class="btn btn-secondary btn-sm"                   onclick="deselectAll()">Снять</button>
+        <div class="progress-wrap" id="progress-wrap"><div class="progress-fill" id="progress-fill"></div></div>
+        <button class="btn btn-primary  btn-sm" id="btn-process"  onclick="processAll()"     disabled>▶ Старт</button>
+        <button class="btn btn-danger   btn-sm" id="btn-stop"      onclick="stopProcessing()" style="display:none">■ Стоп</button>
+        <button class="btn btn-secondary btn-sm" id="btn-clear"   onclick="clearAll()"       disabled>🗑</button>
+      </div>
+
+      <!-- Queue -->
+      <div class="queue-wrap" id="queue-wrap">
+        <div class="empty-queue" id="empty-queue">
+          <span class="eq-icon">📂</span>
+          <div class="eq-title">Нет загруженных фото</div>
+          <div style="font-size:13px">Перетащите файлы в зону выше</div>
+        </div>
+        <table class="queue-table" id="queue-table" style="display:none">
+          <thead><tr>
+            <th>☑</th><th>Фото</th><th>Имя файла</th>
+            <th>Тип комнаты</th><th>Режим</th><th>Статус</th>
+          </tr></thead>
+          <tbody id="queue-body"></tbody>
+        </table>
+      </div>
+
+    </div><!-- /tab-process -->
+
+    <!-- ── SESSIONS TAB ── -->
+    <div class="tab-panel" id="tab-sessions">
+      <div class="sessions-toolbar">
+        <span class="tb-title">Прошлые сессии</span>
+        <button class="btn btn-secondary btn-sm" onclick="loadSessions()">↺ Обновить</button>
+      </div>
+      <div class="sessions-list" id="sessions-list">
+        <div class="sessions-loading" id="sessions-loading">Загрузка сессий…</div>
+      </div>
+    </div>
+
+  </div><!-- /panel-left -->
+
+  <!-- RIGHT -->
+  <div class="panel-right">
+    <div class="right-header">
+      <span class="rh-title" id="preview-title">Предпросмотр</span>
+      <span class="rh-sub"   id="preview-sub"></span>
+    </div>
+
+    <div class="preview-wrap" id="preview-wrap">
+      <div class="preview-empty" id="preview-empty">
+        <span class="pe-icon">🪄</span>
+        <div>Выберите файл в очереди или из галереи сессий</div>
+      </div>
+
+      <!-- Comparison mode toolbar -->
+      <div class="cmp-toolbar" id="cmp-toolbar" style="display:none">
+        <button class="cmp-btn active" id="cmp-slider" onclick="setCmpMode('slider')">⇔ Слайдер</button>
+        <button class="cmp-btn"        id="cmp-before" onclick="setCmpMode('before')">← До</button>
+        <button class="cmp-btn"        id="cmp-after"  onclick="setCmpMode('after')">После →</button>
+        <button class="cmp-btn"        id="cmp-split"  onclick="setCmpMode('split')">⊟ Рядом</button>
+      </div>
+
+      <!-- Slider comparison (default) -->
+      <div class="comparison" id="comparison" style="display:none">
+        <img id="img-before" src="" alt="До">
+        <div class="after-wrap" id="after-wrap" style="clip-path:inset(0 50% 0 0)">
+          <img id="img-after" src="" alt="После">
+        </div>
+        <div class="div-line"   id="div-line"   style="left:50%"></div>
+        <div class="div-handle" id="div-handle" style="left:50%">⇔</div>
+        <span class="cmp-label" style="left:10px">До</span>
+        <span class="cmp-label" style="right:10px">После</span>
+      </div>
+
+      <!-- Single image view (Before or After mode) -->
+      <img id="img-main" style="display:none;max-width:100%;max-height:calc(100% - 90px);object-fit:contain;border-radius:var(--radius);box-shadow:var(--shadow);" alt="">
+
+      <!-- Side-by-side view -->
+      <div class="split-view" id="split-view" style="display:none">
+        <div class="split-img-wrap">
+          <img id="split-before" src="" alt="До">
+          <div class="split-label">До</div>
+        </div>
+        <div class="split-img-wrap">
+          <img id="split-after" src="" alt="После">
+          <div class="split-label">После</div>
+        </div>
+      </div>
+
+      <div class="preview-actions" id="preview-actions" style="display:none">
+        <a class="btn btn-primary btn-sm"        id="btn-download"   download>⬇ Скачать результат</a>
+        <button class="btn btn-secondary btn-sm" id="btn-open-orig"  onclick="openOriginal()">↗ Оригинал</button>
+      </div>
+    </div>
+
+    <div class="log-section">
+      <div class="log-header">
+        <span>Лог</span>
+        <button class="btn btn-secondary btn-sm" onclick="clearLog()" style="padding:2px 8px;font-size:10px">Очистить</button>
+      </div>
+      <div class="log-body" id="log-body"></div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSettings()">×</button>
+    <h3>⚙️ Настройки</h3>
+    <div class="form-row">
+      <label class="form-label" for="api-key-input">Grok API Key (xAI)</label>
+      <input type="password" class="form-input" id="api-key-input" placeholder="xai-...">
+      <div class="form-hint">Ключ хранится локально в браузере</div>
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="model-input">Модель</label>
+      <select class="form-select" id="model-input">
+        <option value="aurora">aurora (Image Editing)</option>
+        <option value="grok-imagine-image">grok-imagine-image</option>
+        <option value="grok-imagine-image-pro">grok-imagine-image-pro</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="server-input">Адрес сервера</label>
+      <input type="text" class="form-input" id="server-input" value="http://localhost:3001">
+      <div class="form-hint">Локальный сервер (npm start в папке "ai photo decltter")</div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveSettings()">💾 Сохранить</button>
+  </div>
+</div>
+
+<!-- PROMPT EDITOR MODAL -->
+<div class="modal-overlay" id="prompt-editor-modal">
+  <div class="prompt-editor-box">
+    <button class="modal-close" onclick="closePromptEditor()">×</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <h3 style="font-size:16px;font-weight:700">📝 Редактор промптов</h3>
+      <button class="btn btn-secondary btn-sm" onclick="reloadPrompts()" title="Перезагрузить с сервера">↺ Обновить</button>
+    </div>
+    <div id="pe-load-status" style="display:none;font-size:12px;color:var(--red);background:var(--red-light);border-radius:6px;padding:6px 10px;margin-bottom:10px;flex-shrink:0"></div>
+    <div class="pe-tabs">
+      <button class="pe-tab active" id="pe-tab-declutter" onclick="setPeMode('declutter')">🧹 Уборка</button>
+      <button class="pe-tab"        id="pe-tab-empty"     onclick="setPeMode('empty')">🏚 Опустошить</button>
+      <button class="pe-tab"        id="pe-tab-global"    onclick="setPeMode('global')">⚙️ Правила</button>
+    </div>
+    <!-- Room list + textarea -->
+    <div class="pe-body" id="pe-body">
+      <div class="pe-room-list" id="pe-room-list"></div>
+      <div class="pe-right">
+        <textarea class="pe-textarea" id="pe-textarea" placeholder="Выберите тип комнаты слева…"></textarea>
+      </div>
+    </div>
+    <!-- Global rules view (shown for "Правила" tab) -->
+    <div id="pe-global-view" style="display:none;flex:1;flex-direction:column;gap:10px;overflow-y:auto;min-height:0">
+      <div>
+        <div class="form-label" style="margin-bottom:4px">Правило дефектов (добавляется ко всем промптам)</div>
+        <textarea class="pe-textarea" id="pe-defect-rule" style="height:100px;flex:none;width:100%"></textarea>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:4px">Финальные правила качества (добавляется ко всем промптам)</div>
+        <textarea class="pe-textarea" id="pe-quality-footer" style="height:100px;flex:none;width:100%"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-shrink:0">
+      <button class="btn btn-secondary" onclick="closePromptEditor()">Отмена</button>
+      <button class="btn btn-primary"   onclick="savePrompts()">💾 Сохранить промпты</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────────
+const ROOM_TYPES = ['по умолчанию','кухня','спальня','гостиная','ванная','коридор','балкон','двор','дрон'];
+const ROOM_LABELS = {
+  'по умолчанию':'🔍 Авто','кухня':'🍳 Кухня','спальня':'🛏 Спальня',
+  'гостиная':'🛋 Гостиная','ванная':'🚿 Ванная','коридор':'🚪 Коридор',
+  'балкон':'🌿 Балкон','двор':'🏡 Двор','дрон':'🚁 Дрон'
+};
+const BADGE_CLASS = {wait:'badge-wait',processing:'badge-proc',done:'badge-done',error:'badge-error'};
+const BADGE_LABEL = {wait:'Ожидание',processing:'⏳ Обработка…',done:'✓ Готово',error:'✗ Ошибка'};
+const MODE_OPTS   = [['empty','🏚 Опустошить'],['declutter','🧹 Уборка']];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let files      = [];
+let globalMode = 'empty';
+let stopFlag   = false;
+let processing = false;
+let activeId   = null;
+let currentOriginalUrl = null;
+let serverUrl  = localStorage.getItem('pd_server') || 'http://localhost:3001';
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  checkServer();
+  resetSessionName();
+
+  const dz  = document.getElementById('drop-zone');
+  const inp = document.getElementById('file-input');
+  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', ()  => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); addFiles(e.dataTransfer.files); });
+  inp.addEventListener('change', () => { addFiles(inp.files); inp.value = ''; });
+
+  // Comparison drag
+  const comp = document.getElementById('comparison');
+  let dragging = false;
+  const moveSplit = e => {
+    if (cmpMode !== 'slider') return;
+    const r   = comp.getBoundingClientRect();
+    const pct = Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100));
+    document.getElementById('after-wrap').style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    document.getElementById('div-line').style.left       = pct + '%';
+    document.getElementById('div-handle').style.left     = pct + '%';
+  };
+  comp.addEventListener('mousedown',  () => { dragging = true; });
+  document.addEventListener('mouseup',   () => { dragging = false; });
+  document.addEventListener('mousemove', e => { if (dragging) moveSplit(e); });
+  comp.addEventListener('touchstart',  () => { dragging = true; }, { passive: true });
+  document.addEventListener('touchend',  () => { dragging = false; });
+  document.addEventListener('touchmove', e => { if (dragging) moveSplit(e.touches[0]); }, { passive: true });
+
+  document.getElementById('settings-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('settings-modal')) closeSettings();
+  });
+  document.getElementById('prompt-editor-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('prompt-editor-modal')) closePromptEditor();
+  });
+
+  if (!localStorage.getItem('pd_api_key')) setTimeout(openSettings, 500);
+});
+
+// ── Session name ──────────────────────────────────────────────────────────────
+function resetSessionName() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const name = `Session_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+  document.getElementById('session-name').value = name;
+}
+
+function getSessionName() {
+  return document.getElementById('session-name').value.trim() || 'Session_' + Date.now();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.getElementById('tab-btn-process').classList.toggle('active',  name === 'process');
+  document.getElementById('tab-btn-sessions').classList.toggle('active', name === 'sessions');
+  document.getElementById('tab-process').classList.toggle('active',  name === 'process');
+  document.getElementById('tab-sessions').classList.toggle('active', name === 'sessions');
+  if (name === 'sessions') loadSessions();
+}
+
+// ── Server ────────────────────────────────────────────────────────────────────
+async function checkServer() {
+  setDot('loading', 'Подключение…');
+  try {
+    await fetch(serverUrl + '/', { signal: AbortSignal.timeout(3000) });
+    setDot('online', 'Сервер подключён');
+  } catch {
+    setDot('error', 'Сервер недоступен — запустите npm start');
+  }
+}
+function setDot(cls, txt) {
+  document.getElementById('status-dot').className   = 'status-dot ' + cls;
+  document.getElementById('status-text').textContent = txt;
+}
+
+// ── Files ─────────────────────────────────────────────────────────────────────
+function addFiles(list) {
+  const existing = new Set(files.map(f => f.name + f.file.size));
+  let n = 0;
+  for (const file of list) {
+    if (!file.type.startsWith('image/')) continue;
+    if (existing.has(file.name + file.size)) continue;
+    const id    = 'f' + Date.now() + Math.random().toString(36).slice(2);
+    const thumb = URL.createObjectURL(file);
+    files.push({ id, file, name: file.name, thumb, roomType:'по умолчанию',
+                 mode: globalMode, status:'wait', originalUrl: thumb,
+                 resultUrl: null, serverOriginalUrl: null, checked: true });
+    n++;
+  }
+  if (n) { renderQueue(); updateButtons(); log(`Добавлено ${n} файлов`); }
+}
+
+function clearAll() {
+  if (processing) return;
+  files.forEach(f => URL.revokeObjectURL(f.thumb));
+  files = []; activeId = null;
+  renderQueue(); updateButtons(); hidePreviews(); log('Список очищен');
+  resetSessionName();
+}
+
+function selectAll()   { files.forEach(f => { f.checked = true; });  renderQueue(); }
+function deselectAll() { files.forEach(f => { f.checked = false; }); renderQueue(); }
+
+// ── Render queue ──────────────────────────────────────────────────────────────
+function renderQueue() {
+  const emptyEl = document.getElementById('empty-queue');
+  const tableEl = document.getElementById('queue-table');
+  const tbody   = document.getElementById('queue-body');
+  if (!files.length) {
+    emptyEl.style.display = ''; tableEl.style.display = 'none';
+    tbody.replaceChildren(); return;
+  }
+  emptyEl.style.display = 'none'; tableEl.style.display = '';
+  tbody.replaceChildren(...files.map(buildRow));
+}
+
+function buildRow(f) {
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + f.id;
+  if (f.id === activeId)         tr.classList.add('selected');
+  if (f.status === 'processing') tr.classList.add('processing');
+  tr.addEventListener('click', () => rowClick(f.id));
+
+  // Checkbox
+  const tdCb = document.createElement('td');
+  const cb   = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = !!f.checked;
+  cb.addEventListener('click', e => { e.stopPropagation(); f.checked = e.target.checked; updateButtons(); });
+  tdCb.appendChild(cb); tr.appendChild(tdCb);
+
+  // Thumbnail
+  const tdImg = document.createElement('td');
+  const img   = document.createElement('img');
+  img.className = 'q-thumb';
+  img.src = f.resultUrl ? (serverUrl + f.resultUrl) : f.thumb;
+  img.alt = '';
+  tdImg.appendChild(img); tr.appendChild(tdImg);
+
+  // Filename
+  const tdName = document.createElement('td');
+  const span   = document.createElement('span');
+  span.className = 'q-fname'; span.textContent = f.name; span.title = f.name;
+  tdName.appendChild(span); tr.appendChild(tdName);
+
+  // Room type selector
+  const tdRoom  = document.createElement('td');
+  const selRoom = document.createElement('select');
+  selRoom.className = 'q-select'; selRoom.disabled = f.status === 'processing';
+  ROOM_TYPES.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r; opt.textContent = ROOM_LABELS[r] || r;
+    if (r === f.roomType) opt.selected = true;
+    selRoom.appendChild(opt);
+  });
+  selRoom.addEventListener('change', e => { e.stopPropagation(); f.roomType = e.target.value; });
+  selRoom.addEventListener('click',  e => e.stopPropagation());
+  tdRoom.appendChild(selRoom); tr.appendChild(tdRoom);
+
+  // Mode selector
+  const tdMode  = document.createElement('td');
+  const selMode = document.createElement('select');
+  selMode.className = 'q-select'; selMode.disabled = f.status === 'processing';
+  MODE_OPTS.forEach(([val, label]) => {
+    const opt = document.createElement('option');
+    opt.value = val; opt.textContent = label;
+    if (val === f.mode) opt.selected = true;
+    selMode.appendChild(opt);
+  });
+  selMode.addEventListener('change', e => { e.stopPropagation(); f.mode = e.target.value; });
+  selMode.addEventListener('click',  e => e.stopPropagation());
+  tdMode.appendChild(selMode); tr.appendChild(tdMode);
+
+  // Status badge
+  const tdSt  = document.createElement('td');
+  const badge = document.createElement('span');
+  badge.className   = 'badge ' + (BADGE_CLASS[f.status] || 'badge-wait');
+  badge.textContent = BADGE_LABEL[f.status] || f.status;
+  tdSt.appendChild(badge); tr.appendChild(tdSt);
+
+  return tr;
+}
+
+function setGlobalMode(m) {
+  globalMode = m;
+  document.getElementById('mode-empty').classList.toggle('active', m === 'empty');
+  document.getElementById('mode-declutter').classList.toggle('active', m === 'declutter');
+  files.forEach(f => { if (f.status === 'wait') f.mode = m; });
+  renderQueue();
+}
+
+// ── Preview ───────────────────────────────────────────────────────────────────
+function rowClick(id) {
+  activeId = id; renderQueue();
+  const f = files.find(x => x.id === id);
+  if (f) showPreview({ name: f.name, sub: ROOM_LABELS[f.roomType] || f.roomType,
+                       beforeUrl: f.originalUrl,
+                       afterUrl:  f.resultUrl ? serverUrl + f.resultUrl : null,
+                       downloadUrl: f.resultUrl ? serverUrl + f.resultUrl : null,
+                       downloadName: f.name.replace(/\.\w+$/, '') + (f.mode === 'empty' ? '_empty' : '_clean') + '.jpg' });
+}
+
+function showPreview({ name, sub, beforeUrl, afterUrl, downloadUrl, downloadName }) {
+  document.getElementById('preview-title').textContent = name;
+  document.getElementById('preview-sub').textContent   = sub || '';
+
+  const comp    = document.getElementById('comparison');
+  const empty   = document.getElementById('preview-empty');
+  const actions = document.getElementById('preview-actions');
+
+  currentOriginalUrl = beforeUrl;
+
+  if (afterUrl) {
+    document.getElementById('img-before').src    = beforeUrl;
+    document.getElementById('img-after').src     = afterUrl;
+    document.getElementById('split-before').src  = beforeUrl;
+    document.getElementById('split-after').src   = afterUrl;
+    document.getElementById('after-wrap').style.clipPath = 'inset(0 50% 0 0)';
+    document.getElementById('div-line').style.left       = '50%';
+    document.getElementById('div-handle').style.left     = '50%';
+    // Reset to slider mode
+    cmpMode = 'slider';
+    ['slider','before','after','split'].forEach(m => {
+      const el = document.getElementById('cmp-' + m);
+      if (el) el.classList.toggle('active', m === 'slider');
+    });
+    document.getElementById('cmp-toolbar').style.display = '';
+    document.getElementById('split-view').style.display  = 'none';
+    document.getElementById('img-main').style.display    = 'none';
+    comp.style.display    = '';
+    empty.style.display   = 'none';
+    actions.style.display = '';
+    const dl = document.getElementById('btn-download');
+    dl.href     = downloadUrl || afterUrl;
+    dl.download = downloadName || 'result.jpg';
+  } else {
+    comp.style.display    = 'none';
+    document.getElementById('cmp-toolbar').style.display = 'none';
+    document.getElementById('split-view').style.display  = 'none';
+    document.getElementById('img-main').style.display    = 'none';
+    empty.style.display   = '';
+    actions.style.display = 'none';
+  }
+}
+
+function hidePreviews() {
+  document.getElementById('comparison').style.display      = 'none';
+  document.getElementById('cmp-toolbar').style.display     = 'none';
+  document.getElementById('split-view').style.display      = 'none';
+  document.getElementById('img-main').style.display        = 'none';
+  document.getElementById('preview-empty').style.display   = '';
+  document.getElementById('preview-actions').style.display = 'none';
+  document.getElementById('preview-title').textContent     = 'Предпросмотр';
+  document.getElementById('preview-sub').textContent       = '';
+  currentOriginalUrl = null;
+}
+
+function openOriginal() {
+  if (currentOriginalUrl) window.open(currentOriginalUrl, '_blank');
+}
+
+// ── AI detect ─────────────────────────────────────────────────────────────────
+async function aiDetectAll() {
+  const apiKey = localStorage.getItem('pd_api_key') || '';
+  if (!apiKey) { openSettings(); return; }
+  const targets = files.filter(f => f.checked);
+  if (!targets.length) return;
+
+  document.getElementById('btn-ai').disabled = true;
+  log(`🤖 AI определяет типы для ${targets.length} фото…`, 'ai');
+
+  for (const f of targets) {
+    try {
+      const form = new FormData();
+      form.append('image',  f.file);
+      form.append('apiKey', apiKey);
+      const res  = await fetch(serverUrl + '/api/detect-room', { method:'POST', body:form });
+      const data = await res.json();
+      f.roomType = data.room_type || 'по умолчанию';
+      log(`  ${f.name} → ${ROOM_LABELS[f.roomType]}`, 'ai');
+      renderQueue();
+    } catch (err) {
+      log(`  ${f.name} — ошибка: ${err.message}`, 'err');
+    }
+  }
+
+  document.getElementById('btn-ai').disabled = false;
+  log('✅ Определение завершено', 'ok');
+}
+
+// ── Process ───────────────────────────────────────────────────────────────────
+async function processAll() {
+  const apiKey = localStorage.getItem('pd_api_key') || '';
+  if (!apiKey) { openSettings(); log('⚠ Укажите API ключ в настройках', 'err'); return; }
+
+  const queue = files.filter(f => f.checked && f.status !== 'done');
+  if (!queue.length) { log('Нет файлов для обработки', 'err'); return; }
+
+  const sessionFolder = getSessionName();
+
+  processing = true; stopFlag = false;
+  document.getElementById('btn-process').disabled = true;
+  document.getElementById('btn-stop').style.display = '';
+  document.getElementById('progress-wrap').style.display = '';
+  updateButtons();
+  log(`▶ Сессия: ${sessionFolder} · ${queue.length} фото`);
+
+  let done = 0;
+  for (const f of queue) {
+    if (stopFlag) { log('■ Остановлено', 'err'); break; }
+    f.status = 'processing'; renderQueue();
+    setProgress(done / queue.length * 100);
+    log(`⏳ ${f.name}  [${f.mode === 'empty' ? 'опустошение' : 'уборка'} · ${ROOM_LABELS[f.roomType]}]`);
+
+    try {
+      const form = new FormData();
+      form.append('image',         f.file);
+      form.append('apiKey',        apiKey);
+      form.append('mode',          f.mode);
+      form.append('roomType',      f.roomType);
+      form.append('model',         localStorage.getItem('pd_model') || 'aurora');
+      form.append('sessionFolder', sessionFolder);
+
+      const res  = await fetch(serverUrl + '/api/process-image', { method:'POST', body:form });
+      const data = await res.json();
+
+      if (data.success && data.resultUrl) {
+        f.status           = 'done';
+        f.resultUrl        = data.resultUrl;
+        f.serverOriginalUrl = data.originalUrl || null;
+        log(`✓ ${f.name}  →  ${data.sessionFolder}`, 'ok');
+        if (activeId === f.id) {
+          rowClick(f.id);
+        }
+      } else {
+        f.status = 'error';
+        const detail = data.detail
+          ? (typeof data.detail === 'object' ? JSON.stringify(data.detail).slice(0, 200) : String(data.detail))
+          : String(data.error || 'Ошибка');
+        log(`✗ ${f.name}: ${detail}`, 'err');
+      }
+    } catch (err) {
+      f.status = 'error';
+      log(`✗ ${f.name}: ${err.message}`, 'err');
+    }
+
+    done++; renderQueue(); setProgress(done / queue.length * 100);
+  }
+
+  processing = false;
+  document.getElementById('btn-process').disabled = false;
+  document.getElementById('btn-stop').style.display = 'none';
+  updateButtons();
+  const ok = files.filter(f => f.status === 'done').length;
+  log(`Завершено. Успешно: ${ok} / ${queue.length}`, ok === queue.length ? 'ok' : 'err');
+  setTimeout(() => { document.getElementById('progress-wrap').style.display = 'none'; }, 2000);
+}
+
+function stopProcessing() { stopFlag = true; }
+function setProgress(pct) { document.getElementById('progress-fill').style.width = pct + '%'; }
+
+// ── Sessions gallery ──────────────────────────────────────────────────────────
+let openSessionSlug = null;
+
+async function loadSessions() {
+  const list = document.getElementById('sessions-list');
+  const loading = document.getElementById('sessions-loading');
+  if (loading) loading.textContent = 'Загрузка сессий…';
+  list.replaceChildren(...(loading ? [loading] : []));
+
+  try {
+    const res      = await fetch(serverUrl + '/api/sessions');
+    const sessions = await res.json();
+
+    list.replaceChildren();
+
+    if (!sessions.length) {
+      const msg = document.createElement('div');
+      msg.className = 'sessions-empty';
+      const ico = document.createElement('span');
+      ico.style.cssText = 'font-size:32px;display:block;margin-bottom:8px';
+      ico.textContent = '📭';
+      const txt = document.createElement('div');
+      txt.textContent = 'Нет готовых сессий. Обработайте фото — они появятся здесь.';
+      txt.style.fontSize = '13px';
+      msg.appendChild(ico); msg.appendChild(txt);
+      list.appendChild(msg);
+      return;
+    }
+
+    sessions.forEach(s => list.appendChild(buildSessionCard(s)));
+
+    // Re-open previously open session
+    if (openSessionSlug) {
+      const card = document.getElementById('sc-' + openSessionSlug);
+      if (card) openSession(card, openSessionSlug);
+    }
+  } catch (err) {
+    list.replaceChildren();
+    const msg = document.createElement('div');
+    msg.className = 'sessions-empty';
+    msg.textContent = 'Ошибка загрузки сессий: ' + err.message;
+    list.appendChild(msg);
+  }
+}
+
+function buildSessionCard(s) {
+  const card = document.createElement('div');
+  card.className = 'session-card';
+  card.id = 'sc-' + s.slug;
+
+  const header = document.createElement('div');
+  header.className = 'sc-header';
+
+  const ico = document.createElement('span');
+  ico.className = 'sc-icon'; ico.textContent = '📁';
+
+  const name = document.createElement('span');
+  name.className = 'sc-name'; name.textContent = s.name;
+
+  const meta = document.createElement('span');
+  meta.className = 'sc-meta';
+  const d = new Date(s.created);
+  meta.textContent = d.toLocaleDateString('ru') + ' · ' + s.count + ' фото';
+
+  const arrow = document.createElement('span');
+  arrow.className = 'sc-arrow'; arrow.textContent = '▶';
+
+  header.appendChild(ico); header.appendChild(name);
+  header.appendChild(meta); header.appendChild(arrow);
+  card.appendChild(header);
+
+  // Photos grid (empty, loaded on click)
+  const grid = document.createElement('div');
+  grid.className = 'sc-photos';
+  card.appendChild(grid);
+
+  card.addEventListener('click', () => {
+    if (card.classList.contains('open')) {
+      card.classList.remove('open');
+      openSessionSlug = null;
+    } else {
+      openSession(card, s.slug);
+    }
+  });
+
+  return card;
+}
+
+async function openSession(card, slug) {
+  // Close others
+  document.querySelectorAll('.session-card.open').forEach(c => c.classList.remove('open'));
+  card.classList.add('open');
+  openSessionSlug = slug;
+
+  const grid = card.querySelector('.sc-photos');
+  grid.replaceChildren();
+
+  const loadingTxt = document.createElement('div');
+  loadingTxt.style.cssText = 'font-size:11px;color:var(--text-muted);padding:8px 0;grid-column:1/-1';
+  loadingTxt.textContent = 'Загрузка…';
+  grid.appendChild(loadingTxt);
+
+  try {
+    const res  = await fetch(serverUrl + '/api/sessions/' + encodeURIComponent(slug));
+    const data = await res.json();
+    grid.replaceChildren();
+
+    if (!data.items || !data.items.length) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'font-size:11px;color:var(--text-muted);padding:8px 0;grid-column:1/-1';
+      empty.textContent = 'Нет результатов';
+      grid.appendChild(empty);
+      return;
+    }
+
+    data.items.forEach(item => {
+      const tile = document.createElement('div');
+      tile.className = 'sc-photo';
+
+      const img = document.createElement('img');
+      img.src = serverUrl + item.resultUrl;
+      img.alt = item.name;
+      img.loading = 'lazy';
+
+      const label = document.createElement('div');
+      label.className = 'sc-label';
+      label.textContent = item.name.slice(0, 14);
+
+      tile.appendChild(img); tile.appendChild(label);
+
+      tile.addEventListener('click', e => {
+        e.stopPropagation();
+        showPreview({
+          name:         item.name,
+          sub:          data.name,
+          beforeUrl:    item.originalUrl ? serverUrl + item.originalUrl : serverUrl + item.resultUrl,
+          afterUrl:     serverUrl + item.resultUrl,
+          downloadUrl:  serverUrl + item.resultUrl,
+          downloadName: item.name + '_result.jpg',
+        });
+      });
+
+      grid.appendChild(tile);
+    });
+  } catch (err) {
+    grid.replaceChildren();
+    const errEl = document.createElement('div');
+    errEl.style.cssText = 'font-size:11px;color:var(--red);padding:8px 0;grid-column:1/-1';
+    errEl.textContent = 'Ошибка: ' + err.message;
+    grid.appendChild(errEl);
+  }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+function updateButtons() {
+  const has = files.length > 0;
+  const chk = files.some(f => f.checked);
+  document.getElementById('btn-process').disabled = !chk || processing;
+  document.getElementById('btn-ai').disabled      = !chk || processing;
+  document.getElementById('btn-clear').disabled   = !has || processing;
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function loadSettings() {
+  document.getElementById('api-key-input').value = localStorage.getItem('pd_api_key') || '';
+  document.getElementById('model-input').value   = localStorage.getItem('pd_model')   || 'aurora';
+  document.getElementById('server-input').value  = localStorage.getItem('pd_server')  || 'http://localhost:3001';
+  serverUrl = localStorage.getItem('pd_server') || 'http://localhost:3001';
+}
+
+function saveSettings() {
+  const key = document.getElementById('api-key-input').value.trim();
+  const mdl = document.getElementById('model-input').value;
+  const srv = document.getElementById('server-input').value.trim() || 'http://localhost:3001';
+  localStorage.setItem('pd_api_key', key);
+  localStorage.setItem('pd_model',   mdl);
+  localStorage.setItem('pd_server',  srv);
+  serverUrl = srv;
+  closeSettings(); checkServer(); log('Настройки сохранены', 'ok');
+}
+
+function openSettings()  { document.getElementById('settings-modal').classList.add('open'); }
+function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+
+// ── Log ───────────────────────────────────────────────────────────────────────
+function log(msg, type) {
+  const body = document.getElementById('log-body');
+  const div  = document.createElement('div');
+  if      (type === 'ok')  div.className = 'log-ok';
+  else if (type === 'err') div.className = 'log-err';
+  else if (type === 'ai')  div.className = 'log-ai';
+  const time = new Date().toLocaleTimeString('ru', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  div.textContent = `[${time}] ${msg}`;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function clearLog() { document.getElementById('log-body').replaceChildren(); }
+
+// ── Comparison modes ──────────────────────────────────────────────────────────
+let cmpMode = 'slider';
+
+function setCmpMode(mode) {
+  cmpMode = mode;
+  ['slider','before','after','split'].forEach(m => {
+    const el = document.getElementById('cmp-' + m);
+    if (el) el.classList.toggle('active', m === mode);
+  });
+
+  const comp      = document.getElementById('comparison');
+  const splitView = document.getElementById('split-view');
+  const imgMain   = document.getElementById('img-main');
+  const beforeImg = document.getElementById('img-before');
+  const afterImg  = document.getElementById('img-after');
+  const divLine   = document.getElementById('div-line');
+  const divHandle = document.getElementById('div-handle');
+  const cmpLabels = comp.querySelectorAll('.cmp-label');
+
+  comp.style.display      = 'none';
+  splitView.style.display = 'none';
+  imgMain.style.display   = 'none';
+
+  if (mode === 'slider') {
+    comp.style.display = '';
+    document.getElementById('after-wrap').style.clipPath = 'inset(0 50% 0 0)';
+    document.getElementById('div-line').style.left       = '50%';
+    document.getElementById('div-handle').style.left     = '50%';
+    divLine.style.display   = '';
+    divHandle.style.display = '';
+    cmpLabels.forEach(l => l.style.display = '');
+  } else if (mode === 'before') {
+    imgMain.src = beforeImg.src;
+    imgMain.style.display = '';
+  } else if (mode === 'after') {
+    imgMain.src = afterImg.src;
+    imgMain.style.display = '';
+  } else if (mode === 'split') {
+    document.getElementById('split-before').src = beforeImg.src;
+    document.getElementById('split-after').src  = afterImg.src;
+    splitView.style.display = '';
+  }
+}
+
+// ── Prompt editor ─────────────────────────────────────────────────────────────
+let promptData = {};
+let peMode     = 'declutter';
+let peRoom     = 'кухня';
+
+async function openPromptEditor() {
+  const statusEl = document.getElementById('pe-load-status');
+  try {
+    const res = await fetch(serverUrl + '/api/prompts');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('json')) throw new Error('Сервер вернул не JSON — проверьте адрес сервера в настройках');
+    promptData = await res.json();
+    if (statusEl) statusEl.style.display = 'none';
+  } catch (err) {
+    log('Ошибка загрузки промптов: ' + err.message, 'err');
+    if (statusEl) { statusEl.textContent = '⚠ ' + err.message + ' (промпты не загружены с сервера)'; statusEl.style.display = ''; }
+    if (!promptData || !promptData.empty) promptData = { empty:{}, declutter:{}, defectRule:'', qualityFooter:'' };
+  }
+  setPeMode('declutter');
+  document.getElementById('prompt-editor-modal').classList.add('open');
+}
+
+function closePromptEditor() {
+  document.getElementById('prompt-editor-modal').classList.remove('open');
+}
+
+async function reloadPrompts() {
+  const statusEl = document.getElementById('pe-load-status');
+  try {
+    const res = await fetch(serverUrl + '/api/prompts');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('json')) throw new Error('Сервер вернул не JSON');
+    promptData = await res.json();
+    if (statusEl) statusEl.style.display = 'none';
+    setPeMode(peMode);
+    log('Промпты загружены с сервера', 'ok');
+  } catch (err) {
+    if (statusEl) { statusEl.textContent = '⚠ ' + err.message; statusEl.style.display = ''; }
+    log('Ошибка загрузки промптов: ' + err.message, 'err');
+  }
+}
+
+function flushPeTextarea() {
+  if (peMode === 'global') {
+    promptData.defectRule    = document.getElementById('pe-defect-rule').value;
+    promptData.qualityFooter = document.getElementById('pe-quality-footer').value;
+  } else if (peRoom) {
+    if (!promptData[peMode]) promptData[peMode] = {};
+    promptData[peMode][peRoom] = document.getElementById('pe-textarea').value;
+  }
+}
+
+function setPeMode(mode) {
+  flushPeTextarea();
+  peMode = mode;
+  ['declutter','empty','global'].forEach(m => {
+    document.getElementById('pe-tab-' + m).classList.toggle('active', m === mode);
+  });
+  const body       = document.getElementById('pe-body');
+  const globalView = document.getElementById('pe-global-view');
+  if (mode === 'global') {
+    body.style.display       = 'none';
+    globalView.style.display = 'flex';
+    globalView.style.flex    = '1';
+    document.getElementById('pe-defect-rule').value    = promptData.defectRule    || '';
+    document.getElementById('pe-quality-footer').value = promptData.qualityFooter || '';
+  } else {
+    body.style.display       = '';
+    globalView.style.display = 'none';
+    renderPeRooms();
+    selectPeRoom(peRoom);
+  }
+}
+
+function renderPeRooms() {
+  const list  = document.getElementById('pe-room-list');
+  const rooms = ['кухня','спальня','гостиная','ванная','коридор','балкон','двор','дрон','по умолчанию'];
+  list.replaceChildren(...rooms.map(r => {
+    const item = document.createElement('div');
+    item.className      = 'pe-room-item' + (r === peRoom ? ' active' : '');
+    item.textContent    = ROOM_LABELS[r] || r;
+    item.dataset.room   = r;
+    item.onclick = () => { flushPeTextarea(); selectPeRoom(r); };
+    return item;
+  }));
+}
+
+function selectPeRoom(room) {
+  peRoom = room;
+  document.querySelectorAll('.pe-room-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.room === room);
+  });
+  document.getElementById('pe-textarea').value = (promptData[peMode] || {})[room] || '';
+}
+
+async function savePrompts() {
+  flushPeTextarea();
+  try {
+    const res  = await fetch(serverUrl + '/api/prompts', {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(promptData),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      log('✅ Промпты сохранены', 'ok');
+      closePromptEditor();
+    } else {
+      log('✗ Ошибка сохранения: ' + (data.error || 'неизвестная ошибка'), 'err');
+    }
+  } catch (err) {
+    log('✗ Ошибка сохранения промптов: ' + err.message, 'err');
+  }
+}
+</script>
+</body>
+</html>

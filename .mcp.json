@@ -1,20 +1,42 @@
 {
   "mcpServers": {
-    "ux": {
+    "firebase": {
       "command": "npx",
-      "args": ["-y", "ux-mcp-server"]
+      "args": ["-y", "firebase-tools@latest", "experimental:mcp"],
+      "comment": "Official Firebase MCP — Firestore, Auth, Functions, Hosting"
     },
-    "ui-expert": {
+    "github": {
       "command": "npx",
-      "args": ["-y", "ui-expert-mcp"]
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      },
+      "comment": "Official GitHub MCP — PRs, issues, code search, deployments"
     },
-    "metis": {
+    "playwright": {
       "command": "npx",
-      "args": ["-y", "metis-mcp-server"]
+      "args": ["-y", "@playwright/mcp"],
+      "comment": "Microsoft Playwright MCP — E2E тесты, headless браузер, CI/CD"
     },
-    "web-ui-copy": {
+    "ux-expert": {
       "command": "npx",
-      "args": ["-y", "web-ui-copy-mcp"]
+      "args": ["-y", "@elsahafy/ux-mcp-server"],
+      "comment": "UX Expert — 28 knowledge bases, 23 tools: WCAG, Nielsen heuristics, design systems"
+    },
+    "a11y": {
+      "command": "npx",
+      "args": ["-y", "a11y-mcp"],
+      "comment": "Accessibility MCP — axe-core аудит WCAG прямо на страницах"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "comment": "Official MCP — структурированный анализ и многошаговое мышление"
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "comment": "Official MCP — постоянная память между сессиями (дизайн-решения, контекст)"
     }
   }
 }
