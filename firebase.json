@@ -3,7 +3,7 @@
     "rules": "firestore.rules"
   },
   "hosting": {
-    "public": ".",
+    "public": "apps/frontend",
     "ignore": [
       "firebase.json",
       "firestore.rules",
@@ -12,7 +12,12 @@
       ".env",
       ".tmp/**",
       ".claude/**",
-      "node_modules/**"
+      "node_modules/**",
+      "apps/backend/**",
+      "core/**",
+      "infra/**",
+      "data/**",
+      "docs/**"
     ]
   }
 }
