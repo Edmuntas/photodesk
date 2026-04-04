@@ -2143,6 +2143,13 @@
   </div>
 
   <div class="nav-group">
+    <div class="nav-label">כלים</div>
+    <div class="nav-item" onclick="openDeclutter()">
+      <span class="icon">🪄</span><span class="nav-text">AI Cleaner</span>
+    </div>
+  </div>
+
+  <div class="nav-group">
     <div class="nav-label">הגדרות</div>
     <div class="nav-item" onclick="navigate('availability')">
       <span class="icon">⏰</span><span class="nav-text">זמינות</span>
@@ -2525,6 +2532,19 @@
           <div class="form-group">
             <label class="form-label">אזור שירות</label>
             <input class="form-input" id="settings-service-area" placeholder="תל אביב והמרכז">
+          </div>
+        </div>
+
+        <!-- AI Declutter -->
+        <div>
+          <div class="section-title">AI Declutter</div>
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label">כתובת שרת ה-AI (URL)</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input class="form-input" id="settings-ai-url" placeholder="http://localhost:3001/declutter" style="flex:1;">
+              <button class="btn btn-ghost" style="white-space:nowrap;" onclick="testDeclutterUrl()">בדוק חיבור</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">ברירת מחדל: http://localhost:3001/declutter · שנה אם השרת רץ על פורט אחר</div>
           </div>
         </div>
 
@@ -6687,10 +6707,28 @@ function renderSettings() {
   document.getElementById('settings-email').value           = s.email || '';
   document.getElementById('settings-phone').value           = s.phone || '';
   document.getElementById('settings-service-area').value    = s.serviceArea || '';
+  document.getElementById('settings-ai-url').value          = localStorage.getItem('pd_ai_url') || '';
   const preview = document.getElementById('logo-preview');
   preview.innerHTML = s.logo
     ? `<img src="${s.logo}" style="width:100%;height:100%;object-fit:cover;">`
     : '📷';
+}
+
+function openDeclutter() {
+  const url = localStorage.getItem('pd_ai_url') || 'http://localhost:3001/declutter';
+  window.open(url, '_blank');
+}
+
+async function testDeclutterUrl() {
+  const raw = document.getElementById('settings-ai-url').value.trim() || 'http://localhost:3001/declutter';
+  try {
+    const base = raw.replace(/\/declutter\/?$/, '');
+    const resp = await fetch(base + '/api/sessions', { signal: AbortSignal.timeout(4000) });
+    if (resp.ok) toast('✓ חיבור תקין — השרת פעיל', 'success');
+    else toast('שרת הגיב עם שגיאה ' + resp.status, 'error');
+  } catch {
+    toast('לא ניתן להתחבר — בדוק שהשרת רץ', 'error');
+  }
 }
 
 function saveSettings() {
@@ -6700,6 +6738,9 @@ function saveSettings() {
   store.settings.email             = document.getElementById('settings-email').value.trim();
   store.settings.phone             = document.getElementById('settings-phone').value.trim();
   store.settings.serviceArea       = document.getElementById('settings-service-area').value.trim();
+  const aiUrl = document.getElementById('settings-ai-url').value.trim();
+  if (aiUrl) localStorage.setItem('pd_ai_url', aiUrl);
+  else localStorage.removeItem('pd_ai_url');
   saveStore();
   applySidebarSettings();
   const btn = document.getElementById('settings-save-btn');
