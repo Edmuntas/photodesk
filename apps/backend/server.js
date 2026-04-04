@@ -34,11 +34,20 @@ app.use('/results', express.static(RESULTS_DIR));
 // Suppress favicon 404 in browser console
 app.get('/favicon.ico', (_req, res) => res.status(204).end());
 
-// Serve declutter.html from apps/frontend/
+// Serve all pages from apps/frontend/
+const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
+app.use(express.static(FRONTEND_DIR));
 app.get('/declutter', (_req, res) => {
-  const p = path.join(__dirname, '..', 'frontend', 'declutter.html');
+  const p = path.join(FRONTEND_DIR, 'declutter.html');
   if (fs.existsSync(p)) return res.sendFile(p);
   res.status(404).send('declutter.html not found at ' + p);
+});
+['photodesk', 'booking', 'quote', 'delivery', 'import', 'prepare'].forEach(name => {
+  app.get(`/${name}`, (_req, res) => {
+    const p = path.join(FRONTEND_DIR, `${name}.html`);
+    if (fs.existsSync(p)) return res.sendFile(p);
+    res.status(404).send(`${name}.html not found`);
+  });
 });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -69,12 +78,49 @@ function fileMime(originalname) {
 const PROMPTS_FILE = path.join(__dirname, '..', '..', 'core', 'ai', 'prompts.json');
 let customPrompts = JSON.parse(fs.readFileSync(PROMPTS_FILE, 'utf8'));
 
-function buildPrompt(roomType, mode) {
+function buildPrompt(roomType, mode, lightMood) {
   const map       = mode === 'empty' ? customPrompts.empty : customPrompts.declutter;
   const base      = map[roomType] || map['по умолчанию'];
   const noDefects = roomType === 'дрон';
   const defect    = noDefects ? '' : '\n\n' + customPrompts.defectRule;
-  return base + defect + '\n\n' + customPrompts.qualityFooter;
+  const fixture   = noDefects ? '' : '\n\n' + customPrompts.fixtureRule;
+  const moodData  = (lightMood && lightMood !== 'day') ? (customPrompts.lightingMoods || {})[lightMood] : null;
+
+  if (moodData) {
+    // Lighting mood is the PRIMARY task — place it first so model prioritises it.
+    // Also replace rule (7) in qualityFooter: the lighting change IS intentional.
+    const footerModified = customPrompts.qualityFooter.replace(
+      '(7) Preserve all existing natural and artificial lighting and all shadows exactly as in the original.',
+      '(7) The lighting has been intentionally transformed as instructed above — this is the primary edit of this request.'
+    );
+    return moodData.prompt
+      + '\n\nADDITIONALLY — perform the following room edit on the same image:\n' + base
+      + defect + fixture
+      + '\n\n' + footerModified;
+  }
+
+  return base + defect + fixture + '\n\n' + customPrompts.qualityFooter;
+}
+
+// ── Sky prompts (loaded from skyPrompts.json) ─────────────────────────────────
+const SKY_PROMPTS_FILE = path.join(__dirname, '..', '..', 'core', 'ai', 'skyPrompts.json');
+let skyPrompts = JSON.parse(fs.readFileSync(SKY_PROMPTS_FILE, 'utf8'));
+
+// skyTime: 'golden'|'midday'|'bluehour'|'overcast'|'dramatic'|'night'|'sunrise'
+// cloudVariant: 'few'|'clear'|'cirrus'|'partial'
+function buildSkyPrompt(roomType, skyTime, cloudVariant) {
+  const sceneType = roomType === 'дрон'               ? 'drone'
+                  : ['двор','сад','балкон'].includes(roomType) ? 'outdoor'
+                  : 'indoor';
+  const timeObj  = skyPrompts.times[skyTime]    || skyPrompts.times['golden'];
+  const cloudStr = skyPrompts.clouds[cloudVariant] || skyPrompts.clouds['few'];
+  const scene    = skyPrompts.scenes[sceneType];
+
+  const skyDesc = sceneType === 'indoor'
+    ? `New outdoor sky mood: ${timeObj.desc}.`
+    : `New sky: ${timeObj.desc} ${cloudStr}.`;
+
+  return `${scene}\n\n${skyDesc}\n\n${skyPrompts.quality}`;
 }
 
 app.get('/api/prompts', (_req, res) => res.json(customPrompts));
@@ -112,10 +158,11 @@ app.post('/api/detect-room', upload.single('image'), async (req, res) => {
           { type: 'text', text:
             'This is a real estate photo. Identify the room type.\n' +
             'Reply with EXACTLY ONE Russian word — no other text:\n' +
-            'кухня / спальня / гостиная / ванная / коридор / балкон / двор / дрон / по умолчанию\n\n' +
-            'кухня=kitchen, спальня=bedroom with bed, гостиная=living/dining room, ' +
-            'ванная=bathroom/toilet/shower, коридор=hallway/entryway, ' +
-            'балкон=balcony/terrace, двор=exterior/yard/facade/parking, ' +
+            'кухня / спальня / детская / гостиная / ванная / коридор / балкон / двор / сад / дрон / по умолчанию\n\n' +
+            'кухня=kitchen, спальня=adult bedroom with bed, детская=children\'s room with crib/kids bed/toys/wall decals, ' +
+            'гостиная=living/dining room, ванная=bathroom/toilet/shower, коридор=hallway/entryway, ' +
+            'балкон=balcony/terrace, двор=exterior/yard/facade/parking/driveway, ' +
+            'сад=garden/backyard with grass/flower beds/plants (not aerial), ' +
             'дрон=aerial drone shot from above, по умолчанию=other/unclear.\n' +
             'Reply with ONLY the single Russian word.'
           }
@@ -126,7 +173,7 @@ app.post('/api/detect-room', upload.single('image'), async (req, res) => {
     });
 
     const raw   = (result.choices?.[0]?.message?.content || '').trim().toLowerCase();
-    const ROOMS = ['кухня','спальня','гостиная','ванная','коридор','балкон','двор','дрон'];
+    const ROOMS = ['кухня','спальня','детская','гостиная','ванная','коридор','балкон','двор','сад','дрон'];
     const found = ROOMS.find(r => raw.includes(r)) || 'по умолчанию';
     res.json({ room_type: found });
   } catch (err) {
@@ -155,6 +202,9 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
   const mode         = (body.mode          || 'empty').trim();
   const roomType     = (body.roomType      || 'по умолчанию').trim();
   const sessionSlug  = sanitizeFolder(body.sessionFolder);
+  const skyTime      = (body.skyTime      || 'golden').trim();
+  const cloudVariant = (body.cloudVariant || 'few').trim();
+  const lightMood    = (body.lightMood    || 'day').trim();
 
   if (!apiKey)   return res.status(401).json({ error: 'API key required' });
   if (!req.file) return res.status(400).json({ error: 'Image required' });
@@ -172,7 +222,9 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
     fs.copyFileSync(req.file.path, origPath);
   }
 
-  const prompt  = buildPrompt(roomType, mode);
+  const prompt  = mode === 'sky'
+    ? buildSkyPrompt(roomType, skyTime, cloudVariant)
+    : buildPrompt(roomType, mode, lightMood);
   const dataURI = toDataURI(req.file.path, fileMime(req.file.originalname));
   const rawB64  = dataURI.split(',')[1];
   const model   = body.model || 'aurora';
@@ -207,7 +259,8 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
         throw new Error('No b64_json or url in response item: ' + JSON.stringify(item).slice(0, 200));
       }
 
-      const suffix  = mode === 'empty' ? '_empty' : '_clean';
+      const moodSuffix = (lightMood && lightMood !== 'day') ? `_${lightMood}` : '';
+      const suffix  = mode === 'sky' ? `_sky_${skyTime}` : mode === 'empty' ? `_empty${moodSuffix}` : `_clean${moodSuffix}`;
       const outName = `${stem}${suffix}_${Date.now()}.jpg`;
       const outPath = path.join(sessionDir, outName);
       fs.writeFileSync(outPath, imgBuf);
@@ -276,6 +329,119 @@ app.get('/api/sessions/:slug', (req, res) => {
     });
 
     res.json({ slug, name: slug.replace(/_/g, ' '), items });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Reprocess existing original ───────────────────────────────────────────────
+app.post('/api/reprocess', express.json(), async (req, res) => {
+  const body        = req.body || {};
+  const apiKey      = (body.apiKey      || '').trim();
+  const mode        = (body.mode        || 'empty').trim();
+  const roomType    = (body.roomType    || 'по умолчанию').trim();
+  const sessionSlug = sanitizeFolder(body.sessionFolder);
+  const origFile    = path.basename(body.originalFile || '');
+
+  if (!apiKey)      return res.status(401).json({ error: 'API key required' });
+  if (!origFile)    return res.status(400).json({ error: 'originalFile required' });
+  if (!sessionSlug) return res.status(400).json({ error: 'sessionFolder required' });
+
+  const origPath = path.join(RESULTS_DIR, sessionSlug, origFile);
+  if (!fs.existsSync(origPath)) return res.status(404).json({ error: 'Original file not found' });
+
+  const lightMood = (body.lightMood || 'day').trim();
+  const stem    = path.basename(origFile, path.extname(origFile)).replace(/_original$/, '');
+  const prompt  = buildPrompt(roomType, mode, lightMood);
+  const dataURI = toDataURI(origPath, 'image/jpeg');
+  const rawB64  = dataURI.split(',')[1];
+  const model   = body.model || 'aurora';
+
+  const attempts = [
+    { label: 'obj-url',      payload: { model, prompt, image: { url: dataURI } } },
+    { label: 'obj-b64',      payload: { model, prompt, image: { b64_json: rawB64 } } },
+    { label: 'obj-type-url', payload: { model, prompt, image: { type: 'base64', url: dataURI } } },
+    { label: 'obj-type-b64', payload: { model, prompt, image: { type: 'base64', data: rawB64 } } },
+    { label: 'arr-url',      payload: { model, prompt, image: [{ url: dataURI }] } },
+    { label: 'arr-b64',      payload: { model, prompt, image: [{ b64_json: rawB64 }] } },
+    { label: 'images-arr',   payload: { model, prompt, images: [dataURI] } },
+  ];
+
+  let lastErr = null;
+  for (const { label, payload } of attempts) {
+    try {
+      console.log(`[reprocess] trying format: ${label}`);
+      const result = await xaiPost('https://api.x.ai/v1/images/edits', apiKey, payload);
+      const item   = result?.data?.[0];
+      if (!item) throw new Error('No data[0] in response: ' + JSON.stringify(result).slice(0, 300));
+
+      let imgBuf;
+      if (item.b64_json) {
+        imgBuf = Buffer.from(item.b64_json, 'base64');
+      } else if (item.url) {
+        const imgResp = await fetch(item.url);
+        imgBuf = Buffer.from(await imgResp.arrayBuffer());
+      } else {
+        throw new Error('No b64_json or url in response item: ' + JSON.stringify(item).slice(0, 200));
+      }
+
+      const moodSuffix2 = (lightMood && lightMood !== 'day') ? `_${lightMood}` : '';
+      const suffix  = mode === 'sky' ? `_sky_${(body.skyTime||'golden').trim()}` : mode === 'empty' ? `_empty${moodSuffix2}` : `_clean${moodSuffix2}`;
+      const outName = `${stem}${suffix}_${Date.now()}.jpg`;
+      const outPath = path.join(RESULTS_DIR, sessionSlug, outName);
+      fs.writeFileSync(outPath, imgBuf);
+
+      console.log(`[reprocess] success: ${sessionSlug}/${outName}`);
+      return res.json({
+        success: true,
+        resultUrl:   `/results/${sessionSlug}/${outName}`,
+        originalUrl: `/results/${sessionSlug}/${origFile}`,
+        sessionFolder: sessionSlug,
+      });
+
+    } catch (err) {
+      lastErr = err;
+      const detail = JSON.stringify(err.detail || err.message).slice(0, 200);
+      console.warn(`[reprocess] ${label} failed (${err.status || '?'}): ${detail}`);
+      if (err.status !== 422) break;
+    }
+  }
+
+  const detail = lastErr?.detail || lastErr?.message || String(lastErr);
+  console.error('[reprocess] all attempts failed:', JSON.stringify(detail).slice(0, 500));
+  res.status(500).json({ error: String(lastErr?.message), detail });
+});
+
+// ── Delete a result image ─────────────────────────────────────────────────────
+app.delete('/api/sessions/:slug/image/:filename', (req, res) => {
+  const slug     = sanitizeFolder(req.params.slug);
+  const filename = path.basename(req.params.filename);
+  if (!slug || !filename) return res.status(400).json({ error: 'Invalid params' });
+
+  const filePath = path.join(RESULTS_DIR, slug, filename);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found' });
+
+  try {
+    fs.unlinkSync(filePath);
+    console.log(`[delete-image] removed: ${slug}/${filename}`);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Delete an entire session folder ──────────────────────────────────────────
+app.delete('/api/sessions/:slug', (req, res) => {
+  const slug = sanitizeFolder(req.params.slug);
+  if (!slug) return res.status(400).json({ error: 'Invalid session name' });
+
+  const folderPath = path.join(RESULTS_DIR, slug);
+  if (!fs.existsSync(folderPath)) return res.status(404).json({ error: 'Session not found' });
+
+  try {
+    fs.rmSync(folderPath, { recursive: true, force: true });
+    console.log(`[delete-session] removed session folder: ${slug}`);
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

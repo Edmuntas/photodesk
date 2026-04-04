@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru" dir="ltr">
+<html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PhotoDesk AI — Очистка фото</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PhotoDesk AI — עריכת תמונות</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -63,7 +63,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 /* LAYOUT */
 .layout{flex:1;display:flex;overflow:hidden;}
 .panel-left{width:55%;min-width:480px;display:flex;flex-direction:column;
-             border-right:1px solid var(--border);overflow:hidden;}
+             border-left:1px solid var(--border);overflow:hidden;}
 .panel-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
 
 /* LEFT PANEL TABS */
@@ -110,6 +110,53 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 .mode-btn.active{background:var(--accent);color:#fff;}
 .mode-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
 .ctrl-sep{width:1px;height:22px;background:var(--border);}
+
+/* SKY TOOLBAR */
+.sky-toolbar{padding:10px 16px;background:var(--accent-light);border-bottom:1px solid rgba(249,115,22,.2);
+             display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+.sky-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.sky-label{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;
+           letter-spacing:.5px;white-space:nowrap;min-width:60px;}
+.sky-pill{padding:5px 11px;border-radius:99px;border:1px solid var(--border);font-size:12px;
+          font-weight:500;cursor:pointer;background:var(--surface);color:var(--text-muted);
+          font-family:var(--font);transition:all .15s;white-space:nowrap;}
+.sky-pill:hover:not(.active){background:var(--surface2);color:var(--text);}
+.sky-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.sky-pill-sm{padding:4px 9px;border-radius:99px;border:1px solid var(--border);font-size:11px;
+             font-weight:500;cursor:pointer;background:var(--surface);color:var(--text-muted);
+             font-family:var(--font);transition:all .15s;white-space:nowrap;}
+.sky-pill-sm:hover:not(.active){background:var(--surface2);color:var(--text);}
+.sky-pill-sm.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.sky-lock-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);}
+.sky-lock-row input{accent-color:var(--accent);}
+
+/* PER-FILE LIGHTING MOOD SELECT */
+.q-light-sel{padding:3px 5px;border-radius:var(--radius-sm);border:1px solid var(--border);
+             background:var(--surface);font-size:11px;color:var(--text);font-family:var(--font);
+             cursor:pointer;min-width:80px;}
+.q-light-sel:disabled{opacity:.4;cursor:default;}
+
+/* VARIANT BADGE + BUTTON */
+.q-var-badge{font-size:10px;font-weight:700;padding:2px 5px;border-radius:99px;
+             background:var(--accent);color:#fff;line-height:1;margin-right:4px;vertical-align:middle;}
+.q-revar-btn{font-size:11px;padding:2px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);
+             background:var(--surface);color:var(--text-muted);cursor:pointer;font-family:var(--font);
+             transition:all .15s;line-height:1;margin-right:4px;vertical-align:middle;}
+.q-revar-btn:hover{background:var(--surface2);color:var(--text);}
+
+/* VARIANTS STRIP */
+.variants-strip{padding:8px 12px;border-top:1px solid var(--border);display:flex;
+                align-items:flex-end;gap:10px;flex-wrap:wrap;background:var(--surface);flex-shrink:0;}
+.variants-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;
+                letter-spacing:.4px;white-space:nowrap;align-self:center;}
+.var-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+.var-thumb{width:52px;height:52px;object-fit:cover;border-radius:var(--radius-sm);
+           border:2px solid transparent;transition:border-color .15s;}
+.var-thumb:hover{border-color:var(--text-muted);}
+.var-thumb.active{border-color:var(--accent);}
+.var-item-label{font-size:9px;color:var(--text-muted);text-align:center;max-width:52px;
+                overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
 .progress-wrap{flex:1;height:6px;background:var(--surface2);border-radius:99px;
                min-width:80px;overflow:hidden;display:none;}
 .progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .3s;width:0%;}
@@ -118,7 +165,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 .queue-wrap{flex:1;overflow-y:auto;background:var(--surface);}
 .queue-table{width:100%;border-collapse:collapse;}
 .queue-table thead th{position:sticky;top:0;z-index:2;background:var(--surface2);
-                      padding:8px 10px;text-align:left;font-size:11px;font-weight:600;
+                      padding:8px 10px;text-align:right;font-size:11px;font-weight:600;
                       color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;
                       border-bottom:1px solid var(--border);}
 .queue-table thead th:first-child{width:36px;text-align:center;}
@@ -164,6 +211,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 .sc-meta{font-size:11px;color:var(--text-muted);}
 .sc-arrow{font-size:12px;color:var(--text-muted);transition:transform .2s;}
 .session-card.open .sc-arrow{transform:rotate(90deg);}
+.sc-delete{font-size:13px;padding:2px 7px;border-radius:var(--radius-sm);
+           border:1px solid var(--red-light,#fee2e2);color:var(--red,#ef4444);
+           background:transparent;cursor:pointer;opacity:0;transition:opacity .15s;line-height:1.5;}
+.session-card:hover .sc-delete{opacity:1;}
+.sc-delete:hover{background:var(--red,#ef4444);color:#fff;border-color:var(--red,#ef4444);}
 .sc-photos{display:none;margin-top:10px;
            display:none;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;}
 .session-card.open .sc-photos{display:grid;}
@@ -182,13 +234,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
               display:flex;align-items:center;gap:8px;background:var(--surface);flex-shrink:0;}
 .rh-title{font-size:13px;font-weight:600;flex:1;}
 .rh-sub{font-size:11px;color:var(--text-muted);}
-.preview-wrap{flex:1;display:flex;flex-direction:column;align-items:center;
+.preview-wrap{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;
               justify-content:center;padding:16px;overflow:hidden;gap:12px;}
 .preview-empty{text-align:center;color:var(--text-muted);}
 .pe-icon{font-size:40px;margin-bottom:8px;display:block;}
 
 /* Comparison slider */
-.comparison{position:relative;width:100%;max-height:calc(100% - 60px);
+.comparison{position:relative;width:100%;flex:1;min-height:0;
             border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
             cursor:ew-resize;user-select:none;}
 .comparison img{display:block;width:100%;height:100%;object-fit:contain;}
@@ -217,7 +269,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
               color:var(--text-muted);line-height:1;transition:all .15s;}
 .cmp-icon-btn.active{color:var(--accent);border-color:var(--accent);background:var(--accent-light);}
 .cmp-icon-btn:hover:not(.active){color:var(--text);}
-#img-main{max-width:100%;max-height:calc(100% - 110px);object-fit:contain;
+#img-main{max-width:100%;max-height:100%;flex:1;min-height:0;object-fit:contain;
           border-radius:var(--radius);box-shadow:var(--shadow);transition:opacity .15s;}
 
 /* PROMPT EDITOR MODAL */
@@ -231,7 +283,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 .pe-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
 .pe-body{display:flex;flex:1;gap:12px;overflow:hidden;min-height:0;}
 .pe-room-list{width:135px;flex-shrink:0;display:flex;flex-direction:column;
-              gap:2px;overflow-y:auto;border-right:1px solid var(--border);padding-right:10px;}
+              gap:2px;overflow-y:auto;border-left:1px solid var(--border);padding-left:10px;}
 .pe-room-item{padding:6px 8px;border-radius:var(--radius-sm);cursor:pointer;
               font-size:12px;font-weight:500;color:var(--text-muted);transition:all .12s;}
 .pe-room-item:hover{background:var(--surface2);color:var(--text);}
@@ -267,7 +319,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 .modal-box{background:var(--surface);border-radius:var(--radius);padding:24px;
            width:440px;box-shadow:var(--shadow-lg);position:relative;}
 .modal-box h3{font-size:16px;font-weight:700;margin-bottom:16px;}
-.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;
+.modal-close{position:absolute;top:14px;left:14px;background:none;border:none;
              font-size:20px;cursor:pointer;color:var(--text-muted);line-height:1;}
 .modal-close:hover{color:var(--text);}
 .form-row{margin-bottom:14px;}
@@ -284,13 +336,45 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 
 /* SPLIT VIEW (side-by-side) */
-.split-view{display:flex;gap:8px;width:100%;flex:1;min-height:0;max-height:calc(100% - 50px);}
+.split-view{display:flex;gap:8px;width:100%;flex:1;min-height:0;}
 .split-img-wrap{flex:1;position:relative;border-radius:var(--radius);overflow:hidden;
                 background:var(--surface2);min-height:0;display:flex;align-items:center;justify-content:center;}
 .split-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
 .split-label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
              background:rgba(0,0,0,.55);color:#fff;font-size:11px;
              font-weight:600;padding:2px 8px;border-radius:5px;white-space:nowrap;}
+
+/* MOBILE RTL */
+@media (max-width: 768px) {
+  body { height: auto; overflow: auto; }
+  .layout { flex-direction: column; overflow: visible; min-height: 0; }
+  .panel-left { width: 100%; min-width: unset; border-left: none; border-bottom: 1px solid var(--border); max-height: none; overflow: visible; }
+  .panel-right { flex: none; height: 55vh; min-height: 300px; max-height: 55vh; overflow: hidden; }
+  .topbar { padding: 0 12px; gap: 10px; }
+  .logo-text { font-size: 13px; }
+  .logo-sub { font-size: 10px; }
+  .topbar-back { font-size: 12px; padding: 4px 6px; }
+  .controls { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+  .mode-btn { padding: 5px 9px; font-size: 11px; }
+  .btn-sm { padding: 5px 9px; font-size: 11px; }
+  .sky-pill { font-size: 11px; padding: 4px 8px; }
+  .sky-pill-sm { font-size: 10px; padding: 3px 7px; }
+  .sky-row { gap: 4px; }
+  .queue-table tbody td { padding: 6px 7px; font-size: 12px; }
+  .q-select, .q-light-sel { font-size: 10px; max-width: 80px; }
+  .preview-actions { flex-wrap: wrap; gap: 6px; }
+  .cmp-toolbar { flex-wrap: wrap; gap: 4px; }
+  .cmp-btn { padding: 5px 10px; font-size: 11px; }
+  .modal-box { width: 95vw; padding: 16px; }
+  .prompt-editor-box { width: 95vw; max-height: 92vh; }
+}
+@media (max-width: 480px) {
+  .topbar-back span { display: none; }
+  .left-tab { padding: 8px 12px; font-size: 12px; }
+  .panel-right { height: 48vh; max-height: 48vh; }
+  .queue-table thead th:nth-child(5),
+  .queue-table tbody td:nth-child(5) { display: none; } /* hide Lighting column on tiny screens */
+}
 </style>
 </head>
 <body>
@@ -302,13 +386,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
     <div><div class="logo-text">PhotoDesk</div><div class="logo-sub">AI Cleaner</div></div>
   </a>
   <div class="topbar-sep"></div>
-  <a class="topbar-back" href="photodesk.html">← Назад в CRM</a>
+  <a class="topbar-back" href="photodesk.html">חזרה ל-CRM →</a>
   <div class="topbar-spacer"></div>
   <div class="topbar-status">
     <span class="status-dot" id="status-dot"></span>
-    <span id="status-text">Проверка сервера...</span>
+    <span id="status-text">בודק שרת...</span>
   </div>
-  <button class="btn btn-secondary btn-sm" onclick="openPromptEditor()" style="padding:6px 10px" title="Редактор промптов">📝</button>
+  <button class="btn btn-secondary btn-sm" onclick="openPromptEditor()" style="padding:6px 10px" title="עורך פרומפטים">📝</button>
   <button class="btn btn-secondary btn-sm" onclick="openSettings()" style="padding:6px 10px">⚙️</button>
 </div>
 
@@ -320,8 +404,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 
     <!-- Tabs -->
     <div class="left-tabs">
-      <button class="left-tab active" id="tab-btn-process"  onclick="switchTab('process')">🪄 Обработка</button>
-      <button class="left-tab"        id="tab-btn-sessions" onclick="switchTab('sessions')">📁 Сессии</button>
+      <button class="left-tab active" id="tab-btn-process"  onclick="switchTab('process')">🪄 עיבוד</button>
+      <button class="left-tab"        id="tab-btn-sessions" onclick="switchTab('sessions')">📁 סשנים</button>
     </div>
 
     <!-- ── PROCESS TAB ── -->
@@ -329,8 +413,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 
       <!-- Session name -->
       <div class="session-bar">
-        <span class="session-label">🏷 Сессия</span>
-        <input class="session-input" id="session-name" type="text" placeholder="Название папки результатов">
+        <span class="session-label">🏷 סשן</span>
+        <input class="session-input" id="session-name" type="text" placeholder="שם תיקיית תוצאות">
       </div>
 
       <!-- Drop zone -->
@@ -338,38 +422,65 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
         <div class="drop-zone" id="drop-zone">
           <input type="file" id="file-input" multiple accept="image/jpeg,image/png,image/webp">
           <span class="dz-icon">🖼️</span>
-          <div class="dz-title">Перетащите фотографии сюда</div>
-          <div class="dz-sub">или нажмите для выбора · JPEG / PNG / WebP</div>
+          <div class="dz-title">גרור תמונות לכאן</div>
+          <div class="dz-sub">או לחץ לבחירה · JPEG / PNG / WebP</div>
         </div>
       </div>
 
       <!-- Controls -->
       <div class="controls">
         <div class="mode-group">
-          <button class="mode-btn active" id="mode-empty"     onclick="setGlobalMode('empty')">🏚 Опустошить</button>
-          <button class="mode-btn"        id="mode-declutter" onclick="setGlobalMode('declutter')">🧹 Уборка</button>
+          <button class="mode-btn active" id="mode-empty"     onclick="setGlobalMode('empty')">🏚 ריקון</button>
+          <button class="mode-btn"        id="mode-declutter" onclick="setGlobalMode('declutter')">🧹 ניקוי</button>
+          <button class="mode-btn"        id="mode-sky"       onclick="setGlobalMode('sky')">🌅 שמיים</button>
         </div>
         <div class="ctrl-sep"></div>
-        <button class="btn btn-secondary btn-sm" id="btn-ai"      onclick="aiDetectAll()"    disabled>🤖 Авто тип</button>
-        <button class="btn btn-secondary btn-sm"                   onclick="selectAll()">Все</button>
-        <button class="btn btn-secondary btn-sm"                   onclick="deselectAll()">Снять</button>
+        <button class="btn btn-secondary btn-sm" id="btn-ai"      onclick="aiDetectAll()"    disabled>🤖 זיהוי אוטו</button>
+        <button class="btn btn-secondary btn-sm"                   onclick="selectAll()">הכל</button>
+        <button class="btn btn-secondary btn-sm"                   onclick="deselectAll()">נקה</button>
         <div class="progress-wrap" id="progress-wrap"><div class="progress-fill" id="progress-fill"></div></div>
-        <button class="btn btn-primary  btn-sm" id="btn-process"  onclick="processAll()"     disabled>▶ Старт</button>
-        <button class="btn btn-danger   btn-sm" id="btn-stop"      onclick="stopProcessing()" style="display:none">■ Стоп</button>
+        <button class="btn btn-primary  btn-sm" id="btn-process"  onclick="processAll()"     disabled>▶ התחל</button>
+        <button class="btn btn-danger   btn-sm" id="btn-stop"      onclick="stopProcessing()" style="display:none">■ עצור</button>
         <button class="btn btn-secondary btn-sm" id="btn-clear"   onclick="clearAll()"       disabled>🗑</button>
+      </div>
+
+      <!-- Sky Toolbar (visible only in sky mode) -->
+      <div class="sky-toolbar" id="sky-toolbar" style="display:none">
+        <div class="sky-row">
+          <span class="sky-label">זמן:</span>
+          <button class="sky-pill active" data-time="golden"   onclick="setSkyTime(this)">🌅 שעת זהב</button>
+          <button class="sky-pill"        data-time="sunrise"  onclick="setSkyTime(this)">🌄 זריחה</button>
+          <button class="sky-pill"        data-time="midday"   onclick="setSkyTime(this)">☀️ צהריים</button>
+          <button class="sky-pill"        data-time="overcast" onclick="setSkyTime(this)">☁️ מעונן</button>
+          <button class="sky-pill"        data-time="bluehour" onclick="setSkyTime(this)">🌆 שעה כחולה</button>
+          <button class="sky-pill"        data-time="dramatic" onclick="setSkyTime(this)">⛈ דרמטי</button>
+          <button class="sky-pill"        data-time="night"    onclick="setSkyTime(this)">🌃 לילה</button>
+        </div>
+        <div class="sky-row">
+          <span class="sky-label">עננים:</span>
+          <button class="sky-pill-sm active" data-cloud="few"     onclick="setSkyCloud(this)">עננים בודדים</button>
+          <button class="sky-pill-sm"        data-cloud="clear"   onclick="setSkyCloud(this)">שמיים בהירים</button>
+          <button class="sky-pill-sm"        data-cloud="cirrus"  onclick="setSkyCloud(this)">עננים גבוהים</button>
+          <button class="sky-pill-sm"        data-cloud="partial" onclick="setSkyCloud(this)">עננים מפוזרים</button>
+          <button class="sky-pill-sm"        data-cloud="random"  onclick="setSkyCloud(this)">🎲 אקראי</button>
+        </div>
+        <div class="sky-lock-row">
+          <input type="checkbox" id="sky-session-lock" checked>
+          <label for="sky-session-lock">עננים זהים לכל הסשן (מאופס בסשן חדש)</label>
+        </div>
       </div>
 
       <!-- Queue -->
       <div class="queue-wrap" id="queue-wrap">
         <div class="empty-queue" id="empty-queue">
           <span class="eq-icon">📂</span>
-          <div class="eq-title">Нет загруженных фото</div>
-          <div style="font-size:13px">Перетащите файлы в зону выше</div>
+          <div class="eq-title">אין תמונות טעונות</div>
+          <div style="font-size:13px">גרור קבצים לאזור למעלה</div>
         </div>
         <table class="queue-table" id="queue-table" style="display:none">
           <thead><tr>
-            <th>☑</th><th>Фото</th><th>Имя файла</th>
-            <th>Тип комнаты</th><th>Режим</th><th>Статус</th>
+            <th>☑</th><th>תמונה</th><th>שם קובץ</th>
+            <th>סוג חדר</th><th>תאורה</th><th>מצב</th><th>סטטוס</th>
           </tr></thead>
           <tbody id="queue-body"></tbody>
         </table>
@@ -380,11 +491,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
     <!-- ── SESSIONS TAB ── -->
     <div class="tab-panel" id="tab-sessions">
       <div class="sessions-toolbar">
-        <span class="tb-title">Прошлые сессии</span>
-        <button class="btn btn-secondary btn-sm" onclick="loadSessions()">↺ Обновить</button>
+        <span class="tb-title">סשנים קודמים</span>
+        <button class="btn btn-secondary btn-sm" onclick="loadSessions()">↺ רענן</button>
       </div>
       <div class="sessions-list" id="sessions-list">
-        <div class="sessions-loading" id="sessions-loading">Загрузка сессий…</div>
+        <div class="sessions-loading" id="sessions-loading">טוען סשנים...</div>
       </div>
     </div>
 
@@ -393,34 +504,34 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
   <!-- RIGHT -->
   <div class="panel-right">
     <div class="right-header">
-      <span class="rh-title" id="preview-title">Предпросмотр</span>
+      <span class="rh-title" id="preview-title">תצוגה מקדימה</span>
       <span class="rh-sub"   id="preview-sub"></span>
     </div>
 
     <div class="preview-wrap" id="preview-wrap">
       <div class="preview-empty" id="preview-empty">
         <span class="pe-icon">🪄</span>
-        <div>Выберите файл в очереди или из галереи сессий</div>
+        <div>בחר קובץ מהתור או מגלריית הסשנים</div>
       </div>
 
       <!-- Comparison mode toolbar -->
       <div class="cmp-toolbar" id="cmp-toolbar" style="display:none">
-        <button class="cmp-btn active" id="cmp-slider" onclick="setCmpMode('slider')">⇔ Слайдер</button>
-        <button class="cmp-btn"        id="cmp-before" onclick="setCmpMode('before')">← До</button>
-        <button class="cmp-btn"        id="cmp-after"  onclick="setCmpMode('after')">После →</button>
-        <button class="cmp-btn"        id="cmp-split"  onclick="setCmpMode('split')">⊟ Рядом</button>
+        <button class="cmp-btn active" id="cmp-slider" onclick="setCmpMode('slider')">⇔ סליידר</button>
+        <button class="cmp-btn"        id="cmp-before" onclick="setCmpMode('before')">לפני</button>
+        <button class="cmp-btn"        id="cmp-after"  onclick="setCmpMode('after')">אחרי</button>
+        <button class="cmp-btn"        id="cmp-split"  onclick="setCmpMode('split')">⊟ זה לצד זה</button>
       </div>
 
       <!-- Slider comparison (default) -->
       <div class="comparison" id="comparison" style="display:none">
-        <img id="img-before" src="" alt="До">
+        <img id="img-before" src="" alt="לפני">
         <div class="after-wrap" id="after-wrap" style="clip-path:inset(0 50% 0 0)">
-          <img id="img-after" src="" alt="После">
+          <img id="img-after" src="" alt="אחרי">
         </div>
         <div class="div-line"   id="div-line"   style="left:50%"></div>
         <div class="div-handle" id="div-handle" style="left:50%">⇔</div>
-        <span class="cmp-label" style="left:10px">До</span>
-        <span class="cmp-label" style="right:10px">После</span>
+        <span class="cmp-label" style="left:10px">לפני</span>
+        <span class="cmp-label" style="right:10px">אחרי</span>
       </div>
 
       <!-- Single image view (Before or After mode) -->
@@ -429,25 +540,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
       <!-- Side-by-side view -->
       <div class="split-view" id="split-view" style="display:none">
         <div class="split-img-wrap">
-          <img id="split-before" src="" alt="До">
-          <div class="split-label">До</div>
+          <img id="split-before" src="" alt="לפני">
+          <div class="split-label">לפני</div>
         </div>
         <div class="split-img-wrap">
-          <img id="split-after" src="" alt="После">
-          <div class="split-label">После</div>
+          <img id="split-after" src="" alt="אחרי">
+          <div class="split-label">אחרי</div>
         </div>
       </div>
 
       <div class="preview-actions" id="preview-actions" style="display:none">
-        <a class="btn btn-primary btn-sm"        id="btn-download"   download>⬇ Скачать результат</a>
-        <button class="btn btn-secondary btn-sm" id="btn-open-orig"  onclick="openOriginal()">↗ Оригинал</button>
+        <a class="btn btn-primary btn-sm"        id="btn-download"    download>⬇ הורד תוצאה</a>
+        <button class="btn btn-secondary btn-sm" id="btn-open-orig"   onclick="openOriginal()">↗ מקור</button>
+        <button class="btn btn-secondary btn-sm" id="btn-reprocess"   onclick="reprocessCurrent()" style="display:none">🔄 עיבוד מחדש</button>
+        <button class="btn btn-danger btn-sm"    id="btn-delete-result" onclick="deleteCurrentResult()" style="display:none">🗑 מחק</button>
       </div>
+      <!-- Variants strip (shown when file has multiple results) -->
+      <div class="variants-strip" id="variants-strip" style="display:none"></div>
     </div>
 
     <div class="log-section">
       <div class="log-header">
-        <span>Лог</span>
-        <button class="btn btn-secondary btn-sm" onclick="clearLog()" style="padding:2px 8px;font-size:10px">Очистить</button>
+        <span>יומן</span>
+        <button class="btn btn-secondary btn-sm" onclick="clearLog()" style="padding:2px 8px;font-size:10px">נקה</button>
       </div>
       <div class="log-body" id="log-body"></div>
     </div>
@@ -459,14 +574,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 <div class="modal-overlay" id="settings-modal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeSettings()">×</button>
-    <h3>⚙️ Настройки</h3>
+    <h3>⚙️ הגדרות</h3>
     <div class="form-row">
       <label class="form-label" for="api-key-input">Grok API Key (xAI)</label>
       <input type="password" class="form-input" id="api-key-input" placeholder="xai-...">
-      <div class="form-hint">Ключ хранится локально в браузере</div>
+      <div class="form-hint">המפתח נשמר מקומית בדפדפן</div>
     </div>
     <div class="form-row">
-      <label class="form-label" for="model-input">Модель</label>
+      <label class="form-label" for="model-input">מודל</label>
       <select class="form-select" id="model-input">
         <option value="aurora">aurora (Image Editing)</option>
         <option value="grok-imagine-image">grok-imagine-image</option>
@@ -474,11 +589,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
       </select>
     </div>
     <div class="form-row">
-      <label class="form-label" for="server-input">Адрес сервера</label>
+      <label class="form-label" for="server-input">כתובת שרת</label>
       <input type="text" class="form-input" id="server-input" value="http://localhost:3001">
-      <div class="form-hint">Локальный сервер (npm start в папке "ai photo decltter")</div>
+      <div class="form-hint">שרת מקומי (npm start בתיקיית "photodesk/apps/backend")</div>
     </div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveSettings()">💾 Сохранить</button>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveSettings()">💾 שמור</button>
   </div>
 </div>
 
@@ -487,51 +602,60 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
   <div class="prompt-editor-box">
     <button class="modal-close" onclick="closePromptEditor()">×</button>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <h3 style="font-size:16px;font-weight:700">📝 Редактор промптов</h3>
-      <button class="btn btn-secondary btn-sm" onclick="reloadPrompts()" title="Перезагрузить с сервера">↺ Обновить</button>
+      <h3 style="font-size:16px;font-weight:700">📝 עורך פרומפטים</h3>
+      <button class="btn btn-secondary btn-sm" onclick="reloadPrompts()" title="טעינה מחדש מהשרת">↺ רענן</button>
     </div>
     <div id="pe-load-status" style="display:none;font-size:12px;color:var(--red);background:var(--red-light);border-radius:6px;padding:6px 10px;margin-bottom:10px;flex-shrink:0"></div>
     <div class="pe-tabs">
-      <button class="pe-tab active" id="pe-tab-declutter" onclick="setPeMode('declutter')">🧹 Уборка</button>
-      <button class="pe-tab"        id="pe-tab-empty"     onclick="setPeMode('empty')">🏚 Опустошить</button>
-      <button class="pe-tab"        id="pe-tab-global"    onclick="setPeMode('global')">⚙️ Правила</button>
+      <button class="pe-tab active" id="pe-tab-declutter" onclick="setPeMode('declutter')">🧹 ניקוי</button>
+      <button class="pe-tab"        id="pe-tab-empty"     onclick="setPeMode('empty')">🏚 ריקון</button>
+      <button class="pe-tab"        id="pe-tab-global"    onclick="setPeMode('global')">⚙️ כללים</button>
     </div>
     <!-- Room list + textarea -->
     <div class="pe-body" id="pe-body">
       <div class="pe-room-list" id="pe-room-list"></div>
       <div class="pe-right">
-        <textarea class="pe-textarea" id="pe-textarea" placeholder="Выберите тип комнаты слева…"></textarea>
+        <textarea class="pe-textarea" id="pe-textarea" placeholder="בחר סוג חדר מהרשימה..."></textarea>
       </div>
     </div>
-    <!-- Global rules view (shown for "Правила" tab) -->
+    <!-- Global rules view -->
     <div id="pe-global-view" style="display:none;flex:1;flex-direction:column;gap:10px;overflow-y:auto;min-height:0">
       <div>
-        <div class="form-label" style="margin-bottom:4px">Правило дефектов (добавляется ко всем промптам)</div>
+        <div class="form-label" style="margin-bottom:4px">כלל פגמים (מתווסף לכל הפרומפטים)</div>
         <textarea class="pe-textarea" id="pe-defect-rule" style="height:100px;flex:none;width:100%"></textarea>
       </div>
       <div>
-        <div class="form-label" style="margin-bottom:4px">Финальные правила качества (добавляется ко всем промптам)</div>
+        <div class="form-label" style="margin-bottom:4px">כלל אביזרים — איסור ציור מחדש (מתווסף לכל הפרומפטים)</div>
+        <textarea class="pe-textarea" id="pe-fixture-rule" style="height:100px;flex:none;width:100%"></textarea>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:4px">כללי איכות סופיים (מתווסף לכל הפרומפטים)</div>
         <textarea class="pe-textarea" id="pe-quality-footer" style="height:100px;flex:none;width:100%"></textarea>
       </div>
     </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-shrink:0">
-      <button class="btn btn-secondary" onclick="closePromptEditor()">Отмена</button>
-      <button class="btn btn-primary"   onclick="savePrompts()">💾 Сохранить промпты</button>
+    <div style="display:flex;justify-content:flex-start;gap:8px;margin-top:12px;flex-shrink:0">
+      <button class="btn btn-secondary" onclick="closePromptEditor()">ביטול</button>
+      <button class="btn btn-primary"   onclick="savePrompts()">💾 שמור פרומפטים</button>
     </div>
   </div>
 </div>
 
 <script>
 // ── Constants ─────────────────────────────────────────────────────────────────
-const ROOM_TYPES = ['по умолчанию','кухня','спальня','гостиная','ванная','коридор','балкон','двор','дрон'];
+const ROOM_TYPES = ['по умолчанию','кухня','спальня','детская','гостиная','ванная','коридор','балкон','двор','сад','дрон'];
 const ROOM_LABELS = {
-  'по умолчанию':'🔍 Авто','кухня':'🍳 Кухня','спальня':'🛏 Спальня',
-  'гостиная':'🛋 Гостиная','ванная':'🚿 Ванная','коридор':'🚪 Коридор',
-  'балкон':'🌿 Балкон','двор':'🏡 Двор','дрон':'🚁 Дрон'
+  'по умолчанию':'🔍 אוטומטי','кухня':'🍳 מטבח','спальня':'🛏 חדר שינה',
+  'детская':'🧸 חדר ילדים','гостиная':'🛋 סלון','ванная':'🚿 חדר אמבטיה','коридор':'🚪 מסדרון',
+  'балкон':'🌿 מרפסת','двор':'🏡 חצר','сад':'🌳 גינה','дрон':'🚁 רחפן'
 };
 const BADGE_CLASS = {wait:'badge-wait',processing:'badge-proc',done:'badge-done',error:'badge-error'};
-const BADGE_LABEL = {wait:'Ожидание',processing:'⏳ Обработка…',done:'✓ Готово',error:'✗ Ошибка'};
-const MODE_OPTS   = [['empty','🏚 Опустошить'],['declutter','🧹 Уборка']];
+const BADGE_LABEL = {wait:'ממתין',processing:'⏳ מעבד...',done:'✓ מוכן',error:'✗ שגיאה'};
+const MODE_OPTS   = [['empty','🏚 ריקון'],['declutter','🧹 ניקוי'],['sky','🌅 שמיים']];
+const SKY_TIME_LABELS  = { golden:'שעת זהב', sunrise:'זריחה', midday:'צהריים', overcast:'מעונן', bluehour:'שעה כחולה', dramatic:'דרמטי', night:'לילה' };
+const CLOUD_LABELS     = { few:'עננים בודדים', clear:'שמיים בהירים', cirrus:'עננים גבוהים', partial:'עננים מפוזרים', random:'אקראי' };
+const CLOUD_VALUES     = ['few','clear','cirrus','partial'];
+const LIGHT_MOOD_LABELS = { day:'יום', evening:'ערב', bluehour:'שעה כחולה', night:'לילה' };
+const LIGHT_MOOD_EMOJIS = { day:'☀️', evening:'🌇', bluehour:'💙', night:'🌙' };
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let files      = [];
@@ -540,6 +664,10 @@ let stopFlag   = false;
 let processing = false;
 let activeId   = null;
 let currentOriginalUrl = null;
+let previewMeta = null; // { sessionFolder, resultFile, originalFile, mode, roomType }
+let skyTime         = 'golden';
+let skyCloudVariant = 'few';
+let skySessionCloud = null;  // locked cloud variant for current session
 let serverUrl  = localStorage.getItem('pd_server') || 'http://localhost:3001';
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -606,12 +734,12 @@ function switchTab(name) {
 
 // ── Server ────────────────────────────────────────────────────────────────────
 async function checkServer() {
-  setDot('loading', 'Подключение…');
+  setDot('loading', 'מתחבר...');
   try {
     await fetch(serverUrl + '/', { signal: AbortSignal.timeout(3000) });
-    setDot('online', 'Сервер подключён');
+    setDot('online', 'שרת מחובר');
   } catch {
-    setDot('error', 'Сервер недоступен — запустите npm start');
+    setDot('error', 'השרת לא זמין — הפעל npm start');
   }
 }
 function setDot(cls, txt) {
@@ -628,19 +756,21 @@ function addFiles(list) {
     if (existing.has(file.name + file.size)) continue;
     const id    = 'f' + Date.now() + Math.random().toString(36).slice(2);
     const thumb = URL.createObjectURL(file);
-    files.push({ id, file, name: file.name, thumb, roomType:'по умолчанию',
+    files.push({ id, file, name: file.name, thumb, roomType:'по умолчанию', // Russian key — stays for server compat
                  mode: globalMode, status:'wait', originalUrl: thumb,
-                 resultUrl: null, serverOriginalUrl: null, checked: true });
+                 resultUrl: null, serverOriginalUrl: null, checked: true,
+                 lightMood: 'day', allResults: [] });
     n++;
   }
-  if (n) { renderQueue(); updateButtons(); log(`Добавлено ${n} файлов`); }
+  if (n) { renderQueue(); updateButtons(); log(`נוספו ${n} קבצים`); }
 }
 
 function clearAll() {
   if (processing) return;
   files.forEach(f => URL.revokeObjectURL(f.thumb));
   files = []; activeId = null;
-  renderQueue(); updateButtons(); hidePreviews(); log('Список очищен');
+  skySessionCloud = null;
+  renderQueue(); updateButtons(); hidePreviews(); log('הרשימה נוקתה');
   resetSessionName();
 }
 
@@ -702,6 +832,28 @@ function buildRow(f) {
   selRoom.addEventListener('click',  e => e.stopPropagation());
   tdRoom.appendChild(selRoom); tr.appendChild(tdRoom);
 
+  // Lighting mood selector (hidden for sky mode)
+  const tdLight = document.createElement('td');
+  if (f.mode === 'sky') {
+    tdLight.style.cssText = 'color:var(--text-muted);font-size:11px;text-align:center;';
+    tdLight.textContent = '—';
+  } else {
+    const selLight = document.createElement('select');
+    selLight.className = 'q-light-sel';
+    selLight.disabled = f.status === 'processing';
+    Object.entries(LIGHT_MOOD_LABELS).forEach(([val, lbl]) => {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = (LIGHT_MOOD_EMOJIS[val] || '') + ' ' + lbl;
+      if (val === (f.lightMood || 'day')) opt.selected = true;
+      selLight.appendChild(opt);
+    });
+    selLight.addEventListener('change', e => { e.stopPropagation(); f.lightMood = e.target.value; });
+    selLight.addEventListener('click',  e => e.stopPropagation());
+    tdLight.appendChild(selLight);
+  }
+  tr.appendChild(tdLight);
+
   // Mode selector
   const tdMode  = document.createElement('td');
   const selMode = document.createElement('select');
@@ -712,16 +864,46 @@ function buildRow(f) {
     if (val === f.mode) opt.selected = true;
     selMode.appendChild(opt);
   });
-  selMode.addEventListener('change', e => { e.stopPropagation(); f.mode = e.target.value; });
+  selMode.addEventListener('change', e => {
+    e.stopPropagation();
+    f.mode = e.target.value;
+    // Re-render row to update lighting mood cell visibility
+    tr.replaceWith(buildRow(f));
+  });
   selMode.addEventListener('click',  e => e.stopPropagation());
   tdMode.appendChild(selMode); tr.appendChild(tdMode);
 
-  // Status badge
+  // Status cell with variant count + re-process button
   const tdSt  = document.createElement('td');
+  tdSt.style.whiteSpace = 'nowrap';
   const badge = document.createElement('span');
   badge.className   = 'badge ' + (BADGE_CLASS[f.status] || 'badge-wait');
   badge.textContent = BADGE_LABEL[f.status] || f.status;
-  tdSt.appendChild(badge); tr.appendChild(tdSt);
+  tdSt.appendChild(badge);
+
+  if (f.status === 'done' && f.allResults && f.allResults.length > 1) {
+    const varBadge = document.createElement('span');
+    varBadge.className = 'q-var-badge';
+    varBadge.title = `${f.allResults.length} גרסאות`;
+    varBadge.textContent = '×' + f.allResults.length;
+    tdSt.appendChild(varBadge);
+  }
+
+  if (f.status === 'done') {
+    const revarBtn = document.createElement('button');
+    revarBtn.className = 'q-revar-btn';
+    revarBtn.textContent = '🔁';
+    revarBtn.title = 'הוסף גרסה — שנה תאורה ולחץ התחל';
+    revarBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      f.status = 'wait';
+      f.checked = true;
+      renderQueue();
+      updateButtons();
+    });
+    tdSt.appendChild(revarBtn);
+  }
+  tr.appendChild(tdSt);
 
   return tr;
 }
@@ -730,22 +912,100 @@ function setGlobalMode(m) {
   globalMode = m;
   document.getElementById('mode-empty').classList.toggle('active', m === 'empty');
   document.getElementById('mode-declutter').classList.toggle('active', m === 'declutter');
-  files.forEach(f => { if (f.status === 'wait') f.mode = m; });
+  document.getElementById('mode-sky').classList.toggle('active', m === 'sky');
+  document.getElementById('sky-toolbar').style.display = m === 'sky' ? '' : 'none';
+  // Reset session cloud lock when switching to sky mode
+  if (m === 'sky') skySessionCloud = null;
+  files.forEach(f => { if (f.status !== 'done' && f.status !== 'processing') f.mode = m; });
   renderQueue();
+}
+
+function setSkyTime(btn) {
+  skyTime = btn.dataset.time;
+  document.querySelectorAll('#sky-toolbar .sky-pill[data-time]').forEach(b => b.classList.toggle('active', b === btn));
+}
+
+function setSkyCloud(btn) {
+  skyCloudVariant = btn.dataset.cloud;
+  document.querySelectorAll('#sky-toolbar .sky-pill-sm[data-cloud]').forEach(b => b.classList.toggle('active', b === btn));
+  // Reset session lock when user manually picks a new variant
+  skySessionCloud = null;
+}
+
+
+function getEffectiveCloud() {
+  if (skyCloudVariant === 'random') {
+    return CLOUD_VALUES[Math.floor(Math.random() * CLOUD_VALUES.length)];
+  }
+  return skyCloudVariant;
 }
 
 // ── Preview ───────────────────────────────────────────────────────────────────
 function rowClick(id) {
   activeId = id; renderQueue();
   const f = files.find(x => x.id === id);
-  if (f) showPreview({ name: f.name, sub: ROOM_LABELS[f.roomType] || f.roomType,
-                       beforeUrl: f.originalUrl,
-                       afterUrl:  f.resultUrl ? serverUrl + f.resultUrl : null,
-                       downloadUrl: f.resultUrl ? serverUrl + f.resultUrl : null,
-                       downloadName: f.name.replace(/\.\w+$/, '') + (f.mode === 'empty' ? '_empty' : '_clean') + '.jpg' });
+  if (!f) return;
+  const meta = f.resultUrl && f.sessionFolder ? {
+    sessionFolder: f.sessionFolder,
+    resultFile:    f.resultUrl,
+    originalFile:  f.serverOriginalUrl ? f.serverOriginalUrl.split('/').pop() : null,
+    mode:          f.mode,
+    roomType:      f.roomType,
+  } : null;
+  showPreview({ name: f.name, sub: ROOM_LABELS[f.roomType] || f.roomType,
+                beforeUrl: f.originalUrl,
+                afterUrl:  f.resultUrl ? serverUrl + f.resultUrl : null,
+                downloadUrl: f.resultUrl ? serverUrl + f.resultUrl : null,
+                downloadName: f.name.replace(/\.\w+$/, '') + (f.mode === 'empty' ? '_empty' : '_clean') + '.jpg',
+                meta, allResults: f.allResults || [] });
 }
 
-function showPreview({ name, sub, beforeUrl, afterUrl, downloadUrl, downloadName }) {
+function showVariantsStrip(allResults, activeUrl) {
+  const strip = document.getElementById('variants-strip');
+  strip.replaceChildren();
+  if (!allResults || allResults.length <= 1) { strip.style.display = 'none'; return; }
+  strip.style.display = '';
+
+  const lbl = document.createElement('span');
+  lbl.className = 'variants-label'; lbl.textContent = 'גרסאות:';
+  strip.appendChild(lbl);
+
+  allResults.forEach(r => {
+    const item = document.createElement('div');
+    item.className = 'var-item';
+    item.title = r.label;
+
+    const img = document.createElement('img');
+    img.className = 'var-thumb' + (r.url === activeUrl ? ' active' : '');
+    img.src = serverUrl + r.url;
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'var-item-label'; labelEl.textContent = r.label;
+
+    item.appendChild(img); item.appendChild(labelEl);
+
+    item.addEventListener('click', () => {
+      const abs = serverUrl + r.url;
+      // Update all viewer slots
+      document.getElementById('img-after').src    = abs;
+      document.getElementById('split-after').src  = abs;
+      const sliderAfter = document.querySelector('.slider-img.after');
+      if (sliderAfter) sliderAfter.src = abs;
+      // Update download button
+      const dl = document.getElementById('btn-download');
+      dl.href = abs;
+      // Update active state
+      strip.querySelectorAll('.var-thumb').forEach(t => t.classList.remove('active'));
+      img.classList.add('active');
+      // Update previewMeta
+      if (previewMeta) previewMeta.resultFile = r.url;
+    });
+
+    strip.appendChild(item);
+  });
+}
+
+function showPreview({ name, sub, beforeUrl, afterUrl, downloadUrl, downloadName, meta, allResults }) {
   document.getElementById('preview-title').textContent = name;
   document.getElementById('preview-sub').textContent   = sub || '';
 
@@ -754,6 +1014,10 @@ function showPreview({ name, sub, beforeUrl, afterUrl, downloadUrl, downloadName
   const actions = document.getElementById('preview-actions');
 
   currentOriginalUrl = beforeUrl;
+  previewMeta = meta || null;
+
+  const btnReprocess = document.getElementById('btn-reprocess');
+  const btnDelete    = document.getElementById('btn-delete-result');
 
   if (afterUrl) {
     document.getElementById('img-before').src    = beforeUrl;
@@ -778,6 +1042,10 @@ function showPreview({ name, sub, beforeUrl, afterUrl, downloadUrl, downloadName
     const dl = document.getElementById('btn-download');
     dl.href     = downloadUrl || afterUrl;
     dl.download = downloadName || 'result.jpg';
+    // Show reprocess/delete only when we have server-side meta
+    btnReprocess.style.display = meta ? '' : 'none';
+    btnDelete.style.display    = meta ? '' : 'none';
+    showVariantsStrip(allResults || [], afterUrl ? afterUrl.replace(serverUrl, '') : null);
   } else {
     comp.style.display    = 'none';
     document.getElementById('cmp-toolbar').style.display = 'none';
@@ -785,23 +1053,148 @@ function showPreview({ name, sub, beforeUrl, afterUrl, downloadUrl, downloadName
     document.getElementById('img-main').style.display    = 'none';
     empty.style.display   = '';
     actions.style.display = 'none';
+    btnReprocess.style.display = 'none';
+    btnDelete.style.display    = 'none';
+    showVariantsStrip([], null);
   }
 }
 
 function hidePreviews() {
-  document.getElementById('comparison').style.display      = 'none';
-  document.getElementById('cmp-toolbar').style.display     = 'none';
-  document.getElementById('split-view').style.display      = 'none';
-  document.getElementById('img-main').style.display        = 'none';
-  document.getElementById('preview-empty').style.display   = '';
-  document.getElementById('preview-actions').style.display = 'none';
-  document.getElementById('preview-title').textContent     = 'Предпросмотр';
-  document.getElementById('preview-sub').textContent       = '';
+  document.getElementById('comparison').style.display        = 'none';
+  document.getElementById('cmp-toolbar').style.display       = 'none';
+  document.getElementById('split-view').style.display        = 'none';
+  document.getElementById('img-main').style.display          = 'none';
+  document.getElementById('preview-empty').style.display     = '';
+  document.getElementById('preview-actions').style.display   = 'none';
+  document.getElementById('btn-reprocess').style.display     = 'none';
+  document.getElementById('btn-delete-result').style.display = 'none';
+  document.getElementById('preview-title').textContent       = 'תצוגה מקדימה';
+  document.getElementById('preview-sub').textContent         = '';
+  document.getElementById('variants-strip').style.display = 'none';
   currentOriginalUrl = null;
+  previewMeta = null;
 }
 
 function openOriginal() {
   if (currentOriginalUrl) window.open(currentOriginalUrl, '_blank');
+}
+
+async function reprocessCurrent() {
+  if (!previewMeta) return;
+  const apiKey = localStorage.getItem('pd_api_key') || '';
+  if (!apiKey) { openSettings(); return; }
+
+  const btn = document.getElementById('btn-reprocess');
+  btn.disabled = true;
+  btn.textContent = '⏳ מעבד...';
+  log(`🔄 עיבוד מחדש: ${previewMeta.sessionFolder} · ${ROOM_LABELS[previewMeta.roomType] || previewMeta.roomType}`);
+
+  try {
+    const res  = await fetch(serverUrl + '/api/reprocess', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey:        apiKey,
+        sessionFolder: previewMeta.sessionFolder,
+        originalFile:  previewMeta.originalFile,
+        mode:          previewMeta.mode,
+        roomType:      previewMeta.roomType,
+        lightMood:     (files.find(x => x.id === activeId)?.lightMood) || 'day',
+        model:         localStorage.getItem('pd_model') || 'aurora',
+      }),
+    });
+    const data = await res.json();
+
+    if (data.success && data.resultUrl) {
+      log(`✓ עיבוד מחדש הושלם`, 'ok');
+      // Build new meta
+      const newMeta = {
+        sessionFolder: data.sessionFolder,
+        resultFile:    data.resultUrl,
+        originalFile:  previewMeta.originalFile,
+        mode:          previewMeta.mode,
+        roomType:      previewMeta.roomType,
+      };
+      // Update queue file if active
+      if (activeId) {
+        const f = files.find(x => x.id === activeId);
+        if (f && f.sessionFolder === previewMeta.sessionFolder) {
+          f.resultUrl     = data.resultUrl;
+          f.sessionFolder = data.sessionFolder;
+          if (!f.allResults) f.allResults = [];
+          const fileMood = f.lightMood || 'day';
+          const varLabel = fileMood !== 'day'
+            ? `${LIGHT_MOOD_EMOJIS[fileMood]} ${LIGHT_MOOD_LABELS[fileMood]}`
+            : '☀️ יום';
+          f.allResults.push({ url: data.resultUrl, label: varLabel + ' (עיבוד מחדש)' });
+          renderQueue();
+        }
+      }
+      // Refresh preview with new result
+      const title = document.getElementById('preview-title').textContent;
+      const sub   = document.getElementById('preview-sub').textContent;
+      const activeFile = files.find(x => x.id === activeId);
+      showPreview({
+        name:         title,
+        sub:          sub,
+        beforeUrl:    currentOriginalUrl,
+        afterUrl:     serverUrl + data.resultUrl,
+        downloadUrl:  serverUrl + data.resultUrl,
+        downloadName: data.resultUrl.split('/').pop(),
+        meta:         newMeta,
+        allResults:   activeFile?.allResults || [],
+      });
+    } else {
+      const msg = data.detail
+        ? (typeof data.detail === 'object' ? JSON.stringify(data.detail).slice(0,200) : String(data.detail))
+        : String(data.error || 'שגיאה');
+      log(`✗ עיבוד מחדש: ${msg}`, 'err');
+    }
+  } catch (err) {
+    log(`✗ עיבוד מחדש: ${err.message}`, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔄 עיבוד מחדש';
+}
+
+async function deleteCurrentResult() {
+  if (!previewMeta || !previewMeta.resultFile) return;
+  const slug     = previewMeta.sessionFolder;
+  const filename = previewMeta.resultFile.split('/').pop();
+  if (!confirm(`למחוק את התוצאה "${filename}"?`)) return;
+
+  try {
+    const res  = await fetch(`${serverUrl}/api/sessions/${encodeURIComponent(slug)}/image/${encodeURIComponent(filename)}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      log(`🗑 נמחק: ${filename}`, 'ok');
+      // Hide after panel, show only before
+      document.getElementById('comparison').style.display      = 'none';
+      document.getElementById('cmp-toolbar').style.display     = 'none';
+      document.getElementById('split-view').style.display      = 'none';
+      document.getElementById('preview-empty').style.display   = '';
+      document.getElementById('preview-actions').style.display = 'none';
+      document.getElementById('btn-reprocess').style.display   = 'none';
+      document.getElementById('btn-delete-result').style.display = 'none';
+      previewMeta = null;
+      // Clear result from queue item if active
+      if (activeId) {
+        const f = files.find(x => x.id === activeId);
+        if (f && f.resultUrl && f.resultUrl.includes(filename)) {
+          f.resultUrl = null; f.status = 'pending';
+          renderQueue();
+        }
+      }
+    } else {
+      log(`✗ שגיאת מחיקה: ${data.error}`, 'err');
+    }
+  } catch (err) {
+    log(`✗ שגיאת מחיקה: ${err.message}`, 'err');
+  }
 }
 
 // ── AI detect ─────────────────────────────────────────────────────────────────
@@ -812,7 +1205,7 @@ async function aiDetectAll() {
   if (!targets.length) return;
 
   document.getElementById('btn-ai').disabled = true;
-  log(`🤖 AI определяет типы для ${targets.length} фото…`, 'ai');
+  log(`🤖 AI מזהה סוגי חדרים עבור ${targets.length} תמונות...`, 'ai');
 
   for (const f of targets) {
     try {
@@ -825,21 +1218,21 @@ async function aiDetectAll() {
       log(`  ${f.name} → ${ROOM_LABELS[f.roomType]}`, 'ai');
       renderQueue();
     } catch (err) {
-      log(`  ${f.name} — ошибка: ${err.message}`, 'err');
+      log(`  ${f.name} — שגיאה: ${err.message}`, 'err');
     }
   }
 
   document.getElementById('btn-ai').disabled = false;
-  log('✅ Определение завершено', 'ok');
+  log('✅ הזיהוי הושלם', 'ok');
 }
 
 // ── Process ───────────────────────────────────────────────────────────────────
 async function processAll() {
   const apiKey = localStorage.getItem('pd_api_key') || '';
-  if (!apiKey) { openSettings(); log('⚠ Укажите API ключ в настройках', 'err'); return; }
+  if (!apiKey) { openSettings(); log('⚠ הגדר מפתח API בהגדרות', 'err'); return; }
 
   const queue = files.filter(f => f.checked && f.status !== 'done');
-  if (!queue.length) { log('Нет файлов для обработки', 'err'); return; }
+  if (!queue.length) { log('אין קבצים לעיבוד', 'err'); return; }
 
   const sessionFolder = getSessionName();
 
@@ -848,14 +1241,13 @@ async function processAll() {
   document.getElementById('btn-stop').style.display = '';
   document.getElementById('progress-wrap').style.display = '';
   updateButtons();
-  log(`▶ Сессия: ${sessionFolder} · ${queue.length} фото`);
+  log(`▶ סשן: ${sessionFolder} · ${queue.length} תמונות`);
 
   let done = 0;
   for (const f of queue) {
-    if (stopFlag) { log('■ Остановлено', 'err'); break; }
+    if (stopFlag) { log('■ הופסק', 'err'); break; }
     f.status = 'processing'; renderQueue();
     setProgress(done / queue.length * 100);
-    log(`⏳ ${f.name}  [${f.mode === 'empty' ? 'опустошение' : 'уборка'} · ${ROOM_LABELS[f.roomType]}]`);
 
     try {
       const form = new FormData();
@@ -866,6 +1258,22 @@ async function processAll() {
       form.append('model',         localStorage.getItem('pd_model') || 'aurora');
       form.append('sessionFolder', sessionFolder);
 
+      if (f.mode === 'sky') {
+        const sessionLock = document.getElementById('sky-session-lock').checked;
+        const cloud = sessionLock
+          ? (skySessionCloud || (skySessionCloud = getEffectiveCloud()))
+          : getEffectiveCloud();
+        form.append('skyTime',      skyTime);
+        form.append('cloudVariant', cloud);
+        log(`⏳ ${f.name}  [🌅 ${SKY_TIME_LABELS[skyTime]} · ${CLOUD_LABELS[cloud] || cloud}]`);
+      } else {
+        const fileMood = f.lightMood || 'day';
+        form.append('lightMood', fileMood);
+        const moodTag = fileMood !== 'day'
+          ? ` · ${LIGHT_MOOD_EMOJIS[fileMood]} ${LIGHT_MOOD_LABELS[fileMood]}` : '';
+        log(`⏳ ${f.name}  [${f.mode === 'empty' ? 'ריקון' : 'ניקוי'} · ${ROOM_LABELS[f.roomType]}${moodTag}]`);
+      }
+
       const res  = await fetch(serverUrl + '/api/process-image', { method:'POST', body:form });
       const data = await res.json();
 
@@ -873,6 +1281,15 @@ async function processAll() {
         f.status           = 'done';
         f.resultUrl        = data.resultUrl;
         f.serverOriginalUrl = data.originalUrl || null;
+        f.sessionFolder    = data.sessionFolder || null;
+        // Accumulate all variants
+        if (!f.allResults) f.allResults = [];
+        const varLabel = f.mode === 'sky'
+          ? `🌅 ${SKY_TIME_LABELS[skyTime]}`
+          : (f.lightMood && f.lightMood !== 'day'
+              ? `${LIGHT_MOOD_EMOJIS[f.lightMood]} ${LIGHT_MOOD_LABELS[f.lightMood]}`
+              : '☀️ יום');
+        f.allResults.push({ url: data.resultUrl, label: varLabel });
         log(`✓ ${f.name}  →  ${data.sessionFolder}`, 'ok');
         if (activeId === f.id) {
           rowClick(f.id);
@@ -881,7 +1298,7 @@ async function processAll() {
         f.status = 'error';
         const detail = data.detail
           ? (typeof data.detail === 'object' ? JSON.stringify(data.detail).slice(0, 200) : String(data.detail))
-          : String(data.error || 'Ошибка');
+          : String(data.error || 'שגיאה');
         log(`✗ ${f.name}: ${detail}`, 'err');
       }
     } catch (err) {
@@ -897,7 +1314,7 @@ async function processAll() {
   document.getElementById('btn-stop').style.display = 'none';
   updateButtons();
   const ok = files.filter(f => f.status === 'done').length;
-  log(`Завершено. Успешно: ${ok} / ${queue.length}`, ok === queue.length ? 'ok' : 'err');
+  log(`הושלם. הצליח: ${ok} / ${queue.length}`, ok === queue.length ? 'ok' : 'err');
   setTimeout(() => { document.getElementById('progress-wrap').style.display = 'none'; }, 2000);
 }
 
@@ -910,7 +1327,7 @@ let openSessionSlug = null;
 async function loadSessions() {
   const list = document.getElementById('sessions-list');
   const loading = document.getElementById('sessions-loading');
-  if (loading) loading.textContent = 'Загрузка сессий…';
+  if (loading) loading.textContent = 'טוען סשנים...';
   list.replaceChildren(...(loading ? [loading] : []));
 
   try {
@@ -926,7 +1343,7 @@ async function loadSessions() {
       ico.style.cssText = 'font-size:32px;display:block;margin-bottom:8px';
       ico.textContent = '📭';
       const txt = document.createElement('div');
-      txt.textContent = 'Нет готовых сессий. Обработайте фото — они появятся здесь.';
+      txt.textContent = 'אין סשנים קיימים. עבד תמונות — הן יופיעו כאן.';
       txt.style.fontSize = '13px';
       msg.appendChild(ico); msg.appendChild(txt);
       list.appendChild(msg);
@@ -944,7 +1361,7 @@ async function loadSessions() {
     list.replaceChildren();
     const msg = document.createElement('div');
     msg.className = 'sessions-empty';
-    msg.textContent = 'Ошибка загрузки сессий: ' + err.message;
+    msg.textContent = 'שגיאה בטעינת סשנים: ' + err.message;
     list.appendChild(msg);
   }
 }
@@ -966,13 +1383,19 @@ function buildSessionCard(s) {
   const meta = document.createElement('span');
   meta.className = 'sc-meta';
   const d = new Date(s.created);
-  meta.textContent = d.toLocaleDateString('ru') + ' · ' + s.count + ' фото';
+  meta.textContent = d.toLocaleDateString('he') + ' · ' + s.count + ' תמונות';
 
   const arrow = document.createElement('span');
   arrow.className = 'sc-arrow'; arrow.textContent = '▶';
 
+  const delBtn = document.createElement('button');
+  delBtn.className = 'sc-delete';
+  delBtn.textContent = '🗑';
+  delBtn.title = 'מחק סשן וכל התמונות שלו';
+  delBtn.addEventListener('click', e => { e.stopPropagation(); deleteSession(s.slug, card); });
+
   header.appendChild(ico); header.appendChild(name);
-  header.appendChild(meta); header.appendChild(arrow);
+  header.appendChild(meta); header.appendChild(delBtn); header.appendChild(arrow);
   card.appendChild(header);
 
   // Photos grid (empty, loaded on click)
@@ -992,6 +1415,21 @@ function buildSessionCard(s) {
   return card;
 }
 
+async function deleteSession(slug, cardEl) {
+  if (!confirm(`למחוק את הסשן "${slug}" וכל התמונות שלו?\nהפעולה בלתי הפיכה.`)) return;
+  try {
+    const res = await fetch(serverUrl + '/api/sessions/' + encodeURIComponent(slug), { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'שגיאה');
+    cardEl.remove();
+    log(`🗑 הסשן "${slug}" נמחק`, 'ok');
+    // If the deleted session was open in viewer — clear viewer
+    if (openSessionSlug === slug) { openSessionSlug = null; }
+  } catch (err) {
+    alert('שגיאה במחיקה: ' + err.message);
+  }
+}
+
 async function openSession(card, slug) {
   // Close others
   document.querySelectorAll('.session-card.open').forEach(c => c.classList.remove('open'));
@@ -1003,7 +1441,7 @@ async function openSession(card, slug) {
 
   const loadingTxt = document.createElement('div');
   loadingTxt.style.cssText = 'font-size:11px;color:var(--text-muted);padding:8px 0;grid-column:1/-1';
-  loadingTxt.textContent = 'Загрузка…';
+  loadingTxt.textContent = 'טוען...';
   grid.appendChild(loadingTxt);
 
   try {
@@ -1014,7 +1452,7 @@ async function openSession(card, slug) {
     if (!data.items || !data.items.length) {
       const empty = document.createElement('div');
       empty.style.cssText = 'font-size:11px;color:var(--text-muted);padding:8px 0;grid-column:1/-1';
-      empty.textContent = 'Нет результатов';
+      empty.textContent = 'אין תוצאות';
       grid.appendChild(empty);
       return;
     }
@@ -1036,6 +1474,18 @@ async function openSession(card, slug) {
 
       tile.addEventListener('click', e => {
         e.stopPropagation();
+        // Derive mode from result filename suffix
+        const rFile  = item.resultUrl ? item.resultUrl.split('/').pop() : '';
+        const rMode  = rFile.includes('_empty_') ? 'empty' : 'declutter';
+        const rSlug  = item.resultUrl ? item.resultUrl.split('/')[2] : null;
+        const oFile  = item.originalUrl ? item.originalUrl.split('/').pop() : null;
+        const tMeta  = (rSlug && oFile) ? {
+          sessionFolder: rSlug,
+          resultFile:    item.resultUrl,
+          originalFile:  oFile,
+          mode:          rMode,
+          roomType:      'по умолчанию',
+        } : null;
         showPreview({
           name:         item.name,
           sub:          data.name,
@@ -1043,6 +1493,7 @@ async function openSession(card, slug) {
           afterUrl:     serverUrl + item.resultUrl,
           downloadUrl:  serverUrl + item.resultUrl,
           downloadName: item.name + '_result.jpg',
+          meta:         tMeta,
         });
       });
 
@@ -1052,7 +1503,7 @@ async function openSession(card, slug) {
     grid.replaceChildren();
     const errEl = document.createElement('div');
     errEl.style.cssText = 'font-size:11px;color:var(--red);padding:8px 0;grid-column:1/-1';
-    errEl.textContent = 'Ошибка: ' + err.message;
+    errEl.textContent = 'שגיאה: ' + err.message;
     grid.appendChild(errEl);
   }
 }
@@ -1082,7 +1533,7 @@ function saveSettings() {
   localStorage.setItem('pd_model',   mdl);
   localStorage.setItem('pd_server',  srv);
   serverUrl = srv;
-  closeSettings(); checkServer(); log('Настройки сохранены', 'ok');
+  closeSettings(); checkServer(); log('ההגדרות נשמרו', 'ok');
 }
 
 function openSettings()  { document.getElementById('settings-modal').classList.add('open'); }
@@ -1095,7 +1546,7 @@ function log(msg, type) {
   if      (type === 'ok')  div.className = 'log-ok';
   else if (type === 'err') div.className = 'log-err';
   else if (type === 'ai')  div.className = 'log-ai';
-  const time = new Date().toLocaleTimeString('ru', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const time = new Date().toLocaleTimeString('he', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
   div.textContent = `[${time}] ${msg}`;
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
@@ -1158,12 +1609,12 @@ async function openPromptEditor() {
     const res = await fetch(serverUrl + '/api/prompts');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const ct = res.headers.get('content-type') || '';
-    if (!ct.includes('json')) throw new Error('Сервер вернул не JSON — проверьте адрес сервера в настройках');
+    if (!ct.includes('json')) throw new Error('השרת לא החזיר JSON — בדוק את כתובת השרת בהגדרות');
     promptData = await res.json();
     if (statusEl) statusEl.style.display = 'none';
   } catch (err) {
-    log('Ошибка загрузки промптов: ' + err.message, 'err');
-    if (statusEl) { statusEl.textContent = '⚠ ' + err.message + ' (промпты не загружены с сервера)'; statusEl.style.display = ''; }
+    log('שגיאה בטעינת פרומפטים: ' + err.message, 'err');
+    if (statusEl) { statusEl.textContent = '⚠ ' + err.message + ' (פרומפטים לא נטענו מהשרת)'; statusEl.style.display = ''; }
     if (!promptData || !promptData.empty) promptData = { empty:{}, declutter:{}, defectRule:'', qualityFooter:'' };
   }
   setPeMode('declutter');
@@ -1180,20 +1631,21 @@ async function reloadPrompts() {
     const res = await fetch(serverUrl + '/api/prompts');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const ct = res.headers.get('content-type') || '';
-    if (!ct.includes('json')) throw new Error('Сервер вернул не JSON');
+    if (!ct.includes('json')) throw new Error('השרת לא החזיר JSON');
     promptData = await res.json();
     if (statusEl) statusEl.style.display = 'none';
     setPeMode(peMode);
-    log('Промпты загружены с сервера', 'ok');
+    log('פרומפטים נטענו מהשרת', 'ok');
   } catch (err) {
     if (statusEl) { statusEl.textContent = '⚠ ' + err.message; statusEl.style.display = ''; }
-    log('Ошибка загрузки промптов: ' + err.message, 'err');
+    log('שגיאה בטעינת פרומפטים: ' + err.message, 'err');
   }
 }
 
 function flushPeTextarea() {
   if (peMode === 'global') {
     promptData.defectRule    = document.getElementById('pe-defect-rule').value;
+    promptData.fixtureRule   = document.getElementById('pe-fixture-rule').value;
     promptData.qualityFooter = document.getElementById('pe-quality-footer').value;
   } else if (peRoom) {
     if (!promptData[peMode]) promptData[peMode] = {};
@@ -1214,6 +1666,7 @@ function setPeMode(mode) {
     globalView.style.display = 'flex';
     globalView.style.flex    = '1';
     document.getElementById('pe-defect-rule').value    = promptData.defectRule    || '';
+    document.getElementById('pe-fixture-rule').value   = promptData.fixtureRule   || '';
     document.getElementById('pe-quality-footer').value = promptData.qualityFooter || '';
   } else {
     body.style.display       = '';
@@ -1225,7 +1678,7 @@ function setPeMode(mode) {
 
 function renderPeRooms() {
   const list  = document.getElementById('pe-room-list');
-  const rooms = ['кухня','спальня','гостиная','ванная','коридор','балкон','двор','дрон','по умолчанию'];
+  const rooms = ['кухня','спальня','детская','гостиная','ванная','коридор','балкон','двор','сад','дрон','по умолчанию'];
   list.replaceChildren(...rooms.map(r => {
     const item = document.createElement('div');
     item.className      = 'pe-room-item' + (r === peRoom ? ' active' : '');
@@ -1254,13 +1707,13 @@ async function savePrompts() {
     });
     const data = await res.json();
     if (data.ok) {
-      log('✅ Промпты сохранены', 'ok');
+      log('✅ פרומפטים נשמרו', 'ok');
       closePromptEditor();
     } else {
-      log('✗ Ошибка сохранения: ' + (data.error || 'неизвестная ошибка'), 'err');
+      log('✗ שגיאה בשמירה: ' + (data.error || 'שגיאה לא ידועה'), 'err');
     }
   } catch (err) {
-    log('✗ Ошибка сохранения промптов: ' + err.message, 'err');
+    log('✗ שגיאה בשמירת פרומפטים: ' + err.message, 'err');
   }
 }
 </script>

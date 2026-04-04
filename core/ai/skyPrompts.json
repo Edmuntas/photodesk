@@ -1,0 +1,54 @@
+{
+  "quality": "Photorealistic, high resolution, professional real estate photography quality. Seamless blend at every horizon line, roofline, and architectural edge — no visible halos or hard cuts. Match shadow direction, length, and quality on all ground and surface elements to the new sky light source position. Do NOT move, add, remove, or alter any ground-level elements, buildings, vegetation, vehicles, furniture, pavement, or any surface. Do NOT change camera angle, perspective, or focal length.",
+
+  "times": {
+    "golden": {
+      "label": "Золотой час",
+      "emoji": "🌅",
+      "desc": "warm golden hour sunset — soft amber and peachy-orange gradient sky darkening upward from horizon, rich warm directional sunlight from low angle casting long soft shadows, warm golden tones washing over all surfaces, gentle warm atmospheric haze near horizon"
+    },
+    "midday": {
+      "label": "Полдень",
+      "emoji": "☀️",
+      "desc": "bright clear midday — vibrant pure cerulean blue sky, bright high overhead sun, crisp short shadows falling directly below objects, vivid natural colors, strong clear visibility, no haze"
+    },
+    "bluehour": {
+      "label": "Синий час",
+      "emoji": "🌆",
+      "desc": "blue hour dusk — deep rich saturated blue gradient sky transitioning from deep indigo overhead to soft orange-pink on the horizon, last traces of warm light, cool ambient blue light on all surfaces, calm twilight atmosphere"
+    },
+    "overcast": {
+      "label": "Пасмурно",
+      "emoji": "☁️",
+      "desc": "bright overcast day — soft uniform light grey-white sky, completely even diffused lighting with no directional shadows, neutral cool-to-neutral ambient light, gentle soft-edged shadows, clean bright appearance"
+    },
+    "dramatic": {
+      "label": "Драматичные тучи",
+      "emoji": "⛈",
+      "desc": "dramatic moody cloudy sky — dark heavy towering storm clouds, swirling dark grey formations, brooding atmospheric tension, dramatic shafts of light breaking through cloud gaps, cool dramatic ambient light on all ground surfaces"
+    },
+    "night": {
+      "label": "Ночь/Сумерки",
+      "emoji": "🌃",
+      "desc": "night twilight — very dark deep blue-black sky transitioning to a faint twilight gradient on the horizon, stars beginning to appear, soft warm artificial lighting naturally enhancing architecture and landscape features, photorealistic evening atmosphere"
+    },
+    "sunrise": {
+      "label": "Рассвет",
+      "emoji": "🌄",
+      "desc": "sunrise morning — soft gentle pink and pale yellow gradient sky rising from horizon upward, low sun angle creating long morning shadows opposite the light, warm golden morning light on all surfaces, fresh clean morning quality"
+    }
+  },
+
+  "clouds": {
+    "few":     "with a few scattered fluffy white cumulus clouds",
+    "clear":   "with a completely clear sky and no clouds visible",
+    "cirrus":  "with thin wispy high-altitude cirrus clouds adding texture",
+    "partial": "with light scattered mid-altitude clouds creating varied dappled light"
+  },
+
+  "scenes": {
+    "outdoor": "TASK: Replace only the sky in this outdoor real estate photo with a new sky as described below. Keep every single ground-level and architectural element — building facade, walls, roof, trees, vehicles, pavement, fencing, garden — completely unchanged in position, texture, color, and condition. Blend the new sky seamlessly at every roofline, treetop, and horizon edge. Adjust ground-level lighting and shadow direction to naturally match the new sky's light source position.",
+    "drone": "TASK: Replace only the sky in this aerial drone real estate photograph with a new sky as described below. Keep all visible ground features — rooftops, roads, trees, cars, landscape, fields — completely unchanged. Blend the new sky seamlessly from the aerial overhead perspective. Adjust reflected light on rooftops and ground surfaces to match the new sky's lighting direction.",
+    "indoor": "TASK: This is an interior photo. Subtly adjust the color and mood of any sky or outdoor light visible through windows and glass doors to reflect the new time of day described below. Softly adjust the ambient fill light inside the room to match the new outdoor light color temperature and direction — warm for golden hour, cool for blue hour, bright for midday. Do NOT add windows or openings where none exist in the original. Do NOT globally recolor or repaint the interior. Preserve all furniture, walls, floors, ceiling, and fixtures exactly as they are."
+  }
+}
