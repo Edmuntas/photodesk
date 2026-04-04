@@ -1114,18 +1114,18 @@
   /* ── PIPELINE STEPPER ───────────── */
   .pipeline-step {
     display: flex; align-items: center; gap: 0;
-    flex-shrink: 0;
+    flex: 1; justify-content: center;
   }
   .pipeline-dot {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
-    cursor: pointer; padding: 0 6px 10px;
+    cursor: pointer; padding: 0 4px 10px;
     transition: opacity 0.15s;
   }
   .pipeline-dot:hover { opacity: 0.8; }
   .pipeline-icon {
-    width: 28px; height: 28px; border-radius: 50%;
+    width: 24px; height: 24px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; border: 2px solid var(--border);
+    font-size: 11px; border: 2px solid var(--border);
     background: var(--surface2); color: var(--text-muted);
     transition: all 0.2s;
   }
@@ -1135,7 +1135,7 @@
   .pipeline-dot.done .pipeline-label,
   .pipeline-dot.active .pipeline-label { color: var(--text-muted); }
   .pipeline-line {
-    width: 24px; height: 2px; background: var(--border); flex-shrink: 0; margin-bottom: 18px;
+    flex: 1; min-width: 6px; max-width: 36px; height: 2px; background: var(--border); margin-bottom: 18px;
     transition: background 0.2s;
   }
   .pipeline-line.done { background: var(--green); }
@@ -1343,6 +1343,23 @@
     box-shadow: var(--shadow-sm);
   }
   .customer-card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+  .agent-card {
+    background: var(--surface); border-radius: var(--radius); padding: 18px;
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.15s;
+    box-shadow: var(--shadow-sm);
+  }
+  .agent-card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+  .agent-card-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 10px;
+  }
+  .agent-card-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .agent-card-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-card-stats { display: flex; gap: 10px; font-size: 12px; flex-wrap: wrap; }
+  /* Grid layout when customer-list contains agent cards (card view mode) */
+  #customers-list:has(.agent-card) { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 14px; padding: 4px 2px; }
   .cust-avatar {
     width: 38px; height: 38px;
     border-radius: 50%;
@@ -2292,6 +2309,10 @@
           <span class="table-title">כל הנכסים</span>
           <span class="table-count" id="listing-count-label">22</span>
           <div style="margin-right:auto; display:flex; gap:8px; align-items:center;">
+            <button id="test-mode-btn" onclick="toggleTestMode()" title="הפעל מצב בדיקה — נכסים ולקוחות חדשים יסומנו כבדיקה"
+              style="padding:5px 10px; font-size:13px; border:1px solid var(--border); border-radius:7px; cursor:pointer; background:var(--surface2); color:var(--text-muted); transition:all 0.15s; white-space:nowrap;">🧪</button>
+            <button id="delete-test-btn" onclick="deleteTestData()" title="מחק את כל נתוני הבדיקה לצמיתות"
+              style="display:none; padding:5px 10px; font-size:13px; border:1px solid var(--border); border-radius:7px; cursor:pointer; background:var(--red-light); color:var(--red); transition:all 0.15s; white-space:nowrap;">🗑 בדיקות</button>
             <select class="form-select" id="status-filter-select" style="width:160px; padding:5px 10px;" onchange="filterByStatus(this.value)">
               <option value="">כל הסטטוסים</option>
               <option value="ממתין לאישור">ממתין לאישור</option>
@@ -2588,7 +2609,7 @@
       <div class="panel-close" onclick="closePanel()">✕</div>
     </div>
   </div>
-  <div id="panel-pipeline" style="padding:12px 20px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:0; overflow-x:auto;"></div>
+  <div id="panel-pipeline" style="padding:12px 20px 8px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between;"></div>
   <div class="panel-tabs">
     <div class="panel-tab active" onclick="switchTab('info')">פרטים</div>
     <div class="panel-tab" onclick="switchTab('photos')">תמונות</div>
@@ -2768,6 +2789,7 @@
       <a class="cust-quick-btn" id="cp-call-btn" href="#">📞 חייג</a>
       <a class="cust-quick-btn" id="cp-wa-btn" href="#" target="_blank">💬 WhatsApp</a>
       <button class="cust-quick-btn" onclick="sendBookingLink()">🔗 שלח לינק הזמנה</button>
+      <button class="cust-quick-btn" onclick="openMergeModal()" title="מזג עם לקוח אחר">🔀 מיזוג</button>
     </div>
   </div>
 
@@ -2836,6 +2858,14 @@
       <div class="form-group">
         <label class="form-label">אימייל</label>
         <input class="form-input" type="email" id="cp-email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">טלפון נוסף / WhatsApp</label>
+        <input class="form-input" type="tel" id="cp-phone2" placeholder="050-..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label">מספר רישיון</label>
+        <input class="form-input" id="cp-license" placeholder="רישיון תיווך..." />
       </div>
       <div class="form-group">
         <label class="form-label">משרד / חברה</label>
@@ -3533,6 +3563,7 @@ function renderListings() {
   document.getElementById('stat-revenue-sub').textContent = `${store.listings.filter(l => l.status === 'נמסר' && l.created && l.created.includes(_mo) && l.created.includes(_yr)).length} נכסים שנמסרו`;
   document.getElementById('listings-badge').textContent = store.listings.length;
   document.getElementById('listing-count-label').textContent = list.length;
+  _updateDeleteTestBtn();
 
   // Sync view toggle buttons
   const vlBtn = document.getElementById('view-list-btn');
@@ -3585,7 +3616,7 @@ function renderListings() {
         <div class="listing-thumb">
           <div class="thumb-img">${l.photoUrls && l.photoUrls[0] ? `<img src="${l.photoUrls[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : '🏠'}</div>
           <div>
-            <div class="thumb-address">${h(l.address)}</div>
+            <div class="thumb-address">${h(l.address)}${l.isTest ? ' <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:1px 5px;border-radius:3px;font-weight:600;vertical-align:middle;">🧪</span>' : ''}</div>
             <div class="thumb-sub">${h(l.city)}${l.state ? ' · ' + h(l.state) : ''} · ${l.beds} חד' · ${l.photos||0} תמונות</div>
           </div>
         </div>
@@ -3630,6 +3661,7 @@ function badgeClass(status) {
 function filterByStatus(val) { filterStatus = val; _statCardFilter = val || ''; renderListings(); }
 
 let _ordersFilter = ''; // '' | status | '__unpaid__'
+let _testMode     = false; // when true, new listings/customers are flagged as test data
 function filterOrders(val) {
   _ordersFilter = (_ordersFilter === val) ? '' : val;
   renderOrders();
@@ -3752,6 +3784,49 @@ function bulkClearSelection() {
   renderListings();
 }
 
+function toggleTestMode() {
+  _testMode = !_testMode;
+  const btn = document.getElementById('test-mode-btn');
+  if (btn) {
+    btn.style.background = _testMode ? 'var(--amber)' : 'var(--surface2)';
+    btn.style.color       = _testMode ? '#fff'         : 'var(--text-muted)';
+    btn.title = _testMode
+      ? 'מצב בדיקה פעיל — כל הנכסים והלקוחות החדשים יסומנו כבדיקה'
+      : 'הפעל מצב בדיקה';
+    btn.textContent = _testMode ? '🧪 מצב בדיקה' : '🧪';
+  }
+  _updateDeleteTestBtn();
+}
+
+function _updateDeleteTestBtn() {
+  const hasTest = store.listings.some(l => l.isTest) || store.customers.some(c => c.isTest);
+  const btn = document.getElementById('delete-test-btn');
+  if (btn) btn.style.display = hasTest ? '' : 'none';
+}
+
+function deleteTestData() {
+  const lCount = store.listings.filter(l => l.isTest).length;
+  const cCount = store.customers.filter(c => c.isTest).length;
+  if (!lCount && !cCount) { toast('אין נתוני בדיקה למחיקה', 'info'); return; }
+  if (!confirm(`למחוק ${lCount} נכסי בדיקה ו-${cCount} לקוחות בדיקה?\nפעולה זו בלתי הפיכה — הנתונים לא יועברו לארכיון.`)) return;
+
+  const testListingIds  = store.listings.filter(l => l.isTest).map(l => l.id);
+  const testCustomerIds = store.customers.filter(c => c.isTest).map(c => c.id);
+
+  store.listings  = store.listings.filter(l => !l.isTest);
+  store.customers = store.customers.filter(c => !c.isTest);
+  store.orders    = (store.orders || []).filter(o => !testListingIds.includes(o.id));
+
+  testListingIds.forEach(id  => db.collection('listings').doc(id).delete().catch(() => {}));
+  testCustomerIds.forEach(id => db.collection('customers').doc(id).delete().catch(() => {}));
+
+  saveStore();
+  renderListings();
+  renderCustomers();
+  _updateDeleteTestBtn();
+  toast(`נמחקו ${lCount} נכסים ו-${cCount} לקוחות בדיקה`, 'success');
+}
+
 // ── KANBAN VIEW ───────────────────────────────────
 let _listingsView = localStorage.getItem('pd_listings_view') || 'list';
 
@@ -3791,7 +3866,7 @@ function renderKanban(list) {
         </div>
         ${cards.length ? cards.map(l => `
           <div class="kanban-card js-open-listing" data-listing-id="${h(l.id)}">
-            <div class="kanban-card-addr">${h(l.address)}</div>
+            <div class="kanban-card-addr">${h(l.address)}${l.isTest ? ' <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:1px 4px;border-radius:3px;font-weight:600;">🧪</span>' : ''}</div>
             <div class="kanban-card-meta">
               ${l.city ? `📍 ${h(l.city)}` : ''}
               ${l.beds ? ` · ${l.beds} חד'` : ''}
@@ -4293,7 +4368,8 @@ function createListing() {
     shootDate: document.getElementById('new-shoot-date').value,
     paymentStatus:'unpaid', paymentAmount:0,
     payReqSent:false, invoiceSent:false,
-    deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false
+    deliveredPhotos:false, deliveredVideo:false, deliveredFloorplan:false,
+    isTest: _testMode
   });
   closeModal('new-listing-modal');
   renderListings();
@@ -4321,6 +4397,12 @@ function migrateToCompanies() {
     store.companies.push({ id:'CO_PRIVATE', name:'פרטי / ישיר', city:'', phone:'', email:'', notes:'' });
     changed = true;
   }
+  // reset companyId if it points to a non-existent company (orphan clients from import)
+  store.customers.forEach(c => {
+    if (c.companyId && !store.companies.find(co => co.id === c.companyId)) {
+      c.companyId = null; changed = true;
+    }
+  });
   // set companyId on customers missing it
   store.customers.forEach(c => {
     if (!c.companyId) {
@@ -4455,18 +4537,16 @@ function renderAgentsView(companyId) {
       const ls = store.listings.filter(l => l.customer === c.id);
       const active = ls.filter(l => l.status !== 'נמסר' && l.status !== 'בוטל').length;
       const revenue = ls.filter(l => l.paymentStatus === 'paid').reduce((s,l) => s+(l.paymentAmount||0), 0);
+      const testBadge = c.isTest ? ' <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:1px 5px;border-radius:3px;font-weight:600;">🧪</span>' : '';
       return `
-      <div class="customer-card js-open-customer" data-customer-id="${h(c.id)}">
-        <div class="cust-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
-        <div style="flex:1;min-width:0;">
-          <div class="cust-name">${h(c.first)} ${h(c.last)}</div>
-          <div class="cust-email">${h(c.phone)||''}${c.email?' · '+c.email:''}</div>
-          ${revenue?`<div style="font-size:11px;color:var(--green);margin-top:2px;">₪${revenue.toLocaleString('he-IL')} הכנסות</div>`:''}
-        </div>
-        <div style="text-align:center;flex-shrink:0;">
-          <div style="font-family:var(--font-display);font-size:18px;">${ls.length}</div>
-          <div style="font-size:10px;color:var(--text-muted);">צילומים</div>
-          ${active?`<div style="font-size:10px;color:var(--accent);margin-top:2px;">${active} פעיל</div>`:''}
+      <div class="agent-card js-open-customer" data-customer-id="${h(c.id)}">
+        <div class="agent-card-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
+        <div class="agent-card-name">${h(c.first)} ${h(c.last)}${testBadge}</div>
+        <div class="agent-card-sub">${h(c.phone)||''}${c.email ? ' · ' + h(c.email) : ''}</div>
+        <div class="agent-card-stats">
+          <span><b>${ls.length}</b> צילומים</span>
+          ${active ? `<span style="color:var(--accent);">${active} פעיל</span>` : ''}
+          ${revenue ? `<span style="color:var(--green);">₪${revenue.toLocaleString('he-IL')}</span>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -4479,7 +4559,7 @@ function renderAgentsView(companyId) {
       <div class="cust-row js-open-customer" data-customer-id="${h(c.id)}">
         <div class="cust-row-avatar">${(c.first||'?')[0]}${(c.last||'')[0]||''}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:14px;">${h(c.first)} ${h(c.last)}</div>
+          <div style="font-weight:600;font-size:14px;">${h(c.first)} ${h(c.last)}${c.isTest ? ' <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:1px 5px;border-radius:3px;font-weight:600;">🧪</span>' : ''}</div>
           <div style="font-size:12px;color:var(--text-muted);">${h(c.phone)||''}${c.email?' · '+c.email:''}</div>
         </div>
         <div style="display:flex;gap:20px;align-items:center;font-size:13px;">
@@ -4566,7 +4646,8 @@ function _saveAgent() {
     last:  document.getElementById('mag-last').value.trim(),
     phone: document.getElementById('mag-phone').value.trim(),
     email: document.getElementById('mag-email').value.trim(),
-    company: co ? co.name : '', companyId: _agentCompanyId, listings: 0
+    company: co ? co.name : '', companyId: _agentCompanyId, listings: 0,
+    isTest: _testMode
   });
   saveStore(); renderAgentsView(_agentCompanyId); closeModal('modal-agent'); toast('סוכן נוסף', 'success');
 }
@@ -4583,7 +4664,8 @@ function createCustomer() {
     phone: document.getElementById('cust-phone').value,
     company: companyName,
     companyId: existingCo ? existingCo.id : 'CO_PRIVATE',
-    listings: 0
+    listings: 0,
+    isTest: _testMode
   });
   closeModal('new-customer-modal');
   renderCustomers();
@@ -5707,11 +5789,13 @@ function openCustomer(id) {
   }
 
   // Notes + edit fields
-  document.getElementById('cp-notes').value = c.notes || '';
-  document.getElementById('cp-first').value = c.first;
-  document.getElementById('cp-last').value  = c.last;
-  document.getElementById('cp-phone').value = c.phone;
-  document.getElementById('cp-email').value = c.email || '';
+  document.getElementById('cp-notes').value   = c.notes   || '';
+  document.getElementById('cp-first').value   = c.first;
+  document.getElementById('cp-last').value    = c.last;
+  document.getElementById('cp-phone').value   = c.phone;
+  document.getElementById('cp-email').value   = c.email   || '';
+  document.getElementById('cp-phone2').value  = c.phone2  || '';
+  document.getElementById('cp-license').value = c.license || '';
 
   // Populate company dropdown
   const cpCoSel = document.getElementById('cp-company-select');
@@ -5763,6 +5847,8 @@ function saveCustomerInfo() {
   currentCustomer.last    = document.getElementById('cp-last').value.trim();
   currentCustomer.phone   = document.getElementById('cp-phone').value.trim();
   currentCustomer.email   = document.getElementById('cp-email').value.trim();
+  currentCustomer.phone2  = document.getElementById('cp-phone2').value.trim();
+  currentCustomer.license = document.getElementById('cp-license').value.trim();
   const coSel = document.getElementById('cp-company-select');
   const coId  = coSel ? coSel.value : '';
   const coObj = store.companies ? store.companies.find(c => c.id === coId) : null;
@@ -6356,6 +6442,11 @@ function _migrateOrdersFromListings() {
 }
 
 function renderOrders() {
+  // Sync all current pipeline listings into store.orders (ensures nothing is missing)
+  store.listings
+    .filter(l => ORDER_PIPELINE.includes(l.status))
+    .forEach(l => { _ensureOrder(l); _syncListingToOrder(l); });
+
   const pending  = loadPendingBookings();
   const active   = store.orders.filter(o => ORDER_PIPELINE.includes(o.status));
   const listEl   = document.getElementById('orders-list');
@@ -6426,7 +6517,7 @@ function renderOrders() {
           <span class="table-title">ממתין לאישור</span>
           <span class="table-count">${filteredPending.length}</span>
         </div>`;
-    html += filteredPending.map(b => {
+    html += filteredPending.filter(b => b.property && b.client).map(b => {
       const p = b.property;
       const cl = b.client.isExisting
         ? (store.customers.find(c => c.id === b.client.id) || {first:'?', last:''})
@@ -6436,6 +6527,7 @@ function renderOrders() {
       const shootStr = b.shootDate
         ? new Date(b.shootDate).toLocaleDateString('he-IL', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})
         : 'לא צוין';
+      const pkgName = b.package?.name || '—';
       return `
         <div class="booking-card">
           <div>
@@ -6443,7 +6535,7 @@ function renderOrders() {
             <div class="booking-meta">
               <span class="badge badge-pending">ממתין לאישור</span>
               <span class="booking-tag">👤 ${name.trim()}</span>
-              <span class="booking-tag">📦 ${b.package.name}</span>
+              <span class="booking-tag">📦 ${pkgName}</span>
               <span class="booking-tag">📅 ${shootStr}</span>
               ${p.rooms ? `<span class="booking-tag">${p.rooms} חד'</span>` : ''}
               ${p.notes ? `<span class="booking-tag" title="${p.notes}">📝 יש הערות</span>` : ''}
@@ -6489,7 +6581,7 @@ function renderOrders() {
       return `
         <div class="booking-card" data-listing-id="${h(l.id)}" style="cursor:pointer;--card-accent:${accentColor}">
           <div style="flex:1;min-width:0;">
-            <div class="card-title">${h(l.address)}, ${h(l.city)}</div>
+            <div class="card-title">${h(l.address)}, ${h(l.city)}${l.isTest ? ' <span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:1px 5px;border-radius:3px;font-weight:600;">🧪</span>' : ''}</div>
             <div class="booking-meta">
               <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
               ${custLabel !== '—' ? `<span class="booking-tag">👤 ${custLabel}</span>` : ''}
@@ -7040,6 +7132,7 @@ async function _initApp() {
   saveStore();         // push local data to Firestore on first run
   migrateToCompanies();
   updateArchiveBadge();
+  _updateDeleteTestBtn();   // show delete-test-btn if test data exists
   navigate('dashboard');
   renderCalendar();
   updateOrdersBadge();
