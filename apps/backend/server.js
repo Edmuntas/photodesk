@@ -3,6 +3,7 @@ const multer  = require('multer');
 const path    = require('path');
 const cors    = require('cors');
 const fs      = require('fs');
+const sharp   = require('sharp');
 require('dotenv').config();
 
 const app  = express();
@@ -95,9 +96,15 @@ app.post('/api/detect-room', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Image required' });
 
   try {
-    const dataURI = toDataURI(req.file.path, fileMime(req.file.originalname));
-    const result  = await xaiPost('https://api.x.ai/v1/chat/completions', apiKey, {
-      model: 'grok-2-vision-1212',
+    // Resize to max 800px for vision — reduces payload, keeps accuracy
+    const resizedBuf = await sharp(req.file.path)
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 75 })
+      .toBuffer();
+    const dataURI = 'data:image/jpeg;base64,' + resizedBuf.toString('base64');
+
+    const result = await xaiPost('https://api.x.ai/v1/chat/completions', apiKey, {
+      model: 'grok-4-0709',
       messages: [{
         role: 'user',
         content: [
