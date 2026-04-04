@@ -30,6 +30,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use('/results', express.static(RESULTS_DIR));
 
+// Suppress favicon 404 in browser console
+app.get('/favicon.ico', (_req, res) => res.status(204).end());
+
 // Serve declutter.html from apps/frontend/
 app.get('/declutter', (_req, res) => {
   const p = path.join(__dirname, '..', 'frontend', 'declutter.html');
@@ -87,7 +90,7 @@ app.put('/api/prompts', (req, res) => {
 
 // ── Room Detection ─────────────────────────────────────────────────────────────
 app.post('/api/detect-room', upload.single('image'), async (req, res) => {
-  const apiKey = (req.body.apiKey || '').trim();
+  const apiKey = ((req.body || {}).apiKey || '').trim();
   if (!apiKey)   return res.status(401).json({ error: 'API key required' });
   if (!req.file) return res.status(400).json({ error: 'Image required' });
 
@@ -140,10 +143,11 @@ function sanitizeFolder(name) {
 
 // ── Image Processing ──────────────────────────────────────────────────────────
 app.post('/api/process-image', upload.single('image'), async (req, res) => {
-  const apiKey       = (req.body.apiKey        || '').trim();
-  const mode         = (req.body.mode          || 'empty').trim();
-  const roomType     = (req.body.roomType      || 'по умолчанию').trim();
-  const sessionSlug  = sanitizeFolder(req.body.sessionFolder);
+  const body         = req.body || {};
+  const apiKey       = (body.apiKey        || '').trim();
+  const mode         = (body.mode          || 'empty').trim();
+  const roomType     = (body.roomType      || 'по умолчанию').trim();
+  const sessionSlug  = sanitizeFolder(body.sessionFolder);
 
   if (!apiKey)   return res.status(401).json({ error: 'API key required' });
   if (!req.file) return res.status(400).json({ error: 'Image required' });
@@ -164,7 +168,7 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
   const prompt  = buildPrompt(roomType, mode);
   const dataURI = toDataURI(req.file.path, fileMime(req.file.originalname));
   const rawB64  = dataURI.split(',')[1];
-  const model   = req.body.model || 'aurora';
+  const model   = body.model || 'aurora';
 
   // image field expects an object — try every known object schema
   const size = '1792x1024';
@@ -268,6 +272,16 @@ app.get('/api/sessions/:slug', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ── Global error handler (catches multer errors, etc.) ────────────────────────
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, _next) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.code === 'LIMIT_FILE_SIZE'
+    ? 'File too large (max 30MB)'
+    : err.message || 'Internal server error';
+  res.status(status).json({ error: message });
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
