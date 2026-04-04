@@ -171,15 +171,15 @@ app.post('/api/process-image', upload.single('image'), async (req, res) => {
   const model   = body.model || 'aurora';
 
   // image field expects an object — try every known object schema
-  const size = '1792x1024';
+  // NOTE: aurora does not support a "size" parameter — omit it entirely
   const attempts = [
-    { label: 'obj-url',      payload: { model, prompt, size, image: { url: dataURI } } },
-    { label: 'obj-b64',      payload: { model, prompt, size, image: { b64_json: rawB64 } } },
-    { label: 'obj-type-url', payload: { model, prompt, size, image: { type: 'base64', url: dataURI } } },
-    { label: 'obj-type-b64', payload: { model, prompt, size, image: { type: 'base64', data: rawB64 } } },
-    { label: 'arr-url',      payload: { model, prompt, size, image: [{ url: dataURI }] } },
-    { label: 'arr-b64',      payload: { model, prompt, size, image: [{ b64_json: rawB64 }] } },
-    { label: 'images-arr',   payload: { model, prompt, size, images: [dataURI] } },
+    { label: 'obj-url',      payload: { model, prompt, image: { url: dataURI } } },
+    { label: 'obj-b64',      payload: { model, prompt, image: { b64_json: rawB64 } } },
+    { label: 'obj-type-url', payload: { model, prompt, image: { type: 'base64', url: dataURI } } },
+    { label: 'obj-type-b64', payload: { model, prompt, image: { type: 'base64', data: rawB64 } } },
+    { label: 'arr-url',      payload: { model, prompt, image: [{ url: dataURI }] } },
+    { label: 'arr-b64',      payload: { model, prompt, image: [{ b64_json: rawB64 }] } },
+    { label: 'images-arr',   payload: { model, prompt, images: [dataURI] } },
   ];
 
   let lastErr = null;
