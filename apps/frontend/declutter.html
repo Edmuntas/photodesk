@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>PhotoDesk AI — עריכת תמונות</title>
-<script src="https://browser.sentry-cdn.com/8.53.0/bundle.tracing.min.js" crossorigin="anonymous"></script>
+<script async src="https://browser.sentry-cdn.com/8.53.0/bundle.tracing.min.js" crossorigin="anonymous"></script>
 <script>
 (function() {
   const _server = localStorage.getItem('pd_server') || 'http://localhost:3001';
@@ -1225,6 +1225,7 @@ async function aiDetectAll() {
   log(`🤖 AI מזהה סוגי חדרים עבור ${targets.length} תמונות...`, 'ai');
 
   for (const f of targets) {
+    if (!f.file) { log(`  ${f.name} — דולג (קובץ חסר)`, 'err'); continue; }
     try {
       const form = new FormData();
       form.append('image',  f.file);
