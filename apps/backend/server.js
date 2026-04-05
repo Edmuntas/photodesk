@@ -6,6 +6,17 @@ const fs      = require('fs');
 const sharp   = require('sharp');
 require('dotenv').config();
 
+// ── Sentry (optional — only initialised when SENTRY_DSN is set) ───────────────
+const Sentry = require('@sentry/node');
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'production',
+    tracesSampleRate: 0.2,
+  });
+  console.log('[Sentry] initialized');
+}
+
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
@@ -122,6 +133,13 @@ function buildSkyPrompt(roomType, skyTime, cloudVariant) {
 
   return `${scene}\n\n${skyDesc}\n\n${skyPrompts.quality}`;
 }
+
+// ── Public config (safe to expose to browser) ────────────────────────────────
+app.get('/api/config', (_req, res) => {
+  res.json({
+    sentryDsn: process.env.SENTRY_DSN_PUBLIC || null,
+  });
+});
 
 app.get('/api/prompts', (_req, res) => res.json(customPrompts));
 
@@ -446,6 +464,11 @@ app.delete('/api/sessions/:slug', (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ── Sentry error handler (must come before our own error handler) ─────────────
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
 
 // ── Global error handler (catches multer errors, etc.) ────────────────────────
 // eslint-disable-next-line no-unused-vars

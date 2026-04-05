@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PhotoDesk — ניהול צילום נדל"ן</title>
+<script src="https://browser.sentry-cdn.com/8.53.0/bundle.tracing.min.js" crossorigin="anonymous"></script>
+<script>
+(function() {
+  var _server = (function(){try{return localStorage.getItem('pd_server')||'http://localhost:3001';}catch(e){return 'http://localhost:3001';}}());
+  fetch(_server + '/api/config').then(function(r){return r.json();}).then(function(cfg){
+    if (cfg.sentryDsn && window.Sentry) {
+      Sentry.init({ dsn: cfg.sentryDsn, tracesSampleRate: 0.1 });
+    }
+  }).catch(function(){});
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
