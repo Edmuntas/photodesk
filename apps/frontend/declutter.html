@@ -168,9 +168,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 .var-item-label{font-size:9px;color:var(--text-muted);text-align:center;max-width:52px;
                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
-.progress-wrap{flex:1;height:6px;background:var(--surface2);border-radius:99px;
-               min-width:80px;overflow:hidden;display:none;}
+.progress-wrap{height:6px;background:var(--surface2);border-radius:99px;
+               min-width:80px;overflow:hidden;display:none;width:120px;}
 .progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .3s;width:0%;}
+.progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap;display:none;}
 
 /* QUEUE */
 .queue-wrap{flex:1;overflow-y:auto;background:var(--surface);}
@@ -450,6 +451,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
         <button class="btn btn-secondary btn-sm"                   onclick="selectAll()">הכל</button>
         <button class="btn btn-secondary btn-sm"                   onclick="deselectAll()">נקה</button>
         <div class="progress-wrap" id="progress-wrap"><div class="progress-fill" id="progress-fill"></div></div>
+        <span class="progress-text" id="progress-text"></span>
         <button class="btn btn-primary  btn-sm" id="btn-process"  onclick="processAll()"     disabled>▶ התחל</button>
         <button class="btn btn-danger   btn-sm" id="btn-stop"      onclick="stopProcessing()" style="display:none">■ עצור</button>
         <button class="btn btn-secondary btn-sm" id="btn-clear"   onclick="clearAll()"       disabled>🗑</button>
@@ -661,8 +663,8 @@ const ROOM_LABELS = {
   'детская':'🧸 חדר ילדים','гостиная':'🛋 סלון','ванная':'🚿 חדר אמבטיה','коридор':'🚪 מסדרון',
   'балкон':'🌿 מרפסת','двор':'🏡 חצר','сад':'🌳 גינה','дрон':'🚁 רחפן'
 };
-const BADGE_CLASS = {wait:'badge-wait',processing:'badge-proc',done:'badge-done',error:'badge-error'};
-const BADGE_LABEL = {wait:'ממתין',processing:'⏳ מעבד...',done:'✓ מוכן',error:'✗ שגיאה'};
+const BADGE_CLASS = {wait:'badge-wait',processing:'badge-proc',done:'badge-done',error:'badge-error',skip:'badge-wait'};
+const BADGE_LABEL = {wait:'ממתין',processing:'⏳ מעבד...',done:'✓ מוכן',error:'✗ שגיאה',skip:'⚠ דולג'};
 const MODE_OPTS   = [['empty','🏚 ריקון'],['declutter','🧹 ניקוי'],['sky','🌅 שמיים']];
 const SKY_TIME_LABELS  = { golden:'שעת זהב', sunset_pink:'שקיעה ורודה', sunset_purple:'שקיעה סגולה', sunrise:'זריחה', midday:'צהריים', overcast:'מעונן', bluehour:'שעה כחולה', dramatic:'דרמטי', night:'לילה' };
 const CLOUD_LABELS     = { few:'עננים בודדים', clear:'שמיים בהירים', cirrus:'עננים גבוהים', partial:'עננים מפוזרים', random:'אקראי' };
@@ -1261,13 +1263,38 @@ async function processAll() {
   updateButtons();
   log(`▶ סשן: ${sessionFolder} · ${queue.length} תמונות`);
 
+  const OUTDOOR_ROOMS = ['дрон','двор','сад','балкон'];
+
   let done = 0;
+  _imgTimes = [];
+  setProgress(0, queue.length);
   for (const f of queue) {
     if (stopFlag) { log('■ הופסק', 'err'); break; }
     f.status = 'processing'; renderQueue();
-    setProgress(done / queue.length * 100);
+    setProgress(done, queue.length);
 
+    const imgStart = Date.now();
     try {
+      // ── Sky detection pre-check for indoor rooms ─────────────────────────
+      if (f.mode === 'sky' && !OUTDOOR_ROOMS.includes(f.roomType) && f.file) {
+        log(`🔍 ${f.name}  — בודק נוכחות שמיים...`);
+        try {
+          const skyForm = new FormData();
+          skyForm.append('image',  f.file);
+          skyForm.append('apiKey', apiKey);
+          const skyRes  = await fetch(serverUrl + '/api/detect-sky', { method: 'POST', body: skyForm });
+          const skyData = await skyRes.json();
+          if (!skyData.hasSky) {
+            f.status = 'skip';
+            log(`⚠ ${f.name}  — אין שמיים גלויים בתמונה, מצב שמיים לא רלוונטי. מדלג.`, 'err');
+            done++; renderQueue(); setProgress(done, queue.length);
+            continue;
+          }
+        } catch (skyErr) {
+          log(`⚠ ${f.name}  — בדיקת שמיים נכשלה (${skyErr.message}), ממשיך...`, 'err');
+        }
+      }
+
       const form = new FormData();
       form.append('image',         f.file);
       form.append('apiKey',        apiKey);
@@ -1300,7 +1327,6 @@ async function processAll() {
         f.resultUrl        = data.resultUrl;
         f.serverOriginalUrl = data.originalUrl || null;
         f.sessionFolder    = data.sessionFolder || null;
-        // Accumulate all variants
         if (!f.allResults) f.allResults = [];
         const varLabel = f.mode === 'sky'
           ? `🌅 ${SKY_TIME_LABELS[skyTime]}`
@@ -1309,9 +1335,7 @@ async function processAll() {
               : '☀️ יום');
         f.allResults.push({ url: data.resultUrl, label: varLabel });
         log(`✓ ${f.name}  →  ${data.sessionFolder}`, 'ok');
-        if (activeId === f.id) {
-          rowClick(f.id);
-        }
+        if (activeId === f.id) rowClick(f.id);
       } else {
         f.status = 'error';
         const detail = data.detail
@@ -1324,7 +1348,8 @@ async function processAll() {
       log(`✗ ${f.name}: ${err.message}`, 'err');
     }
 
-    done++; renderQueue(); setProgress(done / queue.length * 100);
+    _imgTimes.push(Date.now() - imgStart);
+    done++; renderQueue(); setProgress(done, queue.length);
   }
 
   processing = false;
@@ -1332,12 +1357,33 @@ async function processAll() {
   document.getElementById('btn-stop').style.display = 'none';
   updateButtons();
   const ok = queue.filter(f => f.status === 'done').length;
-  log(`הושלם. הצליח: ${ok} / ${queue.length}`, ok === queue.length ? 'ok' : 'err');
-  setTimeout(() => { document.getElementById('progress-wrap').style.display = 'none'; }, 2000);
+  const skipped = queue.filter(f => f.status === 'skip').length;
+  const skipNote = skipped > 0 ? ` · ${skipped} דולגו (אין שמיים)` : '';
+  log(`הושלם. הצליח: ${ok} / ${queue.length}${skipNote}`, ok === queue.length - skipped ? 'ok' : 'err');
+  setTimeout(() => {
+    document.getElementById('progress-wrap').style.display = 'none';
+    document.getElementById('progress-text').style.display = 'none';
+  }, 3000);
 }
 
 function stopProcessing() { stopFlag = true; }
-function setProgress(pct) { document.getElementById('progress-fill').style.width = pct + '%'; }
+
+let _imgTimes = []; // ms per processed image for ETA
+function setProgress(done, total) {
+  const pct = total > 0 ? (done / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  const textEl = document.getElementById('progress-text');
+  if (!textEl) return;
+  if (total === 0) { textEl.style.display = 'none'; return; }
+  textEl.style.display = '';
+  let txt = `${done} / ${total}`;
+  if (done > 0 && done < total && _imgTimes.length > 0) {
+    const avg = _imgTimes.reduce((a, b) => a + b, 0) / _imgTimes.length;
+    const sec  = Math.ceil(avg * (total - done) / 1000);
+    txt += sec >= 60 ? ` · ~${Math.ceil(sec/60)}min` : ` · ~${sec}s`;
+  }
+  textEl.textContent = txt;
+}
 
 // ── Sessions gallery ──────────────────────────────────────────────────────────
 let openSessionSlug = null;

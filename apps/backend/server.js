@@ -213,6 +213,49 @@ function sanitizeFolder(name) {
     .slice(0, 80) || 'Session_' + Date.now();
 }
 
+// ── Sky Presence Detection ────────────────────────────────────────────────────
+app.post('/api/detect-sky', upload.single('image'), async (req, res) => {
+  const apiKey = ((req.body || {}).apiKey || '').trim();
+  if (!apiKey)   return res.status(401).json({ error: 'API key required' });
+  if (!req.file) return res.status(400).json({ error: 'Image required' });
+
+  try {
+    const resizedBuf = await sharp(req.file.path)
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 70 })
+      .toBuffer();
+    const dataURI = 'data:image/jpeg;base64,' + resizedBuf.toString('base64');
+
+    const result = await xaiPost('https://api.x.ai/v1/chat/completions', apiKey, {
+      model: 'grok-4-0709',
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: dataURI } },
+          { type: 'text', text:
+            'Look at this real estate photo carefully.\n' +
+            'Reply with EXACTLY ONE WORD:\n' +
+            'YES — if there is visible sky, outdoor view, or outdoor daylight coming through windows, glass doors, or skylights.\n' +
+            'NO — if this is a fully enclosed interior with no visible sky or outdoor view through any opening.\n' +
+            'Reply with ONLY the single word YES or NO.'
+          }
+        ]
+      }],
+      temperature: 0,
+      max_tokens: 5,
+    });
+
+    const raw = (result.choices?.[0]?.message?.content || '').trim().toUpperCase();
+    res.json({ hasSky: raw.startsWith('YES') });
+  } catch (err) {
+    console.error('[detect-sky]', err.message);
+    // On error, assume sky exists so processing is not blocked
+    res.json({ hasSky: true, error: err.message });
+  } finally {
+    if (req.file) fs.unlink(req.file.path, () => {});
+  }
+});
+
 // ── Image Processing ──────────────────────────────────────────────────────────
 app.post('/api/process-image', upload.single('image'), async (req, res) => {
   const body         = req.body || {};
