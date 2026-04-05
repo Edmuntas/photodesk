@@ -173,6 +173,33 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 .progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .3s;width:0%;}
 .progress-text{font-size:11px;color:var(--text-muted);white-space:nowrap;display:none;}
 
+/* ── Beginner / Advanced mode ── */
+body:not(.advanced-mode) .adv-only{display:none!important;}
+.btn-adv{padding:5px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
+         font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);
+         color:var(--text-muted);font-family:var(--font);transition:all .15s;white-space:nowrap;}
+.btn-adv.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-adv:hover:not(.active){background:var(--surface2);color:var(--text);}
+
+/* ── Sky pill color gradients ── */
+.sky-pill[data-time="golden"].active    {background:linear-gradient(135deg,#f97316,#facc15);border-color:transparent;color:#fff;}
+.sky-pill[data-time="midday"].active    {background:linear-gradient(135deg,#0284c7,#38bdf8);border-color:transparent;color:#fff;}
+.sky-pill[data-time="sunset_pink"].active{background:linear-gradient(135deg,#db2777,#f472b6);border-color:transparent;color:#fff;}
+.sky-pill[data-time="sunset_purple"].active{background:linear-gradient(135deg,#6d28d9,#c026d3);border-color:transparent;color:#fff;}
+.sky-pill[data-time="sunrise"].active   {background:linear-gradient(135deg,#ea580c,#f9a8d4);border-color:transparent;color:#fff;}
+.sky-pill[data-time="overcast"].active  {background:linear-gradient(135deg,#64748b,#cbd5e1);border-color:transparent;color:#fff;}
+.sky-pill[data-time="bluehour"].active  {background:linear-gradient(135deg,#1e3a8a,#4f46e5);border-color:transparent;color:#fff;}
+.sky-pill[data-time="dramatic"].active  {background:linear-gradient(135deg,#111827,#374151);border-color:transparent;color:#fff;}
+.sky-pill[data-time="night"].active     {background:linear-gradient(135deg,#020617,#1e1b4b);border-color:transparent;color:#fff;}
+.sky-pill[data-time="golden"]:hover:not(.active)    {border-color:#f97316;}
+.sky-pill[data-time="midday"]:hover:not(.active)    {border-color:#0284c7;}
+.sky-pill[data-time="sunset_pink"]:hover:not(.active){border-color:#db2777;}
+.sky-pill[data-time="sunset_purple"]:hover:not(.active){border-color:#6d28d9;}
+.sky-pill[data-time="sunrise"]:hover:not(.active)   {border-color:#ea580c;}
+.sky-pill[data-time="bluehour"]:hover:not(.active)  {border-color:#1e3a8a;}
+.sky-pill[data-time="dramatic"]:hover:not(.active)  {border-color:#374151;}
+.sky-pill[data-time="night"]:hover:not(.active)     {border-color:#4f46e5;}
+
 /* QUEUE */
 .queue-wrap{flex:1;overflow-y:auto;background:var(--surface);}
 .queue-table{width:100%;border-collapse:collapse;}
@@ -447,6 +474,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
           <button class="mode-btn"        id="mode-sky"       onclick="setGlobalMode('sky')">🌅 שמיים</button>
         </div>
         <div class="ctrl-sep"></div>
+        <button class="btn-adv" id="btn-adv-toggle" onclick="toggleAdvanced()" title="הצג הגדרות מתקדמות">⚙️ מתקדם</button>
         <button class="btn btn-secondary btn-sm" id="btn-ai"      onclick="aiDetectAll()"    disabled>🤖 זיהוי אוטו</button>
         <button class="btn btn-secondary btn-sm"                   onclick="selectAll()">הכל</button>
         <button class="btn btn-secondary btn-sm"                   onclick="deselectAll()">נקה</button>
@@ -471,7 +499,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
           <button class="sky-pill"        data-time="dramatic"      onclick="setSkyTime(this)">⛈ דרמטי</button>
           <button class="sky-pill"        data-time="night"         onclick="setSkyTime(this)">🌃 לילה</button>
         </div>
-        <div class="sky-row">
+        <div class="sky-row adv-only">
           <span class="sky-label">עננים:</span>
           <button class="sky-pill-sm active" data-cloud="few"     onclick="setSkyCloud(this)">עננים בודדים</button>
           <button class="sky-pill-sm"        data-cloud="clear"   onclick="setSkyCloud(this)">שמיים בהירים</button>
@@ -495,7 +523,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
         <table class="queue-table" id="queue-table" style="display:none">
           <thead><tr>
             <th>☑</th><th>תמונה</th><th>שם קובץ</th>
-            <th>סוג חדר</th><th>תאורה</th><th>מצב</th><th>סטטוס</th>
+            <th class="adv-only">סוג חדר</th><th class="adv-only">תאורה</th><th class="adv-only">מצב</th><th>סטטוס</th>
           </tr></thead>
           <tbody id="queue-body"></tbody>
         </table>
@@ -531,10 +559,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
 
       <!-- Comparison mode toolbar -->
       <div class="cmp-toolbar" id="cmp-toolbar" style="display:none">
-        <button class="cmp-btn active" id="cmp-slider" onclick="setCmpMode('slider')">⇔ סליידר</button>
         <button class="cmp-btn"        id="cmp-before" onclick="setCmpMode('before')">לפני</button>
         <button class="cmp-btn"        id="cmp-after"  onclick="setCmpMode('after')">אחרי</button>
-        <button class="cmp-btn"        id="cmp-split"  onclick="setCmpMode('split')">⊟ זה לצד זה</button>
+        <button class="cmp-btn active" id="cmp-split"  onclick="setCmpMode('split')">⊟ זה לצד זה</button>
       </div>
 
       <!-- Slider comparison (default) -->
@@ -690,6 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   checkServer();
   resetSessionName();
+  applyAdvancedMode();
 
   const dz  = document.getElementById('drop-zone');
   const inp = document.getElementById('file-input');
@@ -835,6 +863,7 @@ function buildRow(f) {
 
   // Room type selector
   const tdRoom  = document.createElement('td');
+  tdRoom.className = 'adv-only';
   const selRoom = document.createElement('select');
   selRoom.className = 'q-select'; selRoom.disabled = f.status === 'processing';
   ROOM_TYPES.forEach(r => {
@@ -849,6 +878,7 @@ function buildRow(f) {
 
   // Lighting mood selector (hidden for sky mode)
   const tdLight = document.createElement('td');
+  tdLight.className = 'adv-only';
   if (f.mode === 'sky') {
     tdLight.style.cssText = 'color:var(--text-muted);font-size:11px;text-align:center;';
     tdLight.textContent = '—';
@@ -869,8 +899,9 @@ function buildRow(f) {
   }
   tr.appendChild(tdLight);
 
-  // Mode selector
+  // Mode selector (per-row override — advanced only)
   const tdMode  = document.createElement('td');
+  tdMode.className = 'adv-only';
   const selMode = document.createElement('select');
   selMode.className = 'q-select'; selMode.disabled = f.status === 'processing';
   MODE_OPTS.forEach(([val, label]) => {
@@ -1042,11 +1073,11 @@ function showPreview({ name, sub, beforeUrl, afterUrl, downloadUrl, downloadName
     document.getElementById('after-wrap').style.clipPath = 'inset(0 50% 0 0)';
     document.getElementById('div-line').style.left       = '50%';
     document.getElementById('div-handle').style.left     = '50%';
-    // Reset to slider mode
-    cmpMode = 'slider';
-    ['slider','before','after','split'].forEach(m => {
+    // Reset to split mode
+    cmpMode = 'split';
+    ['before','after','split'].forEach(m => {
       const el = document.getElementById('cmp-' + m);
-      if (el) el.classList.toggle('active', m === 'slider');
+      if (el) el.classList.toggle('active', m === 'split');
     });
     document.getElementById('cmp-toolbar').style.display = '';
     document.getElementById('split-view').style.display  = 'none';
@@ -1618,12 +1649,28 @@ function log(msg, type) {
 
 function clearLog() { document.getElementById('log-body').replaceChildren(); }
 
+// ── Beginner / Advanced mode ──────────────────────────────────────────────────
+let advancedMode = localStorage.getItem('pd_advanced') === '1';
+function applyAdvancedMode() {
+  document.body.classList.toggle('advanced-mode', advancedMode);
+  const btn = document.getElementById('btn-adv-toggle');
+  if (btn) {
+    btn.classList.toggle('active', advancedMode);
+    btn.title = advancedMode ? 'מצב פשוט' : 'הצג הגדרות מתקדמות';
+  }
+}
+function toggleAdvanced() {
+  advancedMode = !advancedMode;
+  localStorage.setItem('pd_advanced', advancedMode ? '1' : '0');
+  applyAdvancedMode();
+}
+
 // ── Comparison modes ──────────────────────────────────────────────────────────
-let cmpMode = 'slider';
+let cmpMode = 'split';
 
 function setCmpMode(mode) {
   cmpMode = mode;
-  ['slider','before','after','split'].forEach(m => {
+  ['before','after','split'].forEach(m => {
     const el = document.getElementById('cmp-' + m);
     if (el) el.classList.toggle('active', m === mode);
   });
