@@ -448,13 +448,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);
       <div class="sky-toolbar" id="sky-toolbar" style="display:none">
         <div class="sky-row">
           <span class="sky-label">זמן:</span>
-          <button class="sky-pill active" data-time="golden"   onclick="setSkyTime(this)">🌅 שעת זהב</button>
-          <button class="sky-pill"        data-time="sunrise"  onclick="setSkyTime(this)">🌄 זריחה</button>
-          <button class="sky-pill"        data-time="midday"   onclick="setSkyTime(this)">☀️ צהריים</button>
-          <button class="sky-pill"        data-time="overcast" onclick="setSkyTime(this)">☁️ מעונן</button>
-          <button class="sky-pill"        data-time="bluehour" onclick="setSkyTime(this)">🌆 שעה כחולה</button>
-          <button class="sky-pill"        data-time="dramatic" onclick="setSkyTime(this)">⛈ דרמטי</button>
-          <button class="sky-pill"        data-time="night"    onclick="setSkyTime(this)">🌃 לילה</button>
+          <button class="sky-pill active" data-time="golden"        onclick="setSkyTime(this)">🌅 שעת זהב</button>
+          <button class="sky-pill"        data-time="sunset_pink"   onclick="setSkyTime(this)">🌸 שקיעה ורודה</button>
+          <button class="sky-pill"        data-time="sunset_purple" onclick="setSkyTime(this)">💜 שקיעה סגולה</button>
+          <button class="sky-pill"        data-time="sunrise"       onclick="setSkyTime(this)">🌄 זריחה</button>
+          <button class="sky-pill"        data-time="midday"        onclick="setSkyTime(this)">☀️ צהריים</button>
+          <button class="sky-pill"        data-time="overcast"      onclick="setSkyTime(this)">☁️ מעונן</button>
+          <button class="sky-pill"        data-time="bluehour"      onclick="setSkyTime(this)">🌆 שעה כחולה</button>
+          <button class="sky-pill"        data-time="dramatic"      onclick="setSkyTime(this)">⛈ דרמטי</button>
+          <button class="sky-pill"        data-time="night"         onclick="setSkyTime(this)">🌃 לילה</button>
         </div>
         <div class="sky-row">
           <span class="sky-label">עננים:</span>
@@ -651,7 +653,7 @@ const ROOM_LABELS = {
 const BADGE_CLASS = {wait:'badge-wait',processing:'badge-proc',done:'badge-done',error:'badge-error'};
 const BADGE_LABEL = {wait:'ממתין',processing:'⏳ מעבד...',done:'✓ מוכן',error:'✗ שגיאה'};
 const MODE_OPTS   = [['empty','🏚 ריקון'],['declutter','🧹 ניקוי'],['sky','🌅 שמיים']];
-const SKY_TIME_LABELS  = { golden:'שעת זהב', sunrise:'זריחה', midday:'צהריים', overcast:'מעונן', bluehour:'שעה כחולה', dramatic:'דרמטי', night:'לילה' };
+const SKY_TIME_LABELS  = { golden:'שעת זהב', sunset_pink:'שקיעה ורודה', sunset_purple:'שקיעה סגולה', sunrise:'זריחה', midday:'צהריים', overcast:'מעונן', bluehour:'שעה כחולה', dramatic:'דרמטי', night:'לילה' };
 const CLOUD_LABELS     = { few:'עננים בודדים', clear:'שמיים בהירים', cirrus:'עננים גבוהים', partial:'עננים מפוזרים', random:'אקראי' };
 const CLOUD_VALUES     = ['few','clear','cirrus','partial'];
 const LIGHT_MOOD_LABELS = { day:'יום', evening:'ערב', bluehour:'שעה כחולה', night:'לילה' };

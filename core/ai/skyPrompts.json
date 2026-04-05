@@ -1,49 +1,59 @@
 {
-  "quality": "Photorealistic, high resolution, professional real estate photography quality. Seamless blend at every horizon line, roofline, and architectural edge — no visible halos or hard cuts. Match shadow direction, length, and quality on all ground and surface elements to the new sky light source position. Do NOT move, add, remove, or alter any ground-level elements, buildings, vegetation, vehicles, furniture, pavement, or any surface. Do NOT change camera angle, perspective, or focal length.",
+  "quality": "Photorealistic, high resolution, professional real estate photography quality. Seamless blend at every horizon line, roofline, and architectural edge — no visible halos or hard cuts. Match shadow direction, length, and quality on all ground and surface elements to the new sky light source position. Do NOT move, add, remove, or alter any ground-level elements, buildings, vegetation, vehicles, furniture, pavement, or any surface. Do NOT change camera angle, perspective, or focal length. IMPORTANT: Do NOT paint or add a visible sun disc into the sky.",
 
   "times": {
     "golden": {
       "label": "Золотой час",
       "emoji": "🌅",
-      "desc": "warm golden hour sunset — soft amber and peachy-orange gradient sky darkening upward from horizon, rich warm directional sunlight from low angle casting long soft shadows, warm golden tones washing over all surfaces, gentle warm atmospheric haze near horizon"
+      "desc": "warm golden hour sunset sky — rich gradient from deep amber-orange at the horizon blending upward through soft peach and rose-pink to pale lavender and powder blue overhead. No visible sun disc. Warm golden-orange directional light from low off-frame angle casting long soft shadows. Delicate pink-rose glow on cloud undersides. Warm amber tones washing gently over all surfaces and architecture."
     },
     "midday": {
       "label": "Полдень",
       "emoji": "☀️",
-      "desc": "bright clear midday — vibrant pure cerulean blue sky, bright high overhead sun, crisp short shadows falling directly below objects, vivid natural colors, strong clear visibility, no haze"
+      "desc": "bright clear midday — vibrant pure cerulean blue sky. No visible sun disc. Bright high overhead illumination, crisp short shadows falling directly below objects, vivid natural colors, strong clear visibility, no haze."
+    },
+    "sunset_pink": {
+      "label": "Закат розовый",
+      "emoji": "🌸",
+      "desc": "romantic pink sunset sky — vivid gradient from deep coral-pink and magenta at the horizon blending through soft rose and lilac to pale blue-lavender overhead. No visible sun disc. Soft diffused pink-magenta light with a gentle warm glow on all architectural surfaces. Cloud streaks in shades of deep pink, salmon, and violet. Dreamy, soft atmospheric quality."
+    },
+    "sunset_purple": {
+      "label": "Закат фиолетовый",
+      "emoji": "💜",
+      "desc": "dramatic purple-violet sunset sky — rich gradient from deep violet and magenta at the horizon transitioning through purple and indigo to a deep blue-navy overhead. No visible sun disc. Cool purple-toned ambient light with soft warm magenta accents on cloud edges. Streaks of deep crimson, violet, and cool lavender in the upper sky. Moody and spectacular atmospheric palette."
     },
     "bluehour": {
       "label": "Синий час",
       "emoji": "🌆",
-      "desc": "blue hour dusk — deep rich saturated blue gradient sky transitioning from deep indigo overhead to soft orange-pink on the horizon, last traces of warm light, cool ambient blue light on all surfaces, calm twilight atmosphere"
+      "desc": "blue hour dusk sky — deep rich saturated blue gradient from deep indigo and violet overhead transitioning to soft purple-blue, then a thin band of pale rose-orange at the very horizon. No visible sun disc. Cool blue-violet ambient light on all surfaces. Calm, serene twilight atmosphere with subtle pink undertones near the horizon."
     },
     "overcast": {
       "label": "Пасмурно",
       "emoji": "☁️",
-      "desc": "bright overcast day — soft uniform light grey-white sky, completely even diffused lighting with no directional shadows, neutral cool-to-neutral ambient light, gentle soft-edged shadows, clean bright appearance"
+      "desc": "bright overcast day — soft uniform light grey-white sky. Completely even diffused lighting with no directional shadows, neutral cool-to-neutral ambient light, gentle soft-edged shadows, clean bright appearance."
     },
     "dramatic": {
       "label": "Драматичные тучи",
       "emoji": "⛈",
-      "desc": "dramatic moody cloudy sky — dark heavy towering storm clouds, swirling dark grey formations, brooding atmospheric tension, dramatic shafts of light breaking through cloud gaps, cool dramatic ambient light on all ground surfaces"
+      "desc": "dramatic moody storm sky — dark heavy towering storm clouds in deep charcoal and slate grey, swirling formations with silver-edged cloud breaks. No visible sun disc. Brooding atmospheric tension with cool dramatic ambient light on all ground surfaces. Possible distant violet-grey rain curtains in the background."
     },
     "night": {
       "label": "Ночь/Сумерки",
       "emoji": "🌃",
-      "desc": "night twilight — very dark deep blue-black sky transitioning to a faint twilight gradient on the horizon, stars beginning to appear, soft warm artificial lighting naturally enhancing architecture and landscape features, photorealistic evening atmosphere"
+      "desc": "night twilight sky — very dark deep blue-black overhead transitioning to deep indigo, then a faint residual violet-pink twilight glow at the horizon. Stars beginning to appear. No visible sun disc. Soft warm artificial lighting naturally enhancing architecture. Photorealistic evening atmosphere."
     },
     "sunrise": {
       "label": "Рассвет",
       "emoji": "🌄",
-      "desc": "sunrise morning — soft gentle pink and pale yellow gradient sky rising from horizon upward, low sun angle creating long morning shadows opposite the light, warm golden morning light on all surfaces, fresh clean morning quality"
+      "desc": "soft sunrise morning sky — gentle gradient from pale gold and warm peach at the horizon blending through soft coral-pink and lavender to pale blue overhead. No visible sun disc. Low-angle directional morning light from off-frame casting long shadows opposite the light source. Delicate pink-peach tones on cloud undersides. Fresh clean morning quality with subtle warm glow on all surfaces."
     }
   },
 
   "clouds": {
-    "few":     "with a few scattered fluffy white cumulus clouds",
+    "few":     "with a few scattered fluffy white cumulus clouds with soft pink-tinted undersides",
     "clear":   "with a completely clear sky and no clouds visible",
-    "cirrus":  "with thin wispy high-altitude cirrus clouds adding texture",
-    "partial": "with light scattered mid-altitude clouds creating varied dappled light"
+    "cirrus":  "with thin wispy high-altitude cirrus clouds adding delicate texture",
+    "partial": "with light scattered mid-altitude clouds in soft tones creating varied dappled light"
   },
 
   "scenes": {
