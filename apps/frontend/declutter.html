@@ -1080,14 +1080,18 @@ function openOriginal() {
 }
 
 async function reprocessCurrent() {
-  if (!previewMeta) return;
+  // Capture snapshot before any await — previewMeta may be nulled during the async fetch
+  const meta = previewMeta;
+  if (!meta) return;
   const apiKey = localStorage.getItem('pd_api_key') || '';
   if (!apiKey) { openSettings(); return; }
+  // Capture originalUrl now — currentOriginalUrl may change during await
+  const capturedOriginalUrl = currentOriginalUrl;
 
   const btn = document.getElementById('btn-reprocess');
   btn.disabled = true;
   btn.textContent = '⏳ מעבד...';
-  log(`🔄 עיבוד מחדש: ${previewMeta.sessionFolder} · ${ROOM_LABELS[previewMeta.roomType] || previewMeta.roomType}`);
+  log(`🔄 עיבוד מחדש: ${meta.sessionFolder} · ${ROOM_LABELS[meta.roomType] || meta.roomType}`);
 
   try {
     const res  = await fetch(serverUrl + '/api/reprocess', {
@@ -1095,10 +1099,10 @@ async function reprocessCurrent() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         apiKey:        apiKey,
-        sessionFolder: previewMeta.sessionFolder,
-        originalFile:  previewMeta.originalFile,
-        mode:          previewMeta.mode,
-        roomType:      previewMeta.roomType,
+        sessionFolder: meta.sessionFolder,
+        originalFile:  meta.originalFile,
+        mode:          meta.mode,
+        roomType:      meta.roomType,
         lightMood:     (files.find(x => x.id === activeId)?.lightMood) || 'day',
         model:         localStorage.getItem('pd_model') || 'aurora',
       }),
@@ -1107,18 +1111,18 @@ async function reprocessCurrent() {
 
     if (data.success && data.resultUrl) {
       log(`✓ עיבוד מחדש הושלם`, 'ok');
-      // Build new meta
+      // Build new meta from captured snapshot
       const newMeta = {
         sessionFolder: data.sessionFolder,
         resultFile:    data.resultUrl,
-        originalFile:  previewMeta.originalFile,
-        mode:          previewMeta.mode,
-        roomType:      previewMeta.roomType,
+        originalFile:  meta.originalFile,
+        mode:          meta.mode,
+        roomType:      meta.roomType,
       };
-      // Update queue file if active
+      // Update queue file if still active and matches session
       if (activeId) {
         const f = files.find(x => x.id === activeId);
-        if (f && f.sessionFolder === previewMeta.sessionFolder) {
+        if (f && f.sessionFolder === meta.sessionFolder) {
           f.resultUrl     = data.resultUrl;
           f.sessionFolder = data.sessionFolder;
           if (!f.allResults) f.allResults = [];
@@ -1137,7 +1141,7 @@ async function reprocessCurrent() {
       showPreview({
         name:         title,
         sub:          sub,
-        beforeUrl:    currentOriginalUrl,
+        beforeUrl:    capturedOriginalUrl,
         afterUrl:     serverUrl + data.resultUrl,
         downloadUrl:  serverUrl + data.resultUrl,
         downloadName: data.resultUrl.split('/').pop(),
@@ -1313,7 +1317,7 @@ async function processAll() {
   document.getElementById('btn-process').disabled = false;
   document.getElementById('btn-stop').style.display = 'none';
   updateButtons();
-  const ok = files.filter(f => f.status === 'done').length;
+  const ok = queue.filter(f => f.status === 'done').length;
   log(`הושלם. הצליח: ${ok} / ${queue.length}`, ok === queue.length ? 'ok' : 'err');
   setTimeout(() => { document.getElementById('progress-wrap').style.display = 'none'; }, 2000);
 }
