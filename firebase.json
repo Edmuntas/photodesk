@@ -12,7 +12,22 @@
       ".env",
       ".tmp/**",
       ".claude/**",
-      "node_modules/**"
+      "node_modules/**",
+      "apps/**",
+      "docs/**",
+      "execution/**",
+      "grok_cleaner/**",
+      "grok_cleaner_test_photos/**",
+      "grok_output/**",
+      "data/**",
+      "vault obsidian photodesk/**",
+      "AGENTS.md",
+      "GEMINI.md",
+      "PLAN.md",
+      "firebase-debug.log",
+      "package.json",
+      "package-lock.json",
+      "setup-upgrade.sh"
     ]
   }
 }
