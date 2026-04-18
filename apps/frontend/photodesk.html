@@ -85,10 +85,13 @@
 
   .logo-mark {
     font-family: var(--font-display);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text);
     letter-spacing: -0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .logo-sub {
@@ -130,6 +133,11 @@
   .nav-item.active { color: var(--accent); background: var(--accent-glow); font-weight: 600; }
   .nav-item .icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; opacity: 0.8; }
   .nav-item.active .icon { opacity: 1; }
+  .drag-handle { font-size: 11px; color: var(--text-dim); opacity: 0; cursor: grab; user-select: none; flex-shrink: 0; padding: 0 2px; line-height: 1; }
+  .sidebar:not(.collapsed) .draggable-nav:hover .drag-handle { opacity: 0.45; }
+  .draggable-nav.dragging { opacity: 0.3; }
+  .draggable-nav.drag-over-top { box-shadow: inset 0 2px 0 0 var(--accent); border-radius: 6px 6px 0 0; }
+  .draggable-nav.drag-over-bottom { box-shadow: inset 0 -2px 0 0 var(--accent); border-radius: 0 0 6px 6px; }
 
   .nav-badge {
     margin-right: auto;
@@ -176,7 +184,8 @@
   .sidebar.collapsed { width: 64px; }
   .sidebar.collapsed .logo { justify-content: center; padding: 16px 0; }
   .sidebar.collapsed .logo-mark,
-  .sidebar.collapsed .logo-sub { display: none; }
+  .sidebar.collapsed .logo-sub,
+  .sidebar.collapsed #logo-img-custom { display: none !important; }
   .sidebar.collapsed .nav-label { display: none; }
   .sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; gap: 0; }
   .sidebar.collapsed .nav-text { display: none; }
@@ -2216,32 +2225,38 @@
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo">
-    <div class="logo-icon">📷</div>
-    <div>
+    <div class="logo-icon" id="logo-icon-box">📷</div>
+    <img id="logo-img-custom" style="display:none;height:30px;border-radius:6px;object-fit:contain;max-width:76px;flex-shrink:0;">
+    <div style="flex:1;min-width:0;">
       <div class="logo-mark" id="logo-text">PhotoDesk</div>
       <div class="logo-sub">ניהול צילום נדל"ן</div>
     </div>
     <button class="sidebar-toggle" onclick="toggleSidebar()" title="הצג/הסתר תפריט" id="sidebar-toggle-btn">◀</button>
   </div>
 
-  <div class="nav-group">
+  <div class="nav-group nav-group-main">
     <div class="nav-label">ראשי</div>
-    <div class="nav-item active" onclick="navigate('dashboard')">
+    <div class="nav-item draggable-nav active" draggable="true" data-page="dashboard" onclick="navigate('dashboard')">
+      <span class="drag-handle" onmousedown="event.stopPropagation()">⠿</span>
       <span class="icon">⚡</span><span class="nav-text">דאשבורד</span>
     </div>
-    <div class="nav-item" onclick="navigate('listings')">
-      <span class="icon">🏠</span><span class="nav-text">נכסים</span>
-      <span class="nav-badge" id="listings-badge">22</span>
-    </div>
-    <div class="nav-item" onclick="navigate('orders')" style="position:relative;">
+    <div class="nav-item draggable-nav" draggable="true" data-page="orders" onclick="navigate('orders')" style="position:relative;">
+      <span class="drag-handle" onmousedown="event.stopPropagation()">⠿</span>
       <span class="icon">📋</span><span class="nav-text">הזמנות</span>
       <span class="nav-badge" id="orders-badge" style="display:none; background:var(--accent); color:#fff; border-color:transparent;">0</span>
     </div>
-    <div class="nav-item" onclick="navigate('calendar')">
+    <div class="nav-item draggable-nav" draggable="true" data-page="calendar" onclick="navigate('calendar')">
+      <span class="drag-handle" onmousedown="event.stopPropagation()">⠿</span>
       <span class="icon">📅</span><span class="nav-text">יומן</span>
     </div>
-    <div class="nav-item" onclick="navigate('customers')">
+    <div class="nav-item draggable-nav" draggable="true" data-page="customers" onclick="navigate('customers')">
+      <span class="drag-handle" onmousedown="event.stopPropagation()">⠿</span>
       <span class="icon">👤</span><span class="nav-text">לקוחות</span>
+    </div>
+    <div class="nav-item draggable-nav" draggable="true" data-page="listings" onclick="navigate('listings')">
+      <span class="drag-handle" onmousedown="event.stopPropagation()">⠿</span>
+      <span class="icon">🏠</span><span class="nav-text">נכסים</span>
+      <span class="nav-badge" id="listings-badge">22</span>
     </div>
   </div>
 
@@ -7018,14 +7033,19 @@ function clearLogo() {
 
 function applySidebarSettings() {
   const s = store.settings || {};
-  const logoMark = document.querySelector('.logo-mark');
-  const logoSub  = document.querySelector('.logo-sub');
-  if (logoMark) {
-    if (s.logo) {
-      logoMark.innerHTML = `<img src="${s.logo}" style="height:28px;border-radius:4px;vertical-align:middle;margin-left:6px;"> ${s.businessName || 'PhotoDesk'}`;
-    } else {
-      logoMark.textContent = '📷 ' + (s.businessName || 'PhotoDesk');
-    }
+  const logoMark    = document.querySelector('.logo-mark');
+  const logoSub     = document.querySelector('.logo-sub');
+  const logoIconBox = document.getElementById('logo-icon-box');
+  const logoImgEl   = document.getElementById('logo-img-custom');
+
+  if (s.logo) {
+    if (logoIconBox) logoIconBox.style.display = 'none';
+    if (logoImgEl)  { logoImgEl.src = s.logo; logoImgEl.style.display = 'block'; }
+    if (logoMark)   logoMark.textContent = s.businessName || 'PhotoDesk';
+  } else {
+    if (logoIconBox) logoIconBox.style.display = 'flex';
+    if (logoImgEl)  logoImgEl.style.display = 'none';
+    if (logoMark)   logoMark.textContent = s.businessName || 'PhotoDesk';
   }
   if (logoSub) logoSub.textContent = s.photographerName || 'ניהול צילום נדל"ן';
   const nameEl = document.getElementById('auth-user-name');
@@ -7265,12 +7285,83 @@ function logoutUser() {
 }
 
 // ══════════════════════════════════════════════════
+//  SIDEBAR NAV DRAG-TO-REORDER
+// ══════════════════════════════════════════════════
+function initNavDrag() {
+  const group = document.querySelector('.nav-group-main');
+  if (!group) return;
+  let dragSrc = null;
+
+  group.addEventListener('dragstart', e => {
+    const item = e.target.closest('.draggable-nav');
+    if (!item) return;
+    dragSrc = item;
+    setTimeout(() => item.classList.add('dragging'), 0);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  group.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const item = e.target.closest('.draggable-nav');
+    group.querySelectorAll('.draggable-nav').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
+    if (!item || item === dragSrc) return;
+    const rect = item.getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2) item.classList.add('drag-over-top');
+    else item.classList.add('drag-over-bottom');
+  });
+
+  group.addEventListener('dragleave', e => {
+    if (!group.contains(e.relatedTarget))
+      group.querySelectorAll('.draggable-nav').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
+  });
+
+  group.addEventListener('drop', e => {
+    e.preventDefault();
+    const item = e.target.closest('.draggable-nav');
+    group.querySelectorAll('.draggable-nav').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
+    if (!item || item === dragSrc) return;
+    const rect = item.getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2) group.insertBefore(dragSrc, item);
+    else group.insertBefore(dragSrc, item.nextSibling);
+  });
+
+  group.addEventListener('dragend', () => {
+    if (dragSrc) dragSrc.classList.remove('dragging');
+    group.querySelectorAll('.draggable-nav').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
+    dragSrc = null;
+    saveNavOrder();
+  });
+}
+
+function saveNavOrder() {
+  const items = document.querySelectorAll('.nav-group-main .draggable-nav');
+  const order = Array.from(items).map(el => el.dataset.page);
+  if (!store.settings) store.settings = {};
+  store.settings.navOrder = order;
+  saveStore();
+}
+
+function applyNavOrder() {
+  const order = store.settings?.navOrder;
+  if (!order || !order.length) return;
+  const group = document.querySelector('.nav-group-main');
+  if (!group) return;
+  order.forEach(page => {
+    const item = group.querySelector(`[data-page="${page}"]`);
+    if (item) group.appendChild(item);
+  });
+}
+
+// ══════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════
 async function _initApp() {
   renderSkeletonListings();
   await loadStore();
   applySidebarSettings();
+  applyNavOrder();
+  initNavDrag();
   // Restore sidebar collapse state
   if (localStorage.getItem('pd_sidebar_collapsed') === '1') {
     const sb = document.querySelector('.sidebar');
