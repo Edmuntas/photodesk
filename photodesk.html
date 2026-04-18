@@ -559,6 +559,51 @@
   }
   .panel-close:hover { color: var(--text); background: var(--surface3); border-color: var(--border-focus); }
 
+  /* ── PANEL REDESIGN v2 ──────────────── */
+  .panel-header-info { flex:1; min-width:0; overflow:hidden; }
+  .panel-action-group { display:flex; gap:6px; align-items:center; flex-shrink:0; }
+  .pact-btn {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:5px 10px; border-radius:8px; font-size:12px; font-weight:500;
+    background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    cursor:pointer; transition:all 0.15s; font-family:inherit; white-space:nowrap;
+  }
+  .pact-btn:hover { background:var(--surface3); }
+  .pact-btn.accent { background:var(--accent-light); border-color:rgba(249,115,22,0.3); color:var(--accent); font-weight:600; }
+  .pinfo-grid { display:grid; grid-template-columns:1fr 240px; gap:20px; align-items:start; }
+  .pinfo-sidebar { border:1px solid var(--border); border-radius:12px; overflow:hidden; position:sticky; top:0; }
+  .psidebar-section { padding:14px 16px; border-bottom:1px solid var(--border); }
+  .psidebar-section:last-child { border-bottom:none; }
+  .psidebar-title { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:10px; }
+  .pay-seg { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .pay-seg-btn {
+    flex:1; padding:8px 4px; font-size:11px; font-weight:600; font-family:inherit;
+    background:var(--surface); border:none; border-left:1px solid var(--border);
+    cursor:pointer; color:var(--text-muted); transition:all 0.15s;
+  }
+  .pay-seg-btn:first-child { border-left:none; }
+  .pay-seg-btn.active[data-val="unpaid"]  { background:rgba(239,68,68,0.12);   color:#F87171; }
+  .pay-seg-btn.active[data-val="deposit"] { background:rgba(245,158,11,0.12);  color:#FBBF24; }
+  .pay-seg-btn.active[data-val="paid"]    { background:rgba(16,185,129,0.12);  color:#34D399; }
+  .dchip-grp { display:flex; flex-direction:column; gap:6px; }
+  .dchip {
+    display:flex; align-items:center; gap:8px; padding:7px 10px;
+    border-radius:8px; cursor:pointer; font-size:12px;
+    background:var(--surface); border:1px solid var(--border);
+    transition:all 0.15s; color:var(--text-muted); user-select:none;
+  }
+  .dchip input[type=checkbox] {
+    appearance:none; -webkit-appearance:none;
+    width:14px; height:14px; border:1.5px solid var(--border);
+    border-radius:3px; flex-shrink:0; transition:all 0.15s; cursor:pointer;
+  }
+  .dchip input[type=checkbox]:checked {
+    background:var(--accent); border-color:var(--accent);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-size:10px; background-repeat:no-repeat; background-position:center;
+  }
+  .dchip:has(input:checked) { background:rgba(249,115,22,0.06); border-color:rgba(249,115,22,0.25); color:var(--text); }
+
   .panel-tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
@@ -2627,17 +2672,17 @@
 <!-- LISTING DETAIL PANEL -->
 <div class="detail-panel" id="listing-panel" data-stop-propagation="1">
   <div class="panel-topbar">
-    <div>
-      <div style="font-family: var(--font-display); font-size:16px;" id="panel-listing-title">פרטי נכס</div>
-      <div style="font-size:12px; color:var(--text-muted); margin-top:2px;" id="panel-listing-sub"></div>
+    <div class="panel-close" onclick="closePanel()">✕</div>
+    <div class="panel-header-info">
+      <div id="panel-listing-title" style="font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--text);">פרטי נכס</div>
+      <div id="panel-listing-sub" style="font-size:12px; color:var(--text-muted); margin-top:2px;"></div>
     </div>
-    <div style="display:flex; gap:8px; margin-right:auto; align-items:center;">
-      <span id="panel-status-badge"></span>
-      <button class="btn" style="font-size:12px; padding:5px 12px; background:var(--surface2); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="openInvoice(currentListing?.id)" title="צור חשבונית PDF">🧾 חשבונית</button>
-      <button class="btn" style="font-size:12px; padding:5px 12px; background:var(--accent-light); border:1px solid rgba(249,115,22,0.3); color:var(--accent); cursor:pointer; font-weight:600;" onclick="shareQuoteLink()" title="שלח הצעת מחיר ללקוח">💰 שתף הצעה</button>
-      <button class="btn" id="share-delivery-btn" style="font-size:12px; padding:5px 12px; background:var(--surface2); border:1px solid var(--border); color:var(--text); cursor:pointer;" onclick="shareDeliveryLink()" title="שתף קישור מסירה ללקוח">🔗 שתף מסירה</button>
-      <button class="btn btn-primary" style="font-size:12px; padding:5px 12px;" onclick="deliverListing()">סמן כנמסר</button>
-      <div class="panel-close" onclick="closePanel()">✕</div>
+    <span id="panel-status-badge"></span>
+    <div class="panel-action-group">
+      <button class="pact-btn" onclick="openInvoice(currentListing?.id)" title="חשבונית PDF">🧾 חשבונית</button>
+      <button class="pact-btn accent" onclick="shareQuoteLink()" title="שתף הצעת מחיר">💰 הצעה</button>
+      <button class="pact-btn" id="share-delivery-btn" onclick="shareDeliveryLink()" title="שתף קישור מסירה">🔗 מסירה</button>
+      <button class="btn btn-primary" style="font-size:12px; padding:5px 14px;" onclick="deliverListing()">✓ נמסר</button>
     </div>
   </div>
   <div id="panel-pipeline" style="padding:12px 20px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:0; overflow-x:auto;"></div>
@@ -2651,118 +2696,132 @@
   <div class="panel-content">
     <!-- Info Tab -->
     <div class="panel-tab-content active" id="tab-info">
-      <div class="section-title">מיקום</div>
-      <div class="form-group">
-        <label class="form-label">כתובת</label>
-        <input class="form-input" id="panel-address" />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">עיר</label>
-          <input class="form-input" id="panel-city" />
+      <div class="pinfo-grid">
+        <!-- Main column: property details -->
+        <div>
+          <div class="section-title">מיקום</div>
+          <div class="form-group">
+            <label class="form-label">כתובת</label>
+            <input class="form-input" id="panel-address" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">עיר</label>
+              <input class="form-input" id="panel-city" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">שכונה</label>
+              <input class="form-input" id="panel-state" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">מיקוד</label>
+              <input class="form-input" id="panel-zip" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">מס' רישום</label>
+              <input class="form-input" id="panel-mls" />
+            </div>
+          </div>
+          <div class="section-title">נכס</div>
+          <div class="form-group">
+            <label class="form-label">שם מותאם</label>
+            <input class="form-input" id="panel-name" placeholder="לדוגמה: דירה מודרנית בלב תל אביב" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">תיאור</label>
+            <textarea class="form-textarea" id="panel-desc" placeholder="תאר את הנכס..." style="min-height:72px;"></textarea>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label class="form-label">שטח בנוי (מ"ר)</label>
+              <input class="form-input" type="number" id="panel-area" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">שטח מגרש (מ"ר)</label>
+              <input class="form-input" type="number" id="panel-lot" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">שנת בנייה</label>
+              <input class="form-input" type="number" id="panel-year" />
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label class="form-label">חדרים</label>
+              <input class="form-input" type="number" id="panel-beds" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">חדרי אמבטיה</label>
+              <input class="form-input" type="number" id="panel-baths" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">קומה</label>
+              <input class="form-input" type="number" id="panel-stories" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">חבילה</label>
+              <select class="form-select" id="panel-package">
+                <option value="">— ללא חבילה —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">לקוח</label>
+              <select class="form-select" id="panel-customer">
+                <option value="">— לא משויך —</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+            <button class="btn btn-primary" onclick="saveListing()">שמור שינויים</button>
+            <button class="btn btn-danger" onclick="deleteListing()">מחק נכס</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">שכונה</label>
-          <input class="form-input" id="panel-state" />
+        <!-- Sidebar: payment, delivery, docs, drive -->
+        <div class="pinfo-sidebar">
+          <div class="psidebar-section">
+            <div class="psidebar-title">סטטוס תשלום</div>
+            <div class="pay-seg">
+              <button class="pay-seg-btn" data-val="unpaid"  onclick="setPaySeg('unpaid')">💸 לא שולם</button>
+              <button class="pay-seg-btn" data-val="deposit" onclick="setPaySeg('deposit')">💰 מקדמה</button>
+              <button class="pay-seg-btn" data-val="paid"    onclick="setPaySeg('paid')">✅ שולם</button>
+            </div>
+            <div style="display:none;">
+              <input type="radio" name="panel-payment" value="unpaid"  id="panel-pay-unpaid">
+              <input type="radio" name="panel-payment" value="deposit" id="panel-pay-deposit">
+              <input type="radio" name="panel-payment" value="paid"    id="panel-pay-paid">
+            </div>
+            <div style="margin-top:12px;">
+              <label class="form-label">סכום שהתקבל (₪)</label>
+              <input class="form-input" type="number" id="panel-payment-amount" placeholder="0" min="0" step="1" style="margin-top:5px;">
+            </div>
+          </div>
+          <div class="psidebar-section">
+            <div class="psidebar-title">נמסר ללקוח</div>
+            <div class="dchip-grp">
+              <label class="dchip"><input type="checkbox" id="panel-deliveredphotos"> 📸 תמונות</label>
+              <label class="dchip"><input type="checkbox" id="panel-deliveredvideo">  🎬 וידאו</label>
+              <label class="dchip"><input type="checkbox" id="panel-deliveredfloorplan"> 📐 תוכנית קומה</label>
+            </div>
+          </div>
+          <div class="psidebar-section">
+            <div class="psidebar-title">מסמכים</div>
+            <div class="dchip-grp">
+              <label class="dchip"><input type="checkbox" id="panel-payreq-sent"> 📨 בקשת תשלום</label>
+              <label class="dchip"><input type="checkbox" id="panel-invoice-sent"> 🧾 חשבונית</label>
+            </div>
+          </div>
+          <div class="psidebar-section">
+            <div class="psidebar-title">📁 Google Drive</div>
+            <div id="drive-links" style="display:none; margin-bottom:8px;"></div>
+            <button class="btn" id="create-drive-btn" onclick="createDriveFolders()" style="width:100%; font-size:12px; padding:8px; text-align:center;">
+              📁 צור תיקיות
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">מיקוד</label>
-          <input class="form-input" id="panel-zip" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">מס' רישום</label>
-          <input class="form-input" id="panel-mls" />
-        </div>
-      </div>
-      <div class="section-title">נכס</div>
-      <div class="form-group">
-        <label class="form-label">שם מותאם</label>
-        <input class="form-input" id="panel-name" placeholder="לדוגמה: דירה מודרנית בלב תל אביב" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">תיאור</label>
-        <textarea class="form-textarea" id="panel-desc" placeholder="תאר את הנכס..."></textarea>
-      </div>
-      <div class="form-row-3">
-        <div class="form-group">
-          <label class="form-label">שטח בנוי (מ"ר)</label>
-          <input class="form-input" type="number" id="panel-area" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">שטח מגרש (מ"ר)</label>
-          <input class="form-input" type="number" id="panel-lot" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">שנת בנייה</label>
-          <input class="form-input" type="number" id="panel-year" />
-        </div>
-      </div>
-      <div class="form-row-3">
-        <div class="form-group">
-          <label class="form-label">חדרים</label>
-          <input class="form-input" type="number" id="panel-beds" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">חדרי אמבטיה</label>
-          <input class="form-input" type="number" id="panel-baths" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">קומה</label>
-          <input class="form-input" type="number" id="panel-stories" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">חבילה</label>
-        <select class="form-select" id="panel-package">
-          <option value="">— ללא חבילה —</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">לקוח</label>
-        <select class="form-select" id="panel-customer">
-          <option value="">— לא משויך —</option>
-        </select>
-      </div>
-      <div class="section-title" style="margin-top:20px;">תשלום ומסירה</div>
-      <div class="form-group">
-        <label class="form-label">סטטוס תשלום</label>
-        <div style="display:flex; gap:16px; margin-top:4px;">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="radio" name="panel-payment" value="unpaid"  id="panel-pay-unpaid">  💸 לא שולם</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="radio" name="panel-payment" value="deposit" id="panel-pay-deposit"> 💰 מקדמה</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="radio" name="panel-payment" value="paid"    id="panel-pay-paid">    ✅ שולם</label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">סכום שהתקבל (₪)</label>
-        <input class="form-input" type="number" id="panel-payment-amount" placeholder="0" min="0" step="1">
-      </div>
-      <div class="form-group">
-        <label class="form-label">מסמכים כספיים</label>
-        <div style="display:flex; gap:20px; margin-top:6px; flex-wrap:wrap;">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-payreq-sent"> 📨 נשלחה בקשת תשלום</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-invoice-sent"> 🧾 נשלחה חשבונית</label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">מה נמסר ללקוח</label>
-        <div style="display:flex; gap:20px; margin-top:6px; flex-wrap:wrap;">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-deliveredphotos"> 📸 תמונות</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-deliveredvideo">  🎬 וידאו</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;"><input type="checkbox" id="panel-deliveredfloorplan"> 📐 תוכנית קומה</label>
-        </div>
-      </div>
-      <!-- Google Drive Section -->
-      <div class="section-title" style="margin-top:20px;">📁 Google Drive</div>
-      <div id="drive-links" style="display:none; margin-bottom:10px;"></div>
-      <button class="btn" id="create-drive-btn" onclick="createDriveFolders()" style="font-size:13px; padding:7px 14px; margin-bottom:16px;">
-        📁 צור תיקיות Drive לנכס
-      </button>
-
-      <div style="display:flex; gap:10px; margin-top:8px;">
-        <button class="btn btn-primary" onclick="saveListing()">שמור שינויים</button>
-        <button class="btn btn-danger" onclick="deleteListing()">מחק נכס</button>
       </div>
     </div>
 
@@ -4335,6 +4394,12 @@ const PIPELINE_STEPS = [
   { key:'נמסר',         icon:'✅', label:'נמסר' },
 ];
 
+function setPaySeg(val) {
+  const r = document.querySelector(`input[name="panel-payment"][value="${val}"]`);
+  if (r) r.checked = true;
+  document.querySelectorAll('.pay-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.val === val));
+}
+
 function renderPipeline(l) {
   const el = document.getElementById('panel-pipeline');
   if (!el) return;
@@ -4382,8 +4447,7 @@ function openListing(id) {
   document.getElementById('panel-shoot-date').value = l.shootDate;
 
   const payStatus = l.paymentStatus || 'unpaid';
-  const payRadio = document.querySelector(`input[name="panel-payment"][value="${payStatus}"]`);
-  if (payRadio) payRadio.checked = true;
+  setPaySeg(payStatus);
   document.getElementById('panel-payment-amount').value = l.paymentAmount || 0;
   document.getElementById('panel-deliveredphotos').checked    = !!l.deliveredPhotos;
   document.getElementById('panel-deliveredvideo').checked     = !!l.deliveredVideo;
