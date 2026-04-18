@@ -2670,7 +2670,7 @@
 <div class="panel-overlay" id="panel-overlay" onclick="closePanel(); closeCustomerPanel();">
 
 <!-- LISTING DETAIL PANEL -->
-<div class="detail-panel" id="listing-panel" data-stop-propagation="1">
+<div class="detail-panel" id="listing-panel" onclick="event.stopPropagation()">
   <div class="panel-topbar">
     <div class="panel-close" onclick="closePanel()">✕</div>
     <div class="panel-header-info">
@@ -2873,7 +2873,7 @@
 </div>
 
 <!-- CUSTOMER PANEL -->
-<div class="detail-panel" id="customer-panel" data-stop-propagation="1">
+<div class="detail-panel" id="customer-panel" onclick="event.stopPropagation()">
   <!-- Hero -->
   <div class="cust-panel-hero">
     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
