@@ -2021,7 +2021,7 @@
 }
 .pipeline-row:last-child { border-bottom: none; }
 .pipeline-row:hover { background: var(--surface2); }
-.pipeline-dot {
+.dash-dot {
   width: 10px; height: 10px; border-radius: 50%;
   flex-shrink: 0;
 }
@@ -3641,7 +3641,7 @@ function renderDashPipeline() {
     const pct = Math.round((count / total) * 100);
     return `
       <div class="pipeline-row" onclick="navigate('listings')">
-        <div class="pipeline-dot" style="background:${s.color}"></div>
+        <div class="dash-dot" style="background:${s.color}"></div>
         <span class="pipeline-status-name">${s.icon} ${s.status}</span>
         <div class="pipeline-bar-wrap">
           <div class="pipeline-bar" style="width:${pct}%;background:${s.color}"></div>
@@ -6697,100 +6697,87 @@ function renderOrders() {
     return;
   }
 
-  const statusColors = { 'ממתין לאישור':'#F59E0B','מתוכנן':'#8B5CF6','צולם':'#F97316','בעיבוד':'#3B82F6','ממתין למסירה':'#EF4444','נמסר':'#10B981' };
-  const nextStatus   = { 'מתוכנן':'צולם', 'צולם':'בעיבוד', 'בעיבוד':'ממתין למסירה', 'ממתין למסירה':'נמסר' };
-  const nextLabel    = { 'מתוכנן':'צולם ✓', 'צולם':'בעיבוד ✓', 'בעיבוד':'ממתין למסירה ✓', 'ממתין למסירה':'נמסר ✓' };
-  const URGENCY      = { 'ממתין למסירה':0, 'בעיבוד':1, 'צולם':2, 'מתוכנן':3 };
+  const nextStatus = { 'מתוכנן':'צולם', 'צולם':'בעיבוד', 'בעיבוד':'ממתין למסירה', 'ממתין למסירה':'נמסר' };
+  const nextLabel  = { 'מתוכנן':'צולם ✓', 'צולם':'בעיבוד ✓', 'בעיבוד':'ממתין למסירה ✓', 'ממתין למסירה':'נמסר ✓' };
+  const _d = v => { if (!v) return null; if (v && typeof v.toDate==='function') return v.toDate(); const d=new Date(v); return isNaN(d)?null:d; };
 
-  let html = '';
+  const columns = [
+    { key:'ממתין לאישור', label:'⏳ ממתין לאישור', color:'#F59E0B', isPending:true,  cards: filteredPending },
+    { key:'מתוכנן',       label:'📅 מתוכנן',       color:'#8B5CF6', isPending:false, cards: filteredActive.filter(o=>o.status==='מתוכנן') },
+    { key:'צולם',         label:'📸 צולם',          color:'#F97316', isPending:false, cards: filteredActive.filter(o=>o.status==='צולם') },
+    { key:'בעיבוד',       label:'⚙️ בעיבוד',        color:'#3B82F6', isPending:false, cards: filteredActive.filter(o=>o.status==='בעיבוד') },
+    { key:'ממתין למסירה', label:'🚀 ממתין למסירה', color:'#EF4444', isPending:false, cards: filteredActive.filter(o=>o.status==='ממתין למסירה') },
+  ];
 
-  // ── Pending approvals (flat, no section header) ─
-  filteredPending.forEach(b => {
-    const p  = b.property || {};
-    const bc = b.client   || {};
-    const cl = bc.isExisting
-      ? (store.customers.find(c => c.id === bc.id) || {first:'?', last:''})
-      : bc;
-    const name = ((cl.first || '') + ' ' + (cl.last || '')).trim();
-    const _d = v => { if (!v) return null; if (v && typeof v.toDate === 'function') return v.toDate(); const d = new Date(v); return isNaN(d) ? null : d; };
-    const sDate    = _d(b.shootDate);
-    const shootStr = sDate ? sDate.toLocaleDateString('he-IL', {day:'numeric', month:'long'}) : '';
-    const shootTime= sDate ? sDate.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}) : '';
-    const cDate    = _d(b.createdAt);
-    const sentStr  = cDate ? cDate.toLocaleDateString('he-IL') : '';
-    const pkg      = b.package || {};
+  const colsHtml = columns.map(col => {
+    let cardsHtml = '';
 
-    html += `
-      <div class="ocard" style="--ocard-color:#F59E0B;">
-        <div class="ocard-bar"></div>
-        <div class="ocard-inner">
-          <div class="ocard-top">
-            <div class="ocard-addr">${h(p.address)}${p.city ? ', ' + h(p.city) : ''}</div>
-            ${shootStr ? `<div class="ocard-shootdate">📅 ${shootStr}${shootTime ? ' ' + shootTime : ''}</div>` : ''}
-          </div>
-          <div class="ocard-row2">
-            ${name ? `<span class="ocard-cname">👤 ${h(name)}</span>` : ''}
-            ${pkg.name ? `<span class="ocard-pkg">· 📦 ${h(pkg.name)}</span>` : ''}
-            ${p.rooms ? `<span class="ocard-pkg">· ${h(String(p.rooms))} חד'</span>` : ''}
-          </div>
-          <div class="ocard-bot">
-            <span class="badge badge-pending" style="font-size:11px;">ממתין לאישור</span>
-            ${sentStr ? `<span style="font-size:11px;color:var(--text-dim);">נשלח ${sentStr}</span>` : ''}
-            ${p.notes ? `<span class="booking-tag" title="${h(p.notes)}" style="font-size:11px;">📝 הערות</span>` : ''}
-          </div>
+    if (col.isPending) {
+      col.cards.forEach(b => {
+        const p = b.property||{}, bc = b.client||{};
+        const cl = bc.isExisting ? (store.customers.find(c=>c.id===bc.id)||{first:'?',last:''}) : bc;
+        const name = ((cl.first||'')+' '+(cl.last||'')).trim();
+        const sDate = _d(b.shootDate);
+        const shootStr = sDate ? sDate.toLocaleDateString('he-IL',{day:'numeric',month:'short'}) : '';
+        const shootTime = sDate ? sDate.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '';
+        const pkg = b.package||{};
+        cardsHtml += `
+          <div class="kanban-card" data-stop-propagation="1" style="cursor:default;">
+            <div class="kanban-card-addr">${h(p.address)||'בקשת הזמנה'}${p.city?', '+h(p.city):''}</div>
+            <div class="kanban-card-meta">
+              ${name ? '👤 '+h(name) : ''}
+              ${shootStr ? (name?'<br>':'')+'📅 '+shootStr+(shootTime?' '+shootTime:'') : ''}
+              ${pkg.name ? '<br>📦 '+h(pkg.name) : ''}
+              ${p.rooms ? '<br>🏠 '+h(String(p.rooms))+" חד'" : ''}
+            </div>
+            <div style="display:flex;gap:5px;margin-top:10px;">
+              <button class="btn btn-primary" style="font-size:11px;padding:4px 8px;flex:1;" onclick="approveBooking('${h(b.id)}')">✓ אשר</button>
+              <button class="btn btn-ghost" style="font-size:11px;padding:4px 6px;" onclick="viewBooking('${h(b.id)}')">פרטים</button>
+              <button class="btn btn-danger" style="font-size:11px;padding:4px 6px;" onclick="rejectBooking('${h(b.id)}')">✕</button>
+            </div>
+          </div>`;
+      });
+    } else {
+      col.cards.forEach(l => {
+        const custObj = l.customer ? (store.customers.find(c=>c.id===l.customer)||{first:'',last:''}) : null;
+        const custLabel = custObj ? (custObj.first+' '+custObj.last).trim() : '';
+        const next = nextStatus[l.status];
+        const nextLbl = nextLabel[l.status];
+        const payLbl = {'unpaid':'לא שולם','deposit':'מקדמה','paid':'שולם'}[l.paymentStatus||'unpaid'];
+        const payClass = 'pay-'+(l.paymentStatus||'unpaid');
+        const shootStr = l.shootDate ? new Date(l.shootDate).toLocaleDateString('he-IL',{day:'numeric',month:'short'}) : '';
+        cardsHtml += `
+          <div class="kanban-card js-open-listing" data-listing-id="${h(l.id)}">
+            <div class="kanban-card-addr">${h(l.address)}${l.city?', '+h(l.city):''}</div>
+            <div class="kanban-card-meta">
+              ${custLabel ? '👤 '+h(custLabel) : ''}
+              ${shootStr ? (custLabel?'<br>':'')+'📅 '+shootStr : ''}
+              ${l.pkg ? '<br>📦 '+h(l.pkg) : ''}
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;margin-top:8px;flex-wrap:wrap;" data-stop-propagation="1">
+              <span class="pay-badge ${payClass}" onclick="cyclePayment('${h(l.id)}')" style="font-size:10px;cursor:pointer;">${h(payLbl)}</span>
+              <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredPhotos')" title="תמונות">📸</span>
+              <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredVideo')" title="סרטון">🎬</span>
+              <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredFloorplan')" title="תוכנית">📐</span>
+            </div>
+            ${next ? `<button class="btn btn-primary" style="width:100%;font-size:11px;padding:5px;margin-top:8px;" data-stop-propagation="1" onclick="advanceStatus('${h(l.id)}','${h(next)}')">${h(nextLbl)}</button>` : ''}
+          </div>`;
+      });
+    }
+
+    if (!cardsHtml) cardsHtml = '<div class="kanban-empty">אין הזמנות</div>';
+
+    return `
+      <div class="kanban-col">
+        <div class="kanban-col-header" style="border-color:${col.color};color:${col.color};">
+          ${col.label}
+          <span class="kanban-col-count" style="background:${col.color};">${col.cards.length}</span>
         </div>
-        <div class="ocard-pend-side" data-stop-propagation="1">
-          <button class="btn btn-primary" style="font-size:12px;" onclick="approveBooking('${h(b.id)}')">✓ אשר</button>
-          <button class="btn btn-ghost" style="font-size:12px;" onclick="viewBooking('${h(b.id)}')">פרטים</button>
-          <button class="btn btn-danger" style="font-size:12px;" onclick="rejectBooking('${h(b.id)}')">✕</button>
-        </div>
+        ${cardsHtml}
       </div>`;
-  });
+  }).join('');
 
-  // ── Active orders sorted by urgency then date ──
-  const sorted = [...filteredActive].sort((a, b) => {
-    const ua = URGENCY[a.status] ?? 9, ub = URGENCY[b.status] ?? 9;
-    if (ua !== ub) return ua - ub;
-    return (a.shootDate || '').localeCompare(b.shootDate || '');
-  });
-
-  sorted.forEach(l => {
-    const custObj   = l.customer ? (store.customers.find(c => c.id === l.customer) || {first:'', last:''}) : null;
-    const custLabel = custObj ? (custObj.first + ' ' + custObj.last).trim() : '';
-    const next      = nextStatus[l.status];
-    const nextLbl   = nextLabel[l.status];
-    const payLbl    = {'unpaid':'לא שולם','deposit':'מקדמה','paid':'שולם'}[l.paymentStatus||'unpaid'];
-    const payClass  = 'pay-' + (l.paymentStatus || 'unpaid');
-    const color     = statusColors[l.status] || 'var(--border)';
-    const shootStr  = l.shootDate ? new Date(l.shootDate).toLocaleDateString('he-IL', {day:'numeric', month:'long'}) : '';
-
-    html += `
-      <div class="ocard" style="--ocard-color:${color}" data-listing-id="${h(l.id)}">
-        <div class="ocard-bar"></div>
-        <div class="ocard-inner">
-          <div class="ocard-top">
-            <div class="ocard-addr">${h(l.address)}${l.city ? ', ' + h(l.city) : ''}</div>
-            ${shootStr ? `<div class="ocard-shootdate">📅 ${shootStr}</div>` : ''}
-          </div>
-          <div class="ocard-row2">
-            ${custLabel ? `<span class="ocard-cname">👤 ${h(custLabel)}</span>` : ''}
-            ${l.pkg ? `<span class="ocard-pkg">· 📦 ${h(l.pkg)}</span>` : ''}
-          </div>
-          <div class="ocard-bot" data-stop-propagation="1">
-            <span class="badge ${badgeClass(l.status)}" style="font-size:11px;">${h(l.status)}</span>
-            <span class="pay-badge ${payClass}" onclick="cyclePayment('${h(l.id)}')" style="font-size:11px;cursor:pointer;">${h(payLbl)}</span>
-            <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredPhotos')" title="תמונות">📸</span>
-            <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredVideo')" title="סרטון">🎬</span>
-            <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredFloorplan')" title="תוכנית">📐</span>
-          </div>
-        </div>
-        ${next ? `<div class="ocard-side" data-stop-propagation="1">
-          <button class="btn btn-primary" style="font-size:12px;white-space:nowrap;" onclick="advanceStatus('${h(l.id)}','${h(next)}')">${h(nextLbl)}</button>
-        </div>` : ''}
-      </div>`;
-  });
-
-  listEl.innerHTML = html;
+  listEl.innerHTML = `<div class="kanban-board" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">${colsHtml}</div>`;
 }
 
 function loadPendingBookings() {
