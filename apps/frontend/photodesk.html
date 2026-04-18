@@ -201,25 +201,19 @@
   .sidebar.collapsed .user-name,
   .sidebar.collapsed .user-role { display: none; }
   .sidebar-toggle {
-    position: absolute;
-    top: 16px;
-    left: -12px;
-    width: 24px; height: 24px;
-    background: var(--surface);
+    width: 32px; height: 32px;
+    background: none;
     border: 1px solid var(--border);
-    border-radius: 50%;
+    border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
-    font-size: 11px;
     color: var(--text-muted);
-    z-index: 10;
     transition: all 0.15s;
-    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
   }
+  .sidebar-toggle::before { content: '☰'; font-size: 14px; }
   .sidebar-toggle:hover { background: var(--surface2); color: var(--text); border-color: var(--border-focus); }
   .sidebar { position: relative; }
-  .sidebar.collapsed .sidebar-toggle { left: 50%; transform: translateX(-50%); position: relative; margin: 12px auto 0; display: flex; }
-  .sidebar:not(.collapsed) .sidebar-toggle { display: flex; }
 
   /* ── MAIN ───────────────────────── */
   .main {
@@ -2233,7 +2227,6 @@
       <div class="logo-mark" id="logo-text">PhotoDesk</div>
       <div class="logo-sub">ניהול צילום נדל"ן</div>
     </div>
-    <button class="sidebar-toggle" onclick="toggleSidebar()" title="הצג/הסתר תפריט" id="sidebar-toggle-btn">◀</button>
   </div>
 
   <div class="nav-group nav-group-main">
@@ -2312,6 +2305,7 @@
 
   <!-- TOPBAR -->
   <div class="topbar">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebar-toggle-btn" title="הצג/הסתר תפריט"></button>
     <button class="mobile-menu-btn" onclick="openMobileMenu()" style="display:none;">☰</button>
     <div class="page-title" id="page-title">דאשבורד</div>
     <div class="topbar-actions">
@@ -5792,10 +5786,8 @@ function showStatusMenu(id, el, event) {
 /* ── COLLAPSIBLE SIDEBAR ──────────── */
 function toggleSidebar() {
   const sb = document.querySelector('.sidebar');
-  const btn = document.getElementById('sidebar-toggle-btn');
   sb.classList.toggle('collapsed');
   const col = sb.classList.contains('collapsed');
-  if (btn) btn.textContent = col ? '▶' : '◀';
   localStorage.setItem('pd_sidebar_collapsed', col ? '1' : '');
 }
 
@@ -7367,9 +7359,7 @@ async function _initApp() {
   // Restore sidebar collapse state
   if (localStorage.getItem('pd_sidebar_collapsed') === '1') {
     const sb = document.querySelector('.sidebar');
-    const btn = document.getElementById('sidebar-toggle-btn');
     sb.classList.add('collapsed');
-    if (btn) btn.textContent = '▶';
   }
   _cleanupArchive();
   _migrateOrdersFromListings();
