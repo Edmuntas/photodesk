@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הזמנת טיסת רחפן | Admont Drone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root {
+    --bg: #F0F4FF;
+    --surface: #FFFFFF;
+    --surface2: #F3F4F6;
+    --surface3: #E9ECEF;
+    --border: #E5E7EB;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --accent: #2563EB;
+    --accent2: #3B82F6;
+    --accent-light: #EFF6FF;
+    --accent-mid: rgba(37,99,235,0.12);
+    --green: #10B981;
+    --green-light: rgba(16,185,129,0.1);
+    --red: #EF4444;
+    --red-light: rgba(239,68,68,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.09), 0 1px 4px rgba(0,0,0,0.05);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-accent: 0 6px 20px rgba(37,99,235,0.3);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; direction: rtl;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 20; box-shadow: var(--shadow-sm);
+  }
+  .header-icon {
+    width: 36px; height: 36px; background: var(--accent); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .header-title { font-size: 15px; font-weight: 700; }
+  .header-sub { font-size: 11px; color: var(--text-muted); }
+  .header-badge {
+    margin-right: auto; background: var(--accent-light); color: var(--accent);
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    border: 1px solid rgba(37,99,235,0.18);
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #2563EB 0%, #1e40af 100%);
+    padding: 24px 24px 28px; text-align: center; color: #fff;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -50px; left: -50px;
+    width: 180px; height: 180px; background: rgba(255,255,255,0.06); border-radius: 50%;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -70px; right: -30px;
+    width: 220px; height: 220px; background: rgba(255,255,255,0.04); border-radius: 50%;
+  }
+  .hero-icon { font-size: 32px; margin-bottom: 6px; position: relative; z-index: 1; }
+  .hero-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.3px; position: relative; z-index: 1; }
+  .hero-sub { font-size: 13px; opacity: 0.82; max-width: 400px; margin: 0 auto; line-height: 1.6; position: relative; z-index: 1; }
+
+  /* STEPPER */
+  .stepper-wrap {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 24px; position: sticky; top: 65px; z-index: 10;
+  }
+  .stepper { max-width: 600px; margin: 0 auto; display: flex; align-items: center; padding: 14px 0; gap: 0; }
+  .step { display: flex; align-items: center; gap: 7px; flex: 1; position: relative; }
+  .step:not(:last-child)::after {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: calc(100% - 26px); height: 2px; background: var(--border); margin-left: 26px; transition: background 0.3s;
+  }
+  .step.done:not(:last-child)::after { background: var(--accent); }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+    color: var(--text-muted); background: var(--surface); flex-shrink: 0; transition: all 0.2s; position: relative; z-index: 1;
+  }
+  .step.active .step-num, .step.done .step-num { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .step-label { font-size: 11px; font-weight: 600; color: var(--text-dim); white-space: nowrap; transition: color 0.2s; }
+  .step.active .step-label { color: var(--accent); }
+  .step.done .step-label { color: var(--text-muted); }
+  @media (max-width: 480px) { .step-label { display: none; } }
+
+  /* CONTAINER */
+  .container { max-width: 600px; margin: 0 auto; padding: 24px 20px 60px; }
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CARD */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    margin-bottom: 16px; transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .card:hover { box-shadow: var(--shadow); border-color: rgba(37,99,235,0.16); }
+  .card-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; background: var(--surface2);
+  }
+  .card-icon {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--accent-light);
+    display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+  }
+  .card-title { font-size: 13px; font-weight: 700; }
+  .card-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .card-body { padding: 18px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 14px; }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+  .req { color: var(--accent); }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px; font-size: 14px;
+    font-family: 'Heebo', sans-serif; color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s; direction: rtl;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-mid); background: var(--surface);
+  }
+  .form-textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+  .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* INPUT ERROR STATE */
+  .form-input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+
+  /* MISSION TYPES */
+  .mission-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .mission-option input { display: none; }
+  .mission-card {
+    border: 2px solid var(--border); border-radius: var(--radius-sm);
+    padding: 14px 10px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--surface2);
+  }
+  .mission-card:hover { border-color: var(--accent2); background: var(--accent-light); }
+  .mission-option input:checked + .mission-card {
+    border-color: var(--accent); background: var(--accent-light);
+    box-shadow: 0 0 0 2px var(--accent-mid);
+  }
+  .mission-card-icon { font-size: 26px; margin-bottom: 6px; }
+  .mission-card-name { font-size: 12px; font-weight: 700; line-height: 1.3; }
+  .mission-card-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* KML UPLOAD */
+  .kml-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 28px 20px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--surface2); position: relative;
+  }
+  .kml-zone:hover, .kml-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+  .kml-zone.has-file { border-color: var(--green); background: var(--green-light); }
+  .kml-icon { font-size: 36px; margin-bottom: 8px; }
+  .kml-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .kml-sub { font-size: 12px; color: var(--text-muted); }
+  .kml-file-info {
+    display: none; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 12px;
+  }
+  .kml-file-info.show { display: flex; }
+  .kml-file-icon { font-size: 20px; }
+  .kml-file-name { font-size: 13px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kml-file-size { font-size: 11px; color: var(--text-muted); }
+  .kml-remove { border: none; background: none; font-size: 16px; cursor: pointer; color: var(--text-muted); padding: 2px 4px; }
+  .kml-remove:hover { color: var(--red); }
+
+  /* MAP */
+  #kml-map-wrap { display: none; margin-top: 12px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+  #kml-map-wrap.show { display: block; }
+  #kml-map { height: 280px; }
+  .map-actions { display: flex; gap: 8px; padding: 8px; background: var(--surface2); border-top: 1px solid var(--border); }
+  .map-btn {
+    flex: 1; padding: 8px; font-size: 11px; font-weight: 700; font-family: 'Heebo', sans-serif;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--surface);
+    cursor: pointer; transition: all 0.15s; color: var(--text); text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .map-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+  /* PARAMS */
+  .params-textarea {
+    width: 100%; min-height: 160px; resize: vertical;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    font-size: 13px; font-family: 'Heebo', monospace; color: var(--text);
+    line-height: 1.8; direction: rtl; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .params-textarea:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-mid); background: var(--surface);
+  }
+  .params-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .params-chip {
+    padding: 4px 10px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; color: var(--text-muted);
+  }
+  .params-chip:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+  /* REVIEW */
+  .review-table { width: 100%; border-collapse: collapse; }
+  .review-table tr { border-bottom: 1px solid var(--border); }
+  .review-table tr:last-child { border-bottom: none; }
+  .review-table td { padding: 9px 4px; font-size: 13px; }
+  .review-table td:first-child { color: var(--text-muted); font-weight: 600; width: 38%; }
+
+  /* BUTTONS */
+  .nav-btns { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-next {
+    flex: 1; background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; padding: 13px 20px; font-size: 14px; font-weight: 700;
+    font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s;
+    box-shadow: var(--shadow-accent);
+  }
+  .btn-next:hover { background: #1d4ed8; transform: translateY(-1px); }
+  .btn-next:active { transform: none; }
+  .btn-next:disabled { background: var(--border); color: var(--text-muted); box-shadow: none; cursor: not-allowed; transform: none; }
+  .btn-back {
+    padding: 13px 18px; background: var(--surface); color: var(--text-muted);
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 14px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-submit {
+    width: 100%; background: var(--green); color: #fff; border: none;
+    border-radius: 10px; padding: 16px; font-size: 16px; font-weight: 800;
+    font-family: 'Heebo', sans-serif; cursor: pointer; transition: all 0.15s;
+    box-shadow: 0 6px 20px rgba(16,185,129,0.35); margin-top: 6px;
+  }
+  .btn-submit:hover { background: #059669; transform: translateY(-1px); }
+  .btn-submit:disabled { background: var(--border); color: var(--text-muted); box-shadow: none; cursor: not-allowed; transform: none; }
+
+  /* USER BADGE */
+  .user-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green-light); border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: var(--green);
+    margin-bottom: 16px;
+  }
+
+  /* SUCCESS */
+  .success-screen { display: none; text-align: center; padding: 40px 20px; }
+  .success-screen.show { display: block; animation: fadeIn 0.3s ease; }
+  .success-icon { font-size: 64px; margin-bottom: 16px; }
+  .success-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; color: var(--green); }
+  .success-sub { font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 360px; margin: 0 auto 24px; }
+  .success-ref { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; max-width: 300px; margin: 0 auto; font-size: 13px; }
+  .success-ref-label { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+  .success-ref-code { font-size: 20px; font-weight: 800; color: var(--accent); letter-spacing: 2px; margin-top: 4px; }
+
+  /* ERROR */
+  .error-box {
+    background: var(--red-light); border: 1px solid rgba(239,68,68,0.25);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    font-size: 12px; color: var(--red); margin-top: 8px; display: none;
+  }
+  .error-box.show { display: block; }
+
+  /* SPINNER */
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-left: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .section-divider {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🚁</div>
+  <div>
+    <div class="header-title">Admont Drone</div>
+    <div class="header-sub">הזמנת משימת סקר</div>
+  </div>
+  <div class="header-badge">ENGINEERING</div>
+</div>
+
+<div class="hero">
+  <div class="hero-icon">🗺️</div>
+  <div class="hero-title">הגש הזמנת טיסה</div>
+  <div class="hero-sub">סקר גגות · תרמוגרפיה · מיפוי · בדיקת תשתיות</div>
+</div>
+
+<div class="stepper-wrap">
+  <div class="stepper" id="stepper">
+    <div class="step active" id="s1"><span class="step-num">1</span><span class="step-label">פרטי לקוח</span></div>
+    <div class="step" id="s2"><span class="step-num">2</span><span class="step-label">פרטי משימה</span></div>
+    <div class="step" id="s3"><span class="step-num">3</span><span class="step-label">קובץ ומפה</span></div>
+    <div class="step" id="s4"><span class="step-num">4</span><span class="step-label">אישור</span></div>
+  </div>
+</div>
+
+<div class="container" id="main-container">
+
+  <!-- ══ STEP 1: CLIENT INFO ══════════════ -->
+  <div class="step-panel active" id="panel-1">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">👤</div>
+        <div>
+          <div class="card-title">פרטי הלקוח</div>
+          <div class="card-sub">מי מבצע את ההזמנה?</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="req">* </span>שם פרטי</label>
+            <input class="form-input" id="cust-first" placeholder="דוד" autocomplete="given-name">
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="req">* </span>שם משפחה</label>
+            <input class="form-input" id="cust-last" placeholder="כהן" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"><span class="req">* </span>טלפון</label>
+            <input class="form-input" type="tel" id="cust-phone" placeholder="050-000-0000" inputmode="tel" autocomplete="tel">
+          </div>
+          <div class="form-group">
+            <label class="form-label">אימייל</label>
+            <input class="form-input" type="email" id="cust-email" placeholder="name@company.co.il" autocomplete="email">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">חברה / ארגון</label>
+          <input class="form-input" id="cust-company" placeholder="כיוון אנרגיה בע&quot;מ" autocomplete="organization">
+        </div>
+      </div>
+    </div>
+
+    <div id="error-step1" class="error-box"></div>
+
+    <div class="nav-btns">
+      <button type="button" class="btn-next" onclick="validateStep1()">המשך — פרטי משימה ←</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: MISSION DETAILS ══════════ -->
+  <div class="step-panel" id="panel-2">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🎯</div>
+        <div>
+          <div class="card-title">סוג המשימה</div>
+          <div class="card-sub">בחר את סוג הסקר הנדרש</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="mission-grid">
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="roof-scan">
+            <div class="mission-card">
+              <div class="mission-card-icon">🏠</div>
+              <div class="mission-card-name">סקר גגות</div>
+              <div class="mission-card-sub">RGB + תרמי</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="thermal">
+            <div class="mission-card">
+              <div class="mission-card-icon">🌡️</div>
+              <div class="mission-card-name">בדיקה תרמית</div>
+              <div class="mission-card-sub">פאנלים סולאריים</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="solar-survey">
+            <div class="mission-card">
+              <div class="mission-card-icon">☀️</div>
+              <div class="mission-card-name">סקר סולארי</div>
+              <div class="mission-card-sub">חישוב קיבולת</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="infrastructure">
+            <div class="mission-card">
+              <div class="mission-card-icon">🔧</div>
+              <div class="mission-card-name">בדיקת תשתית</div>
+              <div class="mission-card-sub">גז / בריכות</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="mapping">
+            <div class="mission-card">
+              <div class="mission-card-icon">🗺️</div>
+              <div class="mission-card-name">מיפוי</div>
+              <div class="mission-card-sub">אורתופוטו / DSM</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="other">
+            <div class="mission-card">
+              <div class="mission-card-icon">✏️</div>
+              <div class="mission-card-name">אחר</div>
+              <div class="mission-card-sub">ציין בפרטים</div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🏢</div>
+        <div><div class="card-title">פרטי הלקוח והאתר</div></div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label"><span class="req">* </span>שם הפרויקט / האתר</label>
+          <input class="form-input" id="site-name" placeholder="מפעל כיוון אנרגיה — רחובות">
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span class="req">* </span>כתובת האתר</label>
+          <input class="form-input" id="site-address" placeholder="רחוב התעשייה 4, רחובות">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">תאריך מועדף</label>
+            <input class="form-input" type="date" id="pref-date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">גמישות</label>
+            <select class="form-select" id="date-flex">
+              <option value="exact">תאריך קבוע</option>
+              <option value="week" selected>גמיש — תוך שבוע</option>
+              <option value="2weeks">גמיש — תוך שבועיים</option>
+              <option value="asap">מוקדם ככל האפשר</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">שטח המשימה המשוער</label>
+          <div class="form-row">
+            <input class="form-input" id="area-size" type="number" placeholder="500" min="0">
+            <select class="form-select" id="area-unit">
+              <option value="m2">מ&quot;ר</option>
+              <option value="dunam" selected>דונם</option>
+              <option value="ha">הקטאר</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="error-step2" class="error-box"></div>
+
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goStep(1)">← חזור</button>
+      <button type="button" class="btn-next" onclick="validateStep2()">המשך — קובץ ומפה ←</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: KML + MAP + PARAMS ═══════ -->
+  <div class="step-panel" id="panel-3">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📂</div>
+        <div>
+          <div class="card-title">קובץ KML / KMZ</div>
+          <div class="card-sub">גבולות האזור מ-Google Earth או אפליקציית שטח</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="kml-zone" id="kml-zone" onclick="document.getElementById('kml-file').click()">
+          <input type="file" id="kml-file" accept=".kml,.kmz" style="display:none" onchange="handleKMLUpload(event)">
+          <div class="kml-icon" id="kml-zone-icon">📍</div>
+          <div class="kml-title" id="kml-zone-title">גרור קובץ KML לכאן</div>
+          <div class="kml-sub" id="kml-zone-sub">או לחץ לבחור קובץ · .kml, .kmz</div>
+        </div>
+
+        <div class="kml-file-info" id="kml-file-info">
+          <span class="kml-file-icon">📄</span>
+          <span class="kml-file-name" id="kml-file-name"></span>
+          <span class="kml-file-size" id="kml-file-size"></span>
+          <button class="kml-remove" onclick="removeKML(event)" title="הסר קובץ">✕</button>
+        </div>
+
+        <div id="kml-map-wrap">
+          <div id="kml-map"></div>
+          <div class="map-actions">
+            <a id="gmaps-btn" class="map-btn" target="_blank" href="#">🗺️ פתח ב-Google Maps</a>
+            <a id="earth-btn" class="map-btn" href="#">🌍 הורד ל-Google Earth</a>
+          </div>
+        </div>
+
+        <div class="form-hint" style="margin-top:8px;">ניתן לדלג — ניתן לשלוח KML בשלב מאוחר יותר</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">✈️</div>
+        <div>
+          <div class="card-title">פרמטרי הטיסה ודרישות</div>
+          <div class="card-sub">תאר בחופשיות את דרישות הטיסה</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">הוסף פרמטרים מהירים</label>
+          <div class="params-chips">
+            <span class="params-chip" onclick="addChip('גובה טיסה: ')">📏 גובה</span>
+            <span class="params-chip" onclick="addChip('מהירות: ')">⚡ מהירות</span>
+            <span class="params-chip" onclick="addChip('חפיפה קדמית: ')">↕️ חפיפה קדמית</span>
+            <span class="params-chip" onclick="addChip('חפיפה צדית: ')">↔️ חפיפה צדית</span>
+            <span class="params-chip" onclick="addChip('סנסור: ')">📷 סנסור</span>
+            <span class="params-chip" onclick="addChip('מערכת קואורדינטות: ')">🌐 CRS</span>
+            <span class="params-chip" onclick="addChip('רזולוציה נדרשת: ')">🔍 רזולוציה</span>
+            <span class="params-chip" onclick="addChip('מגבלות אזוריות: ')">🚫 מגבלות</span>
+          </div>
+          <textarea class="params-textarea" id="flight-params"
+            placeholder="תאר את דרישות הטיסה:&#10;&#10;גובה טיסה: X מטרים מעל הקרקע&#10;מהירות: X קמ&quot;ש&#10;חפיפה קדמית/צדית: X%&#10;סנסורים: RGB / תרמי / מולטיספקטרלי&#10;מערכת קואורדינטות: ITM / WGS84&#10;&#10;הערות מיוחדות, מגבלות אזוריות, תנאי גישה..."></textarea>
+          <div class="form-hint">* שדה זה יועבר ישירות לטייס — כתוב בפירוט ככל האפשר</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">💬</div>
+        <div><div class="card-title">הערות נוספות</div></div>
+      </div>
+      <div class="card-body">
+        <textarea class="form-textarea" id="extra-notes"
+          placeholder="קודי גישה, דגשים, שאלות, דרישות מיוחדות..."></textarea>
+      </div>
+    </div>
+
+    <div id="error-step3" class="error-box"></div>
+
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goStep(2)">← חזור</button>
+      <button type="button" class="btn-next" onclick="validateStep3()">סקור הזמנה ←</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 4: REVIEW & SUBMIT ══════════ -->
+  <div class="step-panel" id="panel-4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📋</div>
+        <div>
+          <div class="card-title">סיכום ההזמנה</div>
+          <div class="card-sub">בדוק את הפרטים לפני השליחה</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="review-table" id="review-table"></table>
+      </div>
+    </div>
+
+    <div id="error-submit" class="error-box"></div>
+
+    <button class="btn-submit" id="submit-btn" onclick="submitOrder()">✅ שלח הזמנה</button>
+    <div class="form-hint" style="text-align:center;margin-top:10px;">ניצור איתך קשר לאישור ותיאום לוח זמנים</div>
+
+    <div class="nav-btns" style="margin-top:16px;">
+      <button type="button" class="btn-back" onclick="goStep(3)">← ערוך</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="success-screen">
+  <div class="success-icon">🚁</div>
+  <div class="success-title">ההזמנה נשלחה!</div>
+  <div class="success-sub">קיבלנו את הזמנתך ונחזור אליך בהקדם לתיאום הטיסה.</div>
+  <div class="success-ref">
+    <div class="success-ref-label">מספר הזמנה</div>
+    <div class="success-ref-code" id="order-ref">—</div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey:            "AIzaSyCUrX8Lo8qS30q2E5dMSu8S96GE-RKuRmQ",
+  authDomain:        "photodesk-45381.firebaseapp.com",
+  projectId:         "photodesk-45381",
+  storageBucket:     "photodesk-45381.firebasestorage.app",
+  messagingSenderId: "445351440545",
+  appId:             "1:445351440545:web:14895fba95a5c9001c00e0"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let currentStep = 1;
+let leafletMap = null;
+let kmlData = null;
+
+// ── STEP 1 VALIDATION ──────────────────────────
+function validateStep1() {
+  const first = document.getElementById('cust-first').value.trim();
+  const last  = document.getElementById('cust-last').value.trim();
+  const phone = document.getElementById('cust-phone').value.trim();
+  if (!first) return showError('error-step1', 'נא למלא שם פרטי');
+  if (!last)  return showError('error-step1', 'נא למלא שם משפחה');
+  if (!phone) return showError('error-step1', 'נא למלא מספר טלפון');
+  hideError('error-step1');
+  goStep(2);
+}
+
+// ── STEP NAVIGATION ────────────────────────────
+function goStep(n) {
+  document.getElementById('panel-' + currentStep).classList.remove('active');
+  const prevEl = document.getElementById('s' + currentStep);
+  prevEl.classList.remove('active');
+  prevEl.classList.add('done');
+
+  currentStep = n;
+  document.getElementById('panel-' + currentStep).classList.add('active');
+  const nextEl = document.getElementById('s' + currentStep);
+  nextEl.classList.remove('done');
+  nextEl.classList.add('active');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 4) renderReview();
+}
+
+// ── STEP 2 VALIDATION ──────────────────────────
+function validateStep2() {
+  const mType = document.querySelector('input[name="mission-type"]:checked');
+  if (!mType)                                    return showError('error-step2', 'נא לבחור סוג משימה');
+  if (!document.getElementById('site-name').value.trim())    return showError('error-step2', 'נא למלא שם הפרויקט / האתר');
+  if (!document.getElementById('site-address').value.trim()) return showError('error-step2', 'נא למלא כתובת האתר');
+  hideError('error-step2');
+  goStep(3);
+}
+
+// ── KML HANDLING ───────────────────────────────
+function handleKMLUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('הקובץ גדול מדי (מקסימום 5MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = e => processKML(e.target.result, file.name, file.size);
+  reader.readAsText(file);
+}
+
+function processKML(text, fileName, fileSize) {
+  const parsed = parseKML(text);
+  kmlData = { ...parsed, fileName, rawText: text };
+
+  const zone = document.getElementById('kml-zone');
+  zone.classList.add('has-file');
+  document.getElementById('kml-zone-icon').textContent = '✅';
+  document.getElementById('kml-zone-title').textContent = 'קובץ KML נטען בהצלחה';
+  document.getElementById('kml-zone-sub').textContent   = parsed.name || fileName;
+
+  document.getElementById('kml-file-info').classList.add('show');
+  document.getElementById('kml-file-name').textContent = fileName;
+  document.getElementById('kml-file-size').textContent = formatBytes(fileSize);
+
+  if (parsed.coords.length > 0) {
+    document.getElementById('kml-map-wrap').classList.add('show');
+    renderLeafletMap(parsed.coords, parsed.name || fileName);
+    if (parsed.center) {
+      const gmUrl = 'https://maps.google.com/maps?q=' + parsed.center.lat + ',' + parsed.center.lng + '&z=15&t=k';
+      document.getElementById('gmaps-btn').setAttribute('href', gmUrl);
+    }
+  }
+
+  const earthLink = document.getElementById('earth-btn');
+  earthLink.setAttribute('href', 'data:application/vnd.google-earth.kml+xml;charset=utf-8,' + encodeURIComponent(text));
+  earthLink.setAttribute('download', fileName);
+}
+
+function parseKML(text) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, 'text/xml');
+  const nameNode = doc.querySelector('Document > name, Folder > name, Placemark > name');
+  const name = nameNode ? nameNode.textContent.trim() : '';
+  const coords = [];
+  doc.querySelectorAll('coordinates').forEach(node => {
+    node.textContent.trim().split(/\s+/).forEach(triplet => {
+      const parts = triplet.split(',');
+      const lng = parseFloat(parts[0]);
+      const lat = parseFloat(parts[1]);
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) coords.push([lat, lng]);
+    });
+  });
+  let center = null;
+  if (coords.length > 0) {
+    const sumLat = coords.reduce((s, c) => s + c[0], 0);
+    const sumLng = coords.reduce((s, c) => s + c[1], 0);
+    center = { lat: sumLat / coords.length, lng: sumLng / coords.length };
+  }
+  return { name, coords, center };
+}
+
+function renderLeafletMap(coords, title) {
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+  leafletMap = L.map('kml-map');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(leafletMap);
+  if (coords.length === 1) {
+    leafletMap.setView(coords[0], 16);
+    L.marker(coords[0]).addTo(leafletMap).bindPopup(title).openPopup();
+  } else {
+    const poly = L.polygon(coords, { color: '#2563EB', weight: 2.5, fillColor: '#3B82F6', fillOpacity: 0.18 }).addTo(leafletMap);
+    poly.bindPopup('<strong>' + title + '</strong>').openPopup();
+    leafletMap.fitBounds(poly.getBounds(), { padding: [24, 24] });
+  }
+}
+
+function removeKML(e) {
+  if (e) e.stopPropagation();
+  kmlData = null;
+  document.getElementById('kml-zone').classList.remove('has-file');
+  document.getElementById('kml-zone-icon').textContent = '📍';
+  document.getElementById('kml-zone-title').textContent = 'גרור קובץ KML לכאן';
+  document.getElementById('kml-zone-sub').textContent   = 'או לחץ לבחור קובץ · .kml, .kmz';
+  document.getElementById('kml-file-info').classList.remove('show');
+  document.getElementById('kml-map-wrap').classList.remove('show');
+  document.getElementById('kml-file').value = '';
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+}
+
+(function setupDrop() {
+  const zone = document.getElementById('kml-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => processKML(ev.target.result, file.name, file.size);
+    reader.readAsText(file);
+  });
+})();
+
+// ── CHIPS ──────────────────────────────────────
+function addChip(text) {
+  const ta = document.getElementById('flight-params');
+  const pos = ta.selectionStart;
+  const before = ta.value.substring(0, pos);
+  const after  = ta.value.substring(pos);
+  const sep = (before.length > 0 && !before.endsWith('\n')) ? '\n' : '';
+  ta.value = before + sep + text + after;
+  const newPos = pos + sep.length + text.length;
+  ta.setSelectionRange(newPos, newPos);
+  ta.focus();
+}
+
+// ── STEP 3 VALIDATION ──────────────────────────
+function validateStep3() {
+  if (!document.getElementById('flight-params').value.trim())
+    return showError('error-step3', 'נא למלא פרמטרי הטיסה — תאר את הדרישות');
+  hideError('error-step3');
+  goStep(4);
+}
+
+// ── REVIEW ─────────────────────────────────────
+const MISSION_LABELS = {
+  'roof-scan':      'סקר גגות (RGB + תרמי)',
+  'thermal':        'בדיקה תרמית',
+  'solar-survey':   'סקר סולארי',
+  'infrastructure': 'בדיקת תשתית',
+  'mapping':        'מיפוי ואורתופוטו',
+  'other':          'אחר',
+};
+
+function renderReview() {
+  const mType = document.querySelector('input[name="mission-type"]:checked');
+  const tbody = document.getElementById('review-table');
+  tbody.textContent = '';
+
+  const fullName = (v('cust-first') + ' ' + v('cust-last')).trim();
+  const rows = [
+    ['שם איש קשר',   fullName || '—'],
+    ['טלפון',        v('cust-phone') || '—'],
+    ['אימייל',       v('cust-email') || '—'],
+    ['חברה',         v('cust-company') || '—'],
+    ['סוג משימה',    mType ? (MISSION_LABELS[mType.value] || mType.value) : '—'],
+    ['שם הפרויקט',   v('site-name')],
+    ['כתובת',        v('site-address')],
+    ['תאריך מועדף',  v('pref-date') || 'לא צוין'],
+    ['שטח',          v('area-size') ? (v('area-size') + ' ' + v('area-unit')) : '—'],
+    ['קובץ KML',      kmlData ? ('\u2705 ' + kmlData.fileName) : '—'],
+  ];
+
+  rows.forEach(function(pair) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    td1.textContent = pair[0];
+    const td2 = document.createElement('td');
+    td2.textContent = pair[1];
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tbody.appendChild(tr);
+  });
+
+  const params = v('flight-params');
+  if (params) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    td1.textContent = 'פרמטרי טיסה';
+    td1.style.verticalAlign = 'top';
+    const td2 = document.createElement('td');
+    td2.textContent = params;
+    td2.style.cssText = 'font-size:12px;white-space:pre-wrap;color:var(--text-muted);';
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tbody.appendChild(tr);
+  }
+
+  const notes = v('extra-notes');
+  if (notes) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    td1.textContent = 'הערות';
+    td1.style.verticalAlign = 'top';
+    const td2 = document.createElement('td');
+    td2.textContent = notes;
+    td2.style.cssText = 'font-size:12px;color:var(--text-muted);';
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tbody.appendChild(tr);
+  }
+}
+
+// ── SUBMIT ─────────────────────────────────────
+async function submitOrder() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'שולח...';
+  hideError('error-submit');
+
+  const mType = document.querySelector('input[name="mission-type"]:checked');
+
+  const order = {
+    contactFirst: v('cust-first'),
+    contactLast:  v('cust-last'),
+    phone:        v('cust-phone'),
+    email:        v('cust-email'),
+    company:      v('cust-company'),
+    missionType:  mType ? mType.value : null,
+    siteName:     v('site-name'),
+    siteAddress:  v('site-address'),
+    prefDate:     v('pref-date') || null,
+    dateFlex:     v('date-flex'),
+    areaSize:     v('area-size') ? parseFloat(v('area-size')) : null,
+    areaUnit:     v('area-unit'),
+    kmlFileName:  kmlData ? kmlData.fileName : null,
+    kmlCoords:    kmlData ? kmlData.coords.slice(0, 500).map(function(c) { return { lat: c[0], lng: c[1] }; }) : null,
+    kmlCenter:    kmlData ? kmlData.center : null,
+    kmlAreaName:  kmlData ? kmlData.name : null,
+    flightParams: v('flight-params'),
+    notes:        v('extra-notes'),
+    status:       'pending',
+    createdAt:    firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    const ref = await db.collection('drone_orders').add(order);
+    const shortRef = ref.id.slice(-6).toUpperCase();
+    document.getElementById('main-container').style.display  = 'none';
+    document.querySelector('.stepper-wrap').style.display    = 'none';
+    document.querySelector('.hero').style.display            = 'none';
+    document.getElementById('success-screen').classList.add('show');
+    document.getElementById('order-ref').textContent = 'DR-' + shortRef;
+  } catch(err) {
+    showError('error-submit', 'שגיאה בשליחה: ' + (err.message || 'אנא נסה שוב'));
+    btn.disabled = false;
+    btn.textContent = '✅ שלח הזמנה';
+  }
+}
+
+// ── UTILS ──────────────────────────────────────
+function v(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = '\u26a0\ufe0f ' + msg;
+  el.classList.add('show');
+}
+function hideError(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('show');
+}
+
+</script>
+</body>
+</html>
