@@ -1325,7 +1325,7 @@
   .otype-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   .otype-btn.active { background:var(--accent-glow); color:var(--accent); border-color:var(--accent); font-weight:600; }
   .kanban-section-header { font-size:13px; font-weight:700; color:var(--text-muted); padding:16px 0 8px; border-top:1px solid var(--border); margin-top:16px; display:flex; align-items:center; gap:6px; }
-  .kanban-card--drone { border-inline-start:3px solid var(--accent2); }
+  .kanban-card--drone { border-inline-start:3px solid var(--accent2); cursor:pointer; }
   .kanban-card--drone:hover { background:var(--accent-glow); }
 
   /* ── BULK ACTION BAR ────────────── */
@@ -7569,7 +7569,83 @@ function advanceDroneStatus(droneId, newStatus) {
 
 function rejectDroneOrder(droneId) {
   db.collection('drone_orders').doc(droneId).update({ status: 'rejected' })
+    .then(() => closeModal('drone-detail-modal'))
     .catch(err => console.error('rejectDroneOrder:', err));
+}
+
+function openDroneOrder(droneId) {
+  const d = (window._droneOrders || []).find(o => o.id === droneId);
+  if (!d) return;
+
+  const MLBL = { 'roof-scan':'סקר גגות','thermal':'תרמוגרפיה','solar-survey':'פנלים סולאריים','infrastructure':'בדיקת תשתית','mapping':'מיפוי','construction':'ניטור בנייה','agriculture':'סקר חקלאי','pet-search':'חיפוש חיות אבודות','aerial-photo':'צילום אווירי','other':'אחר' };
+  const SLBL = { pending:'ממתין לאישור ⏳', confirmed:'אושר ✅', in_flight:'בטיסה 🚁', processing:'בעיבוד ⚙️', delivered:'נמסר 📦', rejected:'נדחה ❌' };
+  const SCOL = { pending:'var(--amber)', confirmed:'var(--green)', in_flight:'var(--accent)', processing:'var(--accent)', delivered:'var(--green)', rejected:'var(--red)' };
+
+  const body = document.getElementById('drone-detail-body');
+  body.textContent = '';
+
+  function row(label, value) {
+    if (!value) return;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start;';
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'min-width:130px;font-size:11px;color:var(--text-muted);flex-shrink:0;padding-top:1px;';
+    lbl.textContent = label;
+    const val = document.createElement('div');
+    val.style.cssText = 'font-size:13px;font-weight:500;word-break:break-word;';
+    val.textContent = value;
+    wrap.appendChild(lbl);
+    wrap.appendChild(val);
+    body.appendChild(wrap);
+  }
+
+  // Status badge
+  const badge = document.createElement('div');
+  badge.style.cssText = 'display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:16px;background:color-mix(in srgb,' + (SCOL[d.status]||'var(--accent)') + ' 15%,transparent);color:' + (SCOL[d.status]||'var(--accent)') + ';border:1px solid color-mix(in srgb,' + (SCOL[d.status]||'var(--accent)') + ' 30%,transparent);';
+  badge.textContent = SLBL[d.status] || d.status;
+  body.appendChild(badge);
+
+  row('שם', [d.firstName, d.lastName].filter(Boolean).join(' '));
+  row('טלפון', d.phone);
+  row('אימייל', d.email);
+  row('חברה', d.company);
+  row('סוג משימה', MLBL[d.missionType] || d.missionType);
+  row('שם אתר', d.siteName);
+  row('כתובת', d.siteAddress);
+  row('תאריך מועדף', d.prefDate ? new Date(d.prefDate).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:'numeric'}) : null);
+  row('גמישות בתאריך', d.flexDate === 'yes' ? 'כן' : d.flexDate === 'no' ? 'לא' : null);
+  row('שטח משוער', d.siteArea ? d.siteArea + ' דונם' : null);
+  row('KML / אזור טיסה', d.kmlFileName || null);
+  row('פרמטרי טיסה', d.flightParams);
+  row('מקור', d.source === 'crm' ? 'CRM (הוזן ידנית)' : 'טופס אינטרנט');
+  row('נוצר', d.createdAt ? new Date(d.createdAt).toLocaleString('he-IL') : null);
+
+  // Footer buttons
+  const footer = document.getElementById('drone-detail-footer');
+  footer.textContent = '';
+  const next = DRONE_NEXT_STATUS[d.status];
+  const nextLbl = DRONE_NEXT_LABEL[d.status];
+  if (next) {
+    const advBtn = document.createElement('button');
+    advBtn.className = 'btn btn-primary';
+    advBtn.textContent = nextLbl;
+    advBtn.addEventListener('click', () => { advanceDroneStatus(d.id, next); closeModal('drone-detail-modal'); });
+    footer.appendChild(advBtn);
+  }
+  if (d.status === 'pending') {
+    const rejBtn = document.createElement('button');
+    rejBtn.className = 'btn btn-danger';
+    rejBtn.textContent = 'סרב ✕';
+    rejBtn.addEventListener('click', () => rejectDroneOrder(d.id));
+    footer.appendChild(rejBtn);
+  }
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'btn btn-ghost';
+  closeBtn.textContent = 'סגור';
+  closeBtn.addEventListener('click', () => closeModal('drone-detail-modal'));
+  footer.appendChild(closeBtn);
+
+  openModal('drone-detail-modal');
 }
 
 // ── End drone pipeline ─────────────────────────────────────────────────────
@@ -8130,8 +8206,10 @@ let _appInited = false;
 document.addEventListener('click', e => {
   const listingEl  = e.target.closest('[data-listing-id]');
   const customerEl = e.target.closest('[data-customer-id]');
+  const droneEl    = e.target.closest('[data-drone-id]');
   if (listingEl  && !e.target.closest('[data-stop-propagation]')) openListing(listingEl.dataset.listingId);
   if (customerEl && !e.target.closest('[data-stop-propagation]')) openCustomer(customerEl.dataset.customerId);
+  if (droneEl    && !e.target.closest('button')) openDroneOrder(droneEl.dataset.droneId);
 });
 
 auth.onAuthStateChanged(async user => {
@@ -8789,6 +8867,18 @@ function _renderDriveSection(l) {
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-svc-examples')">סגור</button>
     </div>
+  </div>
+</div>
+
+<!-- ════ DRONE ORDER DETAIL MODAL ════ -->
+<div class="modal-bg" id="drone-detail-modal">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-title">
+      🚁 פרטי הזמנת שירותי רחפן
+      <span class="modal-close" onclick="closeModal('drone-detail-modal')">✕</span>
+    </div>
+    <div id="drone-detail-body" style="padding-top:4px;"></div>
+    <div class="modal-footer" id="drone-detail-footer"></div>
   </div>
 </div>
 
