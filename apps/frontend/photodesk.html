@@ -7505,7 +7505,7 @@ function _buildActiveOrderCard(l) {
 }
 
 // ── Drone orders pipeline ──────────────────────────────────────────────────
-const DRONE_PIPELINE   = ['pending','confirmed','in_flight','processing','delivered'];
+const DRONE_PIPELINE   = ['pending','confirmed','in_flight','processing','delivered','rejected'];
 const DRONE_NEXT_STATUS = { pending:'confirmed', confirmed:'in_flight', in_flight:'processing', processing:'delivered' };
 const DRONE_COL_META   = {
   pending:    { label:'ממתין לאישור', emoji:'⏳' },
@@ -7513,6 +7513,7 @@ const DRONE_COL_META   = {
   in_flight:  { label:'בטיסה',        emoji:'🚁' },
   processing: { label:'בעיבוד',       emoji:'⚙️' },
   delivered:  { label:'נמסר',         emoji:'📦' },
+  rejected:   { label:'נדחה',         emoji:'❌' },
 };
 const DRONE_NEXT_LABEL  = { pending:'אשר ✓', confirmed:'המריא ✓', in_flight:'בעיבוד ✓', processing:'נמסר ✓' };
 
@@ -7537,13 +7538,26 @@ function _buildDroneCard(d) {
   if (missionLbl) lines.push('🛩 ' + missionLbl);
   meta.textContent = lines.join(' · ');
   card.appendChild(meta);
-  if (next) {
-    const advBtn = document.createElement('button');
-    advBtn.className = 'btn btn-primary';
-    advBtn.style.cssText = 'width:100%;font-size:11px;padding:5px;margin-top:8px;';
-    advBtn.textContent = nextLbl;
-    advBtn.addEventListener('click', (e) => { e.stopPropagation(); advanceDroneStatus(d.id, next); });
-    card.appendChild(advBtn);
+  if (next || d.status === 'pending') {
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:6px;margin-top:8px;';
+    if (next) {
+      const advBtn = document.createElement('button');
+      advBtn.className = 'btn btn-primary';
+      advBtn.style.cssText = 'flex:1;font-size:11px;padding:5px;';
+      advBtn.textContent = nextLbl;
+      advBtn.addEventListener('click', (e) => { e.stopPropagation(); advanceDroneStatus(d.id, next); });
+      btnRow.appendChild(advBtn);
+    }
+    if (d.status === 'pending') {
+      const rejBtn = document.createElement('button');
+      rejBtn.className = 'btn btn-danger';
+      rejBtn.style.cssText = 'font-size:11px;padding:5px 10px;';
+      rejBtn.textContent = 'סרב ✕';
+      rejBtn.addEventListener('click', (e) => { e.stopPropagation(); rejectDroneOrder(d.id); });
+      btnRow.appendChild(rejBtn);
+    }
+    card.appendChild(btnRow);
   }
   return card;
 }
@@ -7551,6 +7565,11 @@ function _buildDroneCard(d) {
 function advanceDroneStatus(droneId, newStatus) {
   db.collection('drone_orders').doc(droneId).update({ status: newStatus })
     .catch(err => console.error('advanceDroneStatus:', err));
+}
+
+function rejectDroneOrder(droneId) {
+  db.collection('drone_orders').doc(droneId).update({ status: 'rejected' })
+    .catch(err => console.error('rejectDroneOrder:', err));
 }
 
 // ── End drone pipeline ─────────────────────────────────────────────────────
