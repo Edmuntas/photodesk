@@ -2651,8 +2651,8 @@
       <!-- Order type segment: all / real-estate / drone -->
       <div class="otype-seg" id="otype-seg">
         <button class="otype-btn active" id="otype-all" onclick="filterOrdersType('all')">📋 הכל</button>
-        <button class="otype-btn" id="otype-realestate" onclick="filterOrdersType('realestate')">🏠 נדל"ן</button>
-        <button class="otype-btn" id="otype-drone" onclick="filterOrdersType('drone')">🚁 הנדסה</button>
+        <button class="otype-btn" id="otype-realestate" onclick="filterOrdersType('realestate')">🏠 שירותי נדל"ן</button>
+        <button class="otype-btn" id="otype-drone" onclick="filterOrdersType('drone')">🚁 שירותי רחפן</button>
       </div>
 
       <!-- Filter tabs -->
@@ -2672,8 +2672,8 @@
           </div>
           <!-- Drone actions — hidden in realestate-only view -->
           <div id="orders-actions-drone" style="display:flex; gap:8px;">
-            <button class="btn btn-primary" style="font-size:12px; background:rgba(59,130,246,0.15); color:var(--accent2); border-color:var(--accent2);" onclick="openNewDroneOrderModal()">+ הזמנת הנדסה</button>
-            <button class="btn btn-ghost" style="font-size:12px;" onclick="openDroneShareLinkModal()">🔗 לינק הנדסה</button>
+            <button class="btn btn-primary" style="font-size:12px; background:rgba(59,130,246,0.15); color:var(--accent2); border-color:var(--accent2);" onclick="openNewDroneOrderModal()">+ הזמנת שירותי רחפן</button>
+            <button class="btn btn-ghost" style="font-size:12px;" onclick="openDroneShareLinkModal()">🔗 לינק רחפן</button>
           </div>
         </div>
       </div>
@@ -2903,8 +2903,8 @@
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
         <div style="width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🚁</div>
         <div>
-          <div style="font-size:16px;font-weight:700;">הזמנת משימת הנדסה</div>
-          <div style="font-size:12px;color:var(--text-muted);">סקר · מיפוי · תרמוגרפיה · בדיקת תשתיות</div>
+          <div style="font-size:16px;font-weight:700;">הזמנת שירותי רחפן</div>
+          <div style="font-size:12px;color:var(--text-muted);">סקר · מיפוי · תרמוגרפיה · חיפוש · צילום אווירי</div>
         </div>
       </div>
 
@@ -2951,10 +2951,14 @@
           <div class="dne-card-body">
             <div class="dne-mission-grid">
               <label class="dne-mo"><input type="radio" name="dne-mission" value="roof-scan"><div class="dne-mc"><div class="dne-mc-icon">🏠</div><div class="dne-mc-name">סקר גגות</div><div class="dne-mc-sub">RGB + תרמי</div></div></label>
-              <label class="dne-mo"><input type="radio" name="dne-mission" value="thermal"><div class="dne-mc"><div class="dne-mc-icon">🌡️</div><div class="dne-mc-name">בדיקה תרמית</div><div class="dne-mc-sub">פאנלים סולאריים</div></div></label>
-              <label class="dne-mo"><input type="radio" name="dne-mission" value="solar-survey"><div class="dne-mc"><div class="dne-mc-icon">☀️</div><div class="dne-mc-name">סקר סולארי</div><div class="dne-mc-sub">חישוב קיבולת</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="thermal"><div class="dne-mc"><div class="dne-mc-icon">🌡️</div><div class="dne-mc-name">בדיקה תרמית</div><div class="dne-mc-sub">פאנלים / חשמל</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="solar-survey"><div class="dne-mc"><div class="dne-mc-icon">☀️</div><div class="dne-mc-name">פנלים סולאריים</div><div class="dne-mc-sub">חישוב קיבולת</div></div></label>
               <label class="dne-mo"><input type="radio" name="dne-mission" value="infrastructure"><div class="dne-mc"><div class="dne-mc-icon">🔧</div><div class="dne-mc-name">בדיקת תשתית</div><div class="dne-mc-sub">גז / בריכות</div></div></label>
               <label class="dne-mo"><input type="radio" name="dne-mission" value="mapping"><div class="dne-mc"><div class="dne-mc-icon">🗺️</div><div class="dne-mc-name">מיפוי</div><div class="dne-mc-sub">אורתופוטו / DSM</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="construction"><div class="dne-mc"><div class="dne-mc-icon">🏗️</div><div class="dne-mc-name">ניטור בנייה</div><div class="dne-mc-sub">מעקב התקדמות</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="agriculture"><div class="dne-mc"><div class="dne-mc-icon">🌾</div><div class="dne-mc-name">סקר חקלאי</div><div class="dne-mc-sub">ריסוס / מעקב</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="pet-search"><div class="dne-mc"><div class="dne-mc-icon">🐾</div><div class="dne-mc-name">חיפוש חיות אבודות</div><div class="dne-mc-sub">חיות מחמד / SAR</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="aerial-photo"><div class="dne-mc"><div class="dne-mc-icon">🎬</div><div class="dne-mc-name">צילום אווירי</div><div class="dne-mc-sub">תיעוד / סרטון</div></div></label>
               <label class="dne-mo"><input type="radio" name="dne-mission" value="other"><div class="dne-mc"><div class="dne-mc-icon">✏️</div><div class="dne-mc-name">אחר</div><div class="dne-mc-sub">ציין בפרטים</div></div></label>
             </div>
           </div>
@@ -3079,7 +3083,7 @@
         </div>
         <div class="dne-err" id="dne-err-4"></div>
         <button class="dne-btn-submit" id="dne-submit-btn" onclick="dneSubmit()">✅ שמור הזמנה</button>
-        <div class="dne-hint" style="text-align:center;margin-top:8px;">ההזמנה תופיע בלוח בקטגוריית הנדסה</div>
+        <div class="dne-hint" style="text-align:center;margin-top:8px;">ההזמנה תופיע בלוח בקטגוריית שירותי רחפן</div>
         <div class="dne-nav" style="margin-top:12px;">
           <button class="dne-btn-back" onclick="dneGoStep(3)">← ערוך</button>
         </div>
@@ -3807,7 +3811,7 @@ const pageConfig = {
   promotions:   { title:'מבצעים',   btn:'+ מבצע חדש' },
   settings:     { title:'הגדרות',   btn:null },
   archive:      { title:'ארכיון',   btn:null },
-  'drone-new':  { title:'הזמנת הנדסה חדשה', btn:null },
+  'drone-new':  { title:'הזמנת שירותי רחפן', btn:null },
 };
 
 function navigate(page) {
@@ -7368,7 +7372,7 @@ async function dneSubmit() {
   };
   try {
     await db.collection('drone_orders').add(order);
-    toast('הזמנת ההנדסה נשמרה! 🚁', 'success');
+    toast('הזמנת שירותי הרחפן נשמרה! 🚁', 'success');
     navigate('orders');
     filterOrdersType('drone');
   } catch(err) {
@@ -7516,7 +7520,7 @@ function _buildDroneCard(d) {
   const next     = DRONE_NEXT_STATUS[d.status];
   const nextLbl  = DRONE_NEXT_LABEL[d.status];
   const dateStr  = d.prefDate ? new Date(d.prefDate).toLocaleDateString('he-IL', {day:'numeric', month:'short'}) : '';
-  const missionLabels = { survey:'סקר', mapping:'מיפוי', inspection:'בדיקה', photo:'צילום', thermal:'תרמי', lidar:'LiDAR' };
+  const missionLabels = { 'roof-scan':'סקר גגות', 'thermal':'תרמוגרפיה', 'solar-survey':'פנלים סולאריים', 'infrastructure':'בדיקת תשתית', 'mapping':'מיפוי', 'construction':'ניטור בנייה', 'agriculture':'סקר חקלאי', 'pet-search':'חיפוש חיות', 'aerial-photo':'צילום אווירי', 'other':'אחר' };
   const missionLbl = missionLabels[d.missionType] || d.missionType || '';
   const card = document.createElement('div');
   card.className = 'kanban-card kanban-card--drone';
@@ -7566,7 +7570,7 @@ function renderDroneKanban(listEl) {
     icon.textContent = '🚁';
     const title = document.createElement('div');
     title.className = 'empty-title';
-    title.textContent = 'אין הזמנות הנדסה';
+    title.textContent = 'אין הזמנות שירותי רחפן';
     const sub = document.createElement('div');
     sub.className = 'empty-sub';
     sub.textContent = 'הזמנות דרון יופיעו כאן';
