@@ -305,7 +305,7 @@
   <div class="header-icon">🚁</div>
   <div>
     <div class="header-title">Admont Drone</div>
-    <div class="header-sub">הזמנת משימת סקר</div>
+    <div class="header-sub">שירותי רחפן מקצועיים</div>
   </div>
   <div class="header-badge">ENGINEERING</div>
   <div class="header-partner">Ishkesher by Mccom</div>
@@ -314,7 +314,7 @@
 <div class="hero">
   <div class="hero-icon">🗺️</div>
   <div class="hero-title">הגש הזמנת טיסה</div>
-  <div class="hero-sub">סקר גגות · תרמוגרפיה · מיפוי · בדיקת תשתיות</div>
+  <div class="hero-sub">סקר גגות · תרמוגרפיה · מיפוי · חיפוש חיות · צילום אווירי</div>
 </div>
 
 <div class="stepper-wrap">
@@ -399,14 +399,14 @@
             <div class="mission-card">
               <div class="mission-card-icon">🌡️</div>
               <div class="mission-card-name">בדיקה תרמית</div>
-              <div class="mission-card-sub">פאנלים סולאריים</div>
+              <div class="mission-card-sub">פאנלים / חשמל</div>
             </div>
           </label>
           <label class="mission-option">
             <input type="radio" name="mission-type" value="solar-survey">
             <div class="mission-card">
               <div class="mission-card-icon">☀️</div>
-              <div class="mission-card-name">סקר סולארי</div>
+              <div class="mission-card-name">פנלים סולאריים</div>
               <div class="mission-card-sub">חישוב קיבולת</div>
             </div>
           </label>
@@ -424,6 +424,38 @@
               <div class="mission-card-icon">🗺️</div>
               <div class="mission-card-name">מיפוי</div>
               <div class="mission-card-sub">אורתופוטו / DSM</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="construction">
+            <div class="mission-card">
+              <div class="mission-card-icon">🏗️</div>
+              <div class="mission-card-name">ניטור בנייה</div>
+              <div class="mission-card-sub">מעקב התקדמות</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="agriculture">
+            <div class="mission-card">
+              <div class="mission-card-icon">🌾</div>
+              <div class="mission-card-name">סקר חקלאי</div>
+              <div class="mission-card-sub">ריסוס / מעקב</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="pet-search">
+            <div class="mission-card">
+              <div class="mission-card-icon">🐾</div>
+              <div class="mission-card-name">חיפוש חיות אבודות</div>
+              <div class="mission-card-sub">חיות מחמד / SAR</div>
+            </div>
+          </label>
+          <label class="mission-option">
+            <input type="radio" name="mission-type" value="aerial-photo">
+            <div class="mission-card">
+              <div class="mission-card-icon">🎬</div>
+              <div class="mission-card-name">צילום אווירי</div>
+              <div class="mission-card-sub">תיעוד / סרטון</div>
             </div>
           </label>
           <label class="mission-option">
@@ -801,9 +833,13 @@ function validateStep3() {
 const MISSION_LABELS = {
   'roof-scan':      'סקר גגות (RGB + תרמי)',
   'thermal':        'בדיקה תרמית',
-  'solar-survey':   'סקר סולארי',
+  'solar-survey':   'פנלים סולאריים',
   'infrastructure': 'בדיקת תשתית',
   'mapping':        'מיפוי ואורתופוטו',
+  'construction':   'ניטור בנייה',
+  'agriculture':    'סקר חקלאי',
+  'pet-search':     'חיפוש חיות אבודות',
+  'aerial-photo':   'צילום אווירי',
   'other':          'אחר',
 };
 
