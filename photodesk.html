@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PhotoDesk — ניהול צילום נדל"ן</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="photodesk-redesign.css">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root {
     --bg: #F5F6FA;
@@ -19,10 +19,10 @@
     --text: #111827;
     --text-muted: #6B7280;
     --text-dim: #9CA3AF;
-    --accent: #F97316;
-    --accent2: #FB923C;
-    --accent-light: #FFF7ED;
-    --accent-glow: rgba(249,115,22,0.08);
+    --accent: #2563EB;
+    --accent2: #3B82F6;
+    --accent-light: #EFF6FF;
+    --accent-glow: rgba(37,99,235,0.08);
     --green: #10B981;
     --green-light: rgba(16,185,129,0.08);
     --red: #EF4444;
@@ -36,7 +36,7 @@
     --radius: 10px;
     --radius-sm: 7px;
     --sidebar: 220px;
-    --font-display: 'Heebo', sans-serif;
+    --font-display: 'Rubik', sans-serif;
     --font-body: 'Heebo', sans-serif;
   }
 
@@ -137,6 +137,82 @@
   .nav-item.active .icon { opacity: 1; }
   .drag-handle { font-size: 11px; color: var(--text-dim); opacity: 0; cursor: grab; user-select: none; flex-shrink: 0; padding: 0 2px; line-height: 1; }
   .sidebar:not(.collapsed) .draggable-nav:hover .drag-handle { opacity: 0.45; }
+  .office-copy { font-size: 13px; color: var(--text-dim); opacity: 0; margin-right: auto; cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: all 0.15s; line-height: 1; }
+  .nav-item-office:hover .office-copy { opacity: 0.5; }
+  .office-copy:hover { opacity: 1 !important; background: var(--surface2); color: var(--accent); }
+
+  /* ── MOBILE NAV ─────────────────── */
+  .mobile-bottom-nav { display: none; }
+  @media (max-width: 768px) {
+    .sidebar { display: none !important; }
+    .topbar { padding: 0 14px; gap: 8px; }
+    .topbar .page-title { font-size: 16px; }
+    .topbar-actions .search-box { display: none; }
+    #primary-action-btn { display: none; }
+    .main { padding: 12px; padding-bottom: 80px; }
+    .mobile-bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 62px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      z-index: 200;
+      align-items: stretch;
+    }
+    .mob-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 8px 0;
+      transition: color 0.15s;
+      position: relative;
+    }
+    .mob-btn .mob-icon { font-size: 20px; line-height: 1; }
+    .mob-btn.active { color: var(--accent); }
+    .mob-btn .mob-badge {
+      position: absolute;
+      top: 6px;
+      right: calc(50% - 16px);
+      background: var(--accent);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      min-width: 14px;
+      height: 14px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+    }
+    .mob-fab {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+      margin: auto 0;
+      flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+    .mob-fab:active { transform: scale(0.93); }
+  }
   .draggable-nav.dragging { opacity: 0.3; }
   .draggable-nav.drag-over-top { box-shadow: inset 0 2px 0 0 var(--accent); border-radius: 6px 6px 0 0; }
   .draggable-nav.drag-over-bottom { box-shadow: inset 0 -2px 0 0 var(--accent); border-radius: 0 0 6px 6px; }
@@ -149,7 +225,7 @@
     font-weight: 700;
     padding: 1px 7px;
     border-radius: 10px;
-    border: 1px solid rgba(249,115,22,0.2);
+    border: 1px solid rgba(37,99,235,0.2);
   }
 
   .sidebar-footer {
@@ -286,9 +362,9 @@
   .btn-primary {
     background: var(--accent);
     color: #ffffff;
-    box-shadow: 0 1px 3px rgba(249,115,22,0.3);
+    box-shadow: 0 1px 3px rgba(37,99,235,0.3);
   }
-  .btn-primary:hover { background: #EA6D0C; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(249,115,22,0.35); }
+  .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(37,99,235,0.35); }
 
   .btn-ghost {
     background: var(--surface);
@@ -303,6 +379,8 @@
     border: 1px solid rgba(239,68,68,0.2);
   }
   .btn-danger:hover { background: rgba(239,68,68,0.14); }
+
+  .btn:disabled, .btn[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; transform: none !important; box-shadow: none !important; }
 
   /* ── CONTENT AREA ───────────────── */
   .content {
@@ -336,7 +414,7 @@
   .stat-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06); transform: translateY(-2px); }
   .stat-card.active-filter {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(249,115,22,0.25), 0 4px 12px rgba(249,115,22,0.12);
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.25), 0 4px 12px rgba(37,99,235,0.12);
     background: var(--accent-light);
   }
   .stat-card.active-filter::before { background: var(--accent); height: 4px; }
@@ -459,7 +537,7 @@
   .badge-processing{ background: rgba(59,130,246,0.14);  color: #1E40AF; border: 1px solid rgba(59,130,246,0.35); }
   .badge-cancelled { background: rgba(239,68,68,0.14);   color: #991B1B; border: 1px solid rgba(239,68,68,0.35); }
   .badge-scheduled { background: rgba(139,92,246,0.14);  color: #5B21B6; border: 1px solid rgba(139,92,246,0.35); }
-  .badge-shot      { background: rgba(249,115,22,0.14);  color: #9A3412; border: 1px solid rgba(249,115,22,0.35); }
+  .badge-shot      { background: rgba(37,99,235,0.14);  color: #9A3412; border: 1px solid rgba(37,99,235,0.35); }
   /* ── COMPANY CARDS ──────────────── */
   .company-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:14px; }
   .company-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; cursor:pointer; transition:border-color .2s, box-shadow .2s; box-shadow:var(--shadow-sm); }
@@ -482,7 +560,7 @@
   .view-btn.active { background:var(--surface); color:var(--text); box-shadow:var(--shadow-sm); }
   /* search in customers */
   .cust-search { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 12px; font-size:13px; color:var(--text); outline:none; width:200px; font-family:var(--font-body); direction:rtl; transition:border-color .15s; }
-  .cust-search:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(249,115,22,0.1); }
+  .cust-search:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
   /* row views */
   .company-row { display:flex; align-items:center; gap:14px; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all .15s; margin-bottom:6px; box-shadow:var(--shadow-sm); }
   .company-row:hover { border-color:var(--accent); box-shadow:var(--shadow); }
@@ -559,7 +637,7 @@
     display: flex; align-items: center; justify-content: center;
     color: var(--text-muted);
     font-size: 14px;
-    margin-right: auto;
+    margin-left: auto;
     transition: all 0.15s;
   }
   .panel-close:hover { color: var(--text); background: var(--surface3); border-color: var(--border-focus); }
@@ -574,7 +652,7 @@
     cursor:pointer; transition:all 0.15s; font-family:inherit; white-space:nowrap;
   }
   .pact-btn:hover { background:var(--surface3); }
-  .pact-btn.accent { background:var(--accent-light); border-color:rgba(249,115,22,0.3); color:var(--accent); font-weight:600; }
+  .pact-btn.accent { background:var(--accent-light); border-color:rgba(37,99,235,0.3); color:var(--accent); font-weight:600; }
   .pinfo-grid { display:grid; grid-template-columns:1fr 240px; gap:20px; align-items:start; }
   .pinfo-sidebar { border:1px solid var(--border); border-radius:12px; overflow:hidden; position:sticky; top:0; }
   .psidebar-section { padding:14px 16px; border-bottom:1px solid var(--border); }
@@ -607,7 +685,7 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-size:10px; background-repeat:no-repeat; background-position:center;
   }
-  .dchip:has(input:checked) { background:rgba(249,115,22,0.06); border-color:rgba(249,115,22,0.25); color:var(--text); }
+  .dchip:has(input:checked) { background:rgba(37,99,235,0.06); border-color:rgba(37,99,235,0.25); color:var(--text); }
 
   .panel-tabs {
     display: flex;
@@ -664,7 +742,7 @@
   }
   .form-input:focus, .form-select:focus, .form-textarea:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
   }
   .form-input::placeholder { color: var(--text-dim); }
   .form-select { cursor: pointer; }
@@ -764,7 +842,7 @@
   .vis-badge.active   { background:rgba(34,197,94,.12);  color:#15803d; }
   .vis-badge.inactive { background:rgba(239,68,68,.10);  color:#b91c1c; }
   .vis-badge.hidden   { background:rgba(100,116,139,.12);color:var(--text-muted); }
-  .vis-badge.featured { background:rgba(249,115,22,.12); color:var(--accent); }
+  .vis-badge.featured { background:rgba(37,99,235,.12); color:var(--accent); }
 
   /* ── DIMMED CARD (hidden/inactive) ── */
   .svc-card.card-hidden, .pkg-card.card-hidden { opacity:.45; }
@@ -901,7 +979,7 @@
     flex-direction: column;
     gap: 8px;
   }
-  .svc-card:hover { border-color: var(--accent); box-shadow: 0 4px 18px rgba(249,115,22,0.10); transform: translateY(-2px); }
+  .svc-card:hover { border-color: var(--accent); box-shadow: 0 4px 18px rgba(37,99,235,0.10); transform: translateY(-2px); }
   .svc-card:hover .svc-actions { opacity: 1; }
 
   .svc-card-icon {
@@ -925,7 +1003,7 @@
 
   .svc-deliverables {
     background: var(--accent-light);
-    border: 1px solid rgba(249,115,22,0.18);
+    border: 1px solid rgba(37,99,235,0.18);
     border-radius: var(--radius-sm);
     padding: 8px 10px;
     font-size: 11px;
@@ -1185,7 +1263,7 @@
     transition: all 0.2s;
   }
   .pipeline-dot.done .pipeline-icon { background: var(--green); border-color: var(--green); color: #fff; }
-  .pipeline-dot.active .pipeline-icon { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 3px rgba(249,115,22,0.15); }
+  .pipeline-dot.active .pipeline-icon { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
   .pipeline-label { font-size: 9px; color: var(--text-dim); text-align: center; white-space: nowrap; }
   .pipeline-dot.done .pipeline-label,
   .pipeline-dot.active .pipeline-label { color: var(--text-muted); }
@@ -1239,6 +1317,16 @@
     background: var(--accent-light); border-radius: 4px; padding: 2px 7px; display: inline-block;
     font-weight: 600; }
   .kanban-empty { text-align:center; color:var(--text-dim); font-size:12px; padding:20px 0; }
+
+  /* ORDER TYPE SEGMENT */
+  .otype-seg { display:flex; gap:6px; margin-bottom:12px; }
+  .otype-btn { padding:5px 14px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); font-size:12px; cursor:pointer; transition:background 0.15s,color 0.15s,border-color 0.15s; }
+  .otype-btn:hover { background:var(--surface2); color:var(--text); }
+  .otype-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .otype-btn.active { background:var(--accent-glow); color:var(--accent); border-color:var(--accent); font-weight:600; }
+  .kanban-section-header { font-size:13px; font-weight:700; color:var(--text-muted); padding:16px 0 8px; border-top:1px solid var(--border); margin-top:16px; display:flex; align-items:center; gap:6px; }
+  .kanban-card--drone { border-inline-start:3px solid var(--accent2); }
+  .kanban-card--drone:hover { background:var(--accent-glow); }
 
   /* ── BULK ACTION BAR ────────────── */
   .bulk-status-btn {
@@ -1423,7 +1511,7 @@
     font-weight: 700; font-size: 18px; color: #fff;
     margin-bottom: 12px;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+    box-shadow: 0 4px 12px rgba(37,99,235,0.3);
   }
   .cust-panel-name { font-size: 18px; font-weight: 700; line-height: 1.2; margin-bottom: 2px; color: var(--text); }
   .cust-panel-company { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
@@ -1529,7 +1617,7 @@
   .booking-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
   .booking-tag { font-size: 11px; background: var(--surface2); border: 1px solid var(--border); padding: 2px 9px; border-radius: 20px; color: var(--text-muted); font-weight: 500; }
   .booking-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
-  .booking-actions .btn-primary { font-size: 13px !important; padding: 7px 16px !important; box-shadow: 0 2px 8px rgba(249,115,22,0.25); }
+  .booking-actions .btn-primary { font-size: 13px !important; padding: 7px 16px !important; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
   .booking-actions .btn-danger  { font-size: 13px !important; padding: 7px 12px !important; }
   .booking-actions .btn-ghost   { font-size: 12px !important; }
   .deliver-row { display: flex; gap: 14px; align-items: center; margin-top: 8px; }
@@ -1562,7 +1650,7 @@
     font-family: inherit;
   }
   .ofilt:hover { background: var(--surface2); color: var(--text); }
-  .ofilt.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(249,115,22,0.2); }
+  .ofilt.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
   .ofilt-n {
     font-size: 10px; font-weight: 700; padding: 1px 6px;
     border-radius: 10px; min-width: 16px; text-align: center;
@@ -1688,7 +1776,7 @@
   }
   .row-action:hover { background: var(--surface2); color: var(--text); border-color: var(--border-focus); }
   .row-action.ra-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .row-action.ra-primary:hover { background: #EA6D0C; }
+  .row-action.ra-primary:hover { background: #1d4ed8; }
   .row-action.ra-del { color: #EF4444; opacity: 0.6; }
   .row-action.ra-del:hover { opacity: 1; background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); }
 
@@ -2115,7 +2203,7 @@
 .mini-cal-cell.today {
   background: var(--accent-glow);
   color: var(--accent); font-weight: 700;
-  border: 1px solid rgba(249,115,22,0.3);
+  border: 1px solid rgba(37,99,235,0.3);
 }
 .mini-cal-cell.has-shoot::after {
   content: '';
@@ -2133,7 +2221,7 @@
   margin-bottom: 18px;
   display: flex; align-items: center; gap: 14px;
   flex-wrap: wrap;
-  box-shadow: 0 4px 14px rgba(249,115,22,0.25);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.25);
 }
 .today-banner-label {
   font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.85);
@@ -2177,7 +2265,7 @@
 .us-date-badge {
   width: 36px; flex-shrink: 0; text-align: center;
   background: var(--accent-light);
-  border: 1px solid rgba(249,115,22,0.2);
+  border: 1px solid rgba(37,99,235,0.2);
   border-radius: 8px; padding: 4px 0;
 }
 .us-date-day { font-size: 16px; font-weight: 800; color: var(--accent); line-height: 1; }
@@ -2185,6 +2273,66 @@
 .us-address { font-size: 12px; font-weight: 600; line-height: 1.4; }
 .us-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 .us-empty { text-align: center; padding: 20px 14px; font-size: 12px; color: var(--text-dim); }
+
+/* ═══ DRONE NEW ORDER PAGE ════════════════════════════════════════════════ */
+#page-drone-new .dne-stepper{display:flex;align-items:center;padding:0 0 20px;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px;}
+#page-drone-new .dne-step{display:flex;align-items:center;gap:7px;flex:1;position:relative;}
+#page-drone-new .dne-step:not(:last-child)::after{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:calc(100% - 26px);height:2px;background:var(--border);margin-left:26px;}
+#page-drone-new .dne-step.done:not(:last-child)::after{background:var(--accent);}
+#page-drone-new .dne-step-num{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-muted);background:var(--surface);flex-shrink:0;transition:all 0.2s;position:relative;z-index:1;}
+#page-drone-new .dne-step.active .dne-step-num,#page-drone-new .dne-step.done .dne-step-num{border-color:var(--accent);background:var(--accent);color:#fff;}
+#page-drone-new .dne-step-label{font-size:11px;font-weight:600;color:var(--text-dim);white-space:nowrap;}
+#page-drone-new .dne-step.active .dne-step-label{color:var(--accent);}
+#page-drone-new .dne-panel{display:none;}
+#page-drone-new .dne-panel.active{display:block;animation:dneFade 0.2s ease;}
+@keyframes dneFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+#page-drone-new .dne-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;}
+#page-drone-new .dne-card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface2);}
+#page-drone-new .dne-card-icon{width:30px;height:30px;border-radius:8px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+#page-drone-new .dne-card-title{font-size:13px;font-weight:700;}
+#page-drone-new .dne-card-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+#page-drone-new .dne-card-body{padding:18px;}
+#page-drone-new .dne-mission-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+#page-drone-new .dne-mo input{display:none;}
+#page-drone-new .dne-mc{border:2px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface2);}
+#page-drone-new .dne-mc:hover{border-color:var(--accent2);background:var(--accent-glow);}
+#page-drone-new .dne-mo input:checked + .dne-mc{border-color:var(--accent);background:var(--accent-glow);box-shadow:0 0 0 2px rgba(37,99,235,0.1);}
+#page-drone-new .dne-mc-icon{font-size:26px;margin-bottom:6px;}
+#page-drone-new .dne-mc-name{font-size:12px;font-weight:700;line-height:1.3;}
+#page-drone-new .dne-mc-sub{font-size:10px;color:var(--text-muted);margin-top:2px;}
+#page-drone-new .dne-kml-zone{border:2px dashed var(--border);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface2);}
+#page-drone-new .dne-kml-zone:hover,#page-drone-new .dne-kml-zone.drag-over{border-color:var(--accent);background:var(--accent-glow);}
+#page-drone-new .dne-kml-zone.has-file{border-color:var(--green);background:var(--green-light);}
+#page-drone-new .dne-kml-fi{display:none;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:12px;}
+#page-drone-new .dne-kml-fi.show{display:flex;}
+#page-drone-new #dne-map-wrap{display:none;margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+#page-drone-new #dne-map-wrap.show{display:block;}
+#page-drone-new #dne-map{height:260px;}
+#page-drone-new .dne-map-actions{display:flex;gap:8px;padding:8px;background:var(--surface2);border-top:1px solid var(--border);}
+#page-drone-new .dne-map-btn{flex:1;padding:8px;font-size:11px;font-weight:700;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;transition:all 0.15s;color:var(--text);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px;}
+#page-drone-new .dne-map-btn:hover{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+#page-drone-new .dne-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+#page-drone-new .dne-chip{padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--text-muted);}
+#page-drone-new .dne-chip:hover{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+#page-drone-new .dne-params-ta{width:100%;min-height:150px;resize:vertical;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;font-family:inherit;color:var(--text);line-height:1.8;direction:rtl;transition:border-color 0.2s;box-sizing:border-box;}
+#page-drone-new .dne-params-ta:focus{outline:none;border-color:var(--accent);background:var(--surface);}
+#page-drone-new .dne-review-table{width:100%;border-collapse:collapse;}
+#page-drone-new .dne-review-table tr{border-bottom:1px solid var(--border);}
+#page-drone-new .dne-review-table tr:last-child{border-bottom:none;}
+#page-drone-new .dne-review-table td{padding:9px 4px;font-size:13px;}
+#page-drone-new .dne-review-table td:first-child{color:var(--text-muted);font-weight:600;width:38%;}
+#page-drone-new .dne-err{background:var(--red-light);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-top:8px;display:none;}
+#page-drone-new .dne-err.show{display:block;}
+#page-drone-new .dne-nav{display:flex;gap:10px;margin-top:16px;}
+#page-drone-new .dne-btn-next{flex:1;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:13px 20px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.15s;}
+#page-drone-new .dne-btn-next:hover{background:#1d4ed8;}
+#page-drone-new .dne-btn-back{padding:13px 18px;background:var(--surface);color:var(--text-muted);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.15s;}
+#page-drone-new .dne-btn-back:hover{border-color:var(--accent);color:var(--accent);}
+#page-drone-new .dne-btn-submit{width:100%;background:var(--green);color:#fff;border:none;border-radius:10px;padding:16px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;transition:all 0.15s;box-shadow:0 6px 20px rgba(16,185,129,0.3);margin-top:6px;}
+#page-drone-new .dne-btn-submit:hover{background:#059669;}
+#page-drone-new .dne-btn-submit:disabled{background:var(--border);color:var(--text-muted);box-shadow:none;cursor:not-allowed;}
+#page-drone-new .dne-hint{font-size:11px;color:var(--text-muted);margin-top:4px;}
+#page-drone-new .dne-success{text-align:center;padding:60px 20px;}
 </style>
 <!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -2270,6 +2418,33 @@
   </div>
 
   <div class="nav-group">
+    <div class="nav-label">כלים</div>
+    <div class="nav-item" onclick="openAICleaner()">
+      <span class="icon">🤖</span><span class="nav-text">AI Declutter</span>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">משרד</div>
+    <div class="nav-item nav-item-office" onclick="openClientPage('booking.html')">
+      <span class="icon">📝</span><span class="nav-text">טופס הזמנה</span>
+      <span class="office-copy" onclick="event.stopPropagation(); copyClientLink('booking.html')" title="העתק קישור">⎘</span>
+    </div>
+    <div class="nav-item nav-item-office" onclick="openClientPage('prepare2.html')">
+      <span class="icon">🏠</span><span class="nav-text">הכנה לצילום</span>
+      <span class="office-copy" onclick="event.stopPropagation(); copyClientLink('prepare2.html')" title="העתק קישור">⎘</span>
+    </div>
+    <div class="nav-item nav-item-office" onclick="openClientPage('delivery.html')">
+      <span class="icon">📦</span><span class="nav-text">מסירה ללקוח</span>
+      <span class="office-copy" onclick="event.stopPropagation(); copyClientLink('delivery.html')" title="העתק קישור">⎘</span>
+    </div>
+    <div class="nav-item nav-item-office" onclick="openClientPage('quote.html')">
+      <span class="icon">💬</span><span class="nav-text">הצעת מחיר</span>
+      <span class="office-copy" onclick="event.stopPropagation(); copyClientLink('quote.html')" title="העתק קישור">⎘</span>
+    </div>
+  </div>
+
+  <div class="nav-group">
     <div class="nav-label">הגדרות</div>
     <div class="nav-item" onclick="navigate('availability')">
       <span class="icon">⏰</span><span class="nav-text">זמינות</span>
@@ -2297,6 +2472,25 @@
   </div>
 </aside>
 
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+  <button class="mob-btn active" id="mob-btn-dashboard" onclick="navigate('dashboard')">
+    <span class="mob-icon">⚡</span><span>ראשי</span>
+  </button>
+  <button class="mob-btn" id="mob-btn-orders" onclick="navigate('orders')" style="position:relative;">
+    <span class="mob-icon">📋</span><span>הזמנות</span>
+    <span class="mob-badge" id="mob-orders-badge" style="display:none;">0</span>
+  </button>
+  <button class="mob-fab" onclick="mobileQuickAction()" title="פעולה מהירה">+</button>
+  <button class="mob-btn" id="mob-btn-customers" onclick="navigate('customers')">
+    <span class="mob-icon">👤</span><span>לקוחות</span>
+  </button>
+  <button class="mob-btn" id="mob-btn-calendar" onclick="navigate('calendar')">
+    <span class="mob-icon">📅</span><span>יומן</span>
+  </button>
+</nav>
+
+
 <!-- MAIN -->
 <div class="main">
 
@@ -2308,6 +2502,7 @@
     <button class="sidebar-toggle" onclick="toggleSidebar()" id="sidebar-toggle-btn" title="הצג/הסתר תפריט"></button>
     <button class="mobile-menu-btn" onclick="openMobileMenu()" style="display:none;">☰</button>
     <div class="page-title" id="page-title">דאשבורד</div>
+    <span style="background:#2563EB;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.5px;text-transform:uppercase">DEV</span>
     <div class="topbar-actions">
       <div class="search-box">
         <span>🔍</span>
@@ -2453,9 +2648,16 @@
     <!-- ════════════════ ORDERS PAGE ════════════════ -->
     <div class="page" id="page-orders">
 
+      <!-- Order type segment: all / real-estate / drone -->
+      <div class="otype-seg" id="otype-seg">
+        <button class="otype-btn active" id="otype-all" onclick="filterOrdersType('all')">📋 הכל</button>
+        <button class="otype-btn" id="otype-realestate" onclick="filterOrdersType('realestate')">🏠 נדל"ן</button>
+        <button class="otype-btn" id="otype-drone" onclick="filterOrdersType('drone')">🚁 הנדסה</button>
+      </div>
+
       <!-- Filter tabs -->
       <div class="orders-toolbar">
-        <div class="ofilt-tabs">
+        <div class="ofilt-tabs" id="realestate-ofilt">
           <button class="ofilt active" id="ofilt-all" onclick="filterOrders('')">הכל <span class="ofilt-n" id="osc-val-all">0</span></button>
           <button class="ofilt" id="ofilt-approval" onclick="filterOrders('ממתין לאישור')"><span class="ofilt-dot"></span> ממתין לאישור <span class="ofilt-n" id="osc-val-approval">0</span></button>
           <button class="ofilt" id="ofilt-processing" onclick="filterOrders('בעיבוד')">בביצוע <span class="ofilt-n" id="osc-val-processing">0</span></button>
@@ -2463,8 +2665,16 @@
           <button class="ofilt" id="ofilt-unpaid" onclick="filterOrders('__unpaid__')">לא שולם <span class="ofilt-n" id="osc-val-unpaid">0</span></button>
         </div>
         <div style="display:flex; gap:8px; flex-shrink:0;">
-          <button class="btn btn-primary" style="font-size:12px;" onclick="openNewOrderModal()">+ הזמנה חדשה</button>
-          <a href="booking.html" target="_blank" class="btn btn-ghost" style="font-size:12px; text-decoration:none;">🔗 לינק ללקוח</a>
+          <!-- Real-estate actions — hidden in drone-only view -->
+          <div id="orders-actions-realestate" style="display:flex; gap:8px;">
+            <button class="btn btn-primary" style="font-size:12px;" onclick="openNewOrderModal()">+ הזמנת נדל"ן</button>
+            <button class="btn btn-ghost" style="font-size:12px;" onclick="openShareLinkModal()">🔗 לינק נדל"ן</button>
+          </div>
+          <!-- Drone actions — hidden in realestate-only view -->
+          <div id="orders-actions-drone" style="display:flex; gap:8px;">
+            <button class="btn btn-primary" style="font-size:12px; background:rgba(59,130,246,0.15); color:var(--accent2); border-color:var(--accent2);" onclick="openNewDroneOrderModal()">+ הזמנת הנדסה</button>
+            <button class="btn btn-ghost" style="font-size:12px;" onclick="openDroneShareLinkModal()">🔗 לינק הנדסה</button>
+          </div>
         </div>
       </div>
       <div id="orders-list"></div>
@@ -2637,11 +2847,22 @@
           </div>
         </div>
 
+        <!-- AI Cleaner -->
+        <div>
+          <div class="section-title">🤖 AI Declutter</div>
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label">כתובת AI Cleaner</label>
+            <input class="form-input" id="settings-ai-cleaner-url" placeholder="http://localhost:3001/declutter-dev" style="font-size:12px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">ברירת מחדל: http://localhost:3001/declutter-dev</div>
+          </div>
+        </div>
+
         <!-- Google Drive Integration -->
         <div>
           <div class="section-title">📁 Google Drive</div>
           <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.6;">
-            יוצר תיקיות אוטומטית ב-Drive האישי שלך עבור כל נכס: <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">01_RAW / 02_EDIT / 03_WATERMARK / 04_EXPORT / 05_MISC</code>
+            יוצר תיקיות אוטומטית ב-Drive האישי שלך עבור כל נכס: <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">01_RAW / 02_EDIT / 03_AI / 04_WATERMARK / 05_MISC</code><br>
+            הלקוח מקבל שני קישורי השוואה: <strong>02_EDIT</strong> (עריכה רגילה) + <strong>03_AI</strong> (אחרי Declutter+Enhancer)
           </div>
           <div class="form-group">
             <label class="form-label">Apps Script URL</label>
@@ -2672,6 +2893,198 @@
       <div id="archive-panel-listings" class="archive-panel"></div>
       <div id="archive-panel-customers" class="archive-panel" style="display:none;"></div>
       <div id="archive-panel-companies" class="archive-panel" style="display:none;"></div>
+    </div>
+
+    <!-- ════════════════ DRONE NEW ORDER PAGE ════════════════ -->
+    <div class="page" id="page-drone-new" style="overflow-y:auto;max-width:680px;">
+
+      <button class="btn btn-ghost" style="margin-bottom:20px;font-size:13px;" onclick="navigate('orders');filterOrdersType('drone');">← חזור להזמנות</button>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🚁</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;">הזמנת משימת הנדסה</div>
+          <div style="font-size:12px;color:var(--text-muted);">סקר · מיפוי · תרמוגרפיה · בדיקת תשתיות</div>
+        </div>
+      </div>
+
+      <!-- Stepper -->
+      <div class="dne-stepper" id="dne-stepper">
+        <div class="dne-step active" id="dne-s1"><span class="dne-step-num">1</span><span class="dne-step-label">פרטי לקוח</span></div>
+        <div class="dne-step" id="dne-s2"><span class="dne-step-num">2</span><span class="dne-step-label">פרטי משימה</span></div>
+        <div class="dne-step" id="dne-s3"><span class="dne-step-num">3</span><span class="dne-step-label">קובץ KML</span></div>
+        <div class="dne-step" id="dne-s4"><span class="dne-step-num">4</span><span class="dne-step-label">אישור</span></div>
+      </div>
+
+      <!-- ── STEP 1: CLIENT ── -->
+      <div class="dne-panel active" id="dne-panel-1">
+        <div class="dne-card">
+          <div class="dne-card-head">
+            <div class="dne-card-icon">👤</div>
+            <div><div class="dne-card-title">פרטי הלקוח</div><div class="dne-card-sub">מי מבצע את ההזמנה?</div></div>
+          </div>
+          <div class="dne-card-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">שם פרטי *</label><input class="form-input" id="dne-first" placeholder="דוד" autocomplete="given-name"></div>
+              <div class="form-group"><label class="form-label">שם משפחה *</label><input class="form-input" id="dne-last" placeholder="כהן" autocomplete="family-name"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">טלפון *</label><input class="form-input" type="tel" id="dne-phone" placeholder="050-000-0000" autocomplete="tel"></div>
+              <div class="form-group"><label class="form-label">אימייל</label><input class="form-input" type="email" id="dne-email" placeholder="name@company.co.il" autocomplete="email"></div>
+            </div>
+            <div class="form-group"><label class="form-label">חברה / ארגון</label><input class="form-input" id="dne-company" placeholder="כיוון אנרגיה בע&quot;מ" autocomplete="organization"></div>
+          </div>
+        </div>
+        <div class="dne-err" id="dne-err-1"></div>
+        <div class="dne-nav">
+          <button class="dne-btn-next" onclick="dneValidate1()">המשך — פרטי משימה ←</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: MISSION ── -->
+      <div class="dne-panel" id="dne-panel-2">
+        <div class="dne-card">
+          <div class="dne-card-head">
+            <div class="dne-card-icon">🎯</div>
+            <div><div class="dne-card-title">סוג המשימה</div><div class="dne-card-sub">בחר את סוג הסקר הנדרש</div></div>
+          </div>
+          <div class="dne-card-body">
+            <div class="dne-mission-grid">
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="roof-scan"><div class="dne-mc"><div class="dne-mc-icon">🏠</div><div class="dne-mc-name">סקר גגות</div><div class="dne-mc-sub">RGB + תרמי</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="thermal"><div class="dne-mc"><div class="dne-mc-icon">🌡️</div><div class="dne-mc-name">בדיקה תרמית</div><div class="dne-mc-sub">פאנלים סולאריים</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="solar-survey"><div class="dne-mc"><div class="dne-mc-icon">☀️</div><div class="dne-mc-name">סקר סולארי</div><div class="dne-mc-sub">חישוב קיבולת</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="infrastructure"><div class="dne-mc"><div class="dne-mc-icon">🔧</div><div class="dne-mc-name">בדיקת תשתית</div><div class="dne-mc-sub">גז / בריכות</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="mapping"><div class="dne-mc"><div class="dne-mc-icon">🗺️</div><div class="dne-mc-name">מיפוי</div><div class="dne-mc-sub">אורתופוטו / DSM</div></div></label>
+              <label class="dne-mo"><input type="radio" name="dne-mission" value="other"><div class="dne-mc"><div class="dne-mc-icon">✏️</div><div class="dne-mc-name">אחר</div><div class="dne-mc-sub">ציין בפרטים</div></div></label>
+            </div>
+          </div>
+        </div>
+        <div class="dne-card">
+          <div class="dne-card-head">
+            <div class="dne-card-icon">🏢</div>
+            <div><div class="dne-card-title">פרטי האתר</div></div>
+          </div>
+          <div class="dne-card-body">
+            <div class="form-group"><label class="form-label">שם הפרויקט / האתר *</label><input class="form-input" id="dne-site-name" placeholder="מפעל כיוון אנרגיה — רחובות"></div>
+            <div class="form-group"><label class="form-label">כתובת האתר *</label><input class="form-input" id="dne-site-address" placeholder="רחוב התעשייה 4, רחובות"></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">תאריך מועדף</label>
+                <input class="form-input" type="date" id="dne-pref-date">
+              </div>
+              <div class="form-group">
+                <label class="form-label">גמישות</label>
+                <select class="form-select" id="dne-date-flex">
+                  <option value="exact">תאריך קבוע</option>
+                  <option value="week" selected>גמיש — תוך שבוע</option>
+                  <option value="2weeks">גמיש — תוך שבועיים</option>
+                  <option value="asap">מוקדם ככל האפשר</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">שטח משוער</label>
+              <div class="form-row">
+                <input class="form-input" id="dne-area" type="number" placeholder="500" min="0">
+                <select class="form-select" id="dne-area-unit">
+                  <option value="m2">מ&quot;ר</option>
+                  <option value="dunam" selected>דונם</option>
+                  <option value="ha">הקטאר</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dne-err" id="dne-err-2"></div>
+        <div class="dne-nav">
+          <button class="dne-btn-back" onclick="dneGoStep(1)">← חזור</button>
+          <button class="dne-btn-next" onclick="dneValidate2()">המשך — KML ומפה ←</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: KML + PARAMS ── -->
+      <div class="dne-panel" id="dne-panel-3">
+        <div class="dne-card">
+          <div class="dne-card-head">
+            <div class="dne-card-icon">📂</div>
+            <div><div class="dne-card-title">קובץ KML / KMZ</div><div class="dne-card-sub">גבולות האזור מ-Google Earth או אפליקציית שטח</div></div>
+          </div>
+          <div class="dne-card-body">
+            <div class="dne-kml-zone" id="dne-kml-zone" onclick="document.getElementById('dne-kml-file').click()">
+              <input type="file" id="dne-kml-file" accept=".kml,.kmz" style="display:none" onchange="dneHandleKML(event)">
+              <div style="font-size:36px;margin-bottom:8px;" id="dne-kml-zone-icon">📍</div>
+              <div style="font-size:14px;font-weight:700;margin-bottom:4px;" id="dne-kml-zone-title">גרור קובץ KML לכאן</div>
+              <div style="font-size:12px;color:var(--text-muted);" id="dne-kml-zone-sub">או לחץ לבחור קובץ · .kml, .kmz</div>
+            </div>
+            <div class="dne-kml-fi" id="dne-kml-fi">
+              <span style="font-size:20px;">📄</span>
+              <span style="font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="dne-kml-fname"></span>
+              <span style="font-size:11px;color:var(--text-muted);" id="dne-kml-fsize"></span>
+              <button style="border:none;background:none;font-size:16px;cursor:pointer;color:var(--text-muted);padding:2px 4px;" onclick="dneRemoveKML(event)" title="הסר קובץ">✕</button>
+            </div>
+            <div id="dne-map-wrap">
+              <div id="dne-map"></div>
+              <div class="dne-map-actions">
+                <a id="dne-gmaps-btn" class="dne-map-btn" target="_blank" href="#">🗺️ פתח ב-Google Maps</a>
+                <a id="dne-earth-btn" class="dne-map-btn" href="#">🌍 הורד ל-Google Earth</a>
+              </div>
+            </div>
+            <div class="dne-hint" style="margin-top:8px;">ניתן לדלג — ניתן לשלוח KML בשלב מאוחר יותר</div>
+          </div>
+        </div>
+        <div class="dne-card">
+          <div class="dne-card-head">
+            <div class="dne-card-icon">✈️</div>
+            <div><div class="dne-card-title">פרמטרי הטיסה</div><div class="dne-card-sub">תאר בחופשיות את דרישות הטיסה</div></div>
+          </div>
+          <div class="dne-card-body">
+            <div class="dne-chips">
+              <span class="dne-chip" onclick="dneAddChip('גובה טיסה: ')">📏 גובה</span>
+              <span class="dne-chip" onclick="dneAddChip('מהירות: ')">⚡ מהירות</span>
+              <span class="dne-chip" onclick="dneAddChip('חפיפה קדמית: ')">↕️ חפיפה קדמית</span>
+              <span class="dne-chip" onclick="dneAddChip('חפיפה צדית: ')">↔️ חפיפה צדית</span>
+              <span class="dne-chip" onclick="dneAddChip('סנסור: ')">📷 סנסור</span>
+              <span class="dne-chip" onclick="dneAddChip('מערכת קואורדינטות: ')">🌐 CRS</span>
+              <span class="dne-chip" onclick="dneAddChip('רזולוציה נדרשת: ')">🔍 רזולוציה</span>
+              <span class="dne-chip" onclick="dneAddChip('מגבלות אזוריות: ')">🚫 מגבלות</span>
+            </div>
+            <textarea class="dne-params-ta" id="dne-flight-params"
+              placeholder="תאר את דרישות הטיסה:&#10;&#10;גובה טיסה: X מטרים מעל הקרקע&#10;מהירות: X קמ&quot;ש&#10;חפיפה קדמית/צדית: X%&#10;סנסורים: RGB / תרמי&#10;&#10;הערות מיוחדות, מגבלות אזוריות..."></textarea>
+            <div class="dne-hint">* שדה זה יועבר ישירות לטייס</div>
+          </div>
+        </div>
+        <div class="dne-card">
+          <div class="dne-card-head"><div class="dne-card-icon">💬</div><div><div class="dne-card-title">הערות נוספות</div></div></div>
+          <div class="dne-card-body">
+            <textarea class="form-input" id="dne-extra-notes" rows="3" placeholder="קודי גישה, דגשים, שאלות, דרישות מיוחדות..." style="resize:vertical;"></textarea>
+          </div>
+        </div>
+        <div class="dne-err" id="dne-err-3"></div>
+        <div class="dne-nav">
+          <button class="dne-btn-back" onclick="dneGoStep(2)">← חזור</button>
+          <button class="dne-btn-next" onclick="dneGoStep(4)">סקור הזמנה ←</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 4: REVIEW ── -->
+      <div class="dne-panel" id="dne-panel-4">
+        <div class="dne-card">
+          <div class="dne-card-head">
+            <div class="dne-card-icon">📋</div>
+            <div><div class="dne-card-title">סיכום ההזמנה</div><div class="dne-card-sub">בדוק את הפרטים לפני השמירה</div></div>
+          </div>
+          <div class="dne-card-body">
+            <table class="dne-review-table" id="dne-review-table"></table>
+          </div>
+        </div>
+        <div class="dne-err" id="dne-err-4"></div>
+        <button class="dne-btn-submit" id="dne-submit-btn" onclick="dneSubmit()">✅ שמור הזמנה</button>
+        <div class="dne-hint" style="text-align:center;margin-top:8px;">ההזמנה תופיע בלוח בקטגוריית הנדסה</div>
+        <div class="dne-nav" style="margin-top:12px;">
+          <button class="dne-btn-back" onclick="dneGoStep(3)">← ערוך</button>
+        </div>
+      </div>
+
     </div>
 
   </div><!-- /content -->
@@ -3394,6 +3807,7 @@ const pageConfig = {
   promotions:   { title:'מבצעים',   btn:'+ מבצע חדש' },
   settings:     { title:'הגדרות',   btn:null },
   archive:      { title:'ארכיון',   btn:null },
+  'drone-new':  { title:'הזמנת הנדסה חדשה', btn:null },
 };
 
 function navigate(page) {
@@ -3413,6 +3827,7 @@ function navigate(page) {
   if (cfg.btn) { btn.textContent = cfg.btn; btn.style.display = ''; }
   else btn.style.display = 'none';
   renderPage(page);
+  _updateMobileNav(page);
 }
 
 function _populateSelect(selEl, options) {
@@ -3485,6 +3900,7 @@ function renderPage(page) {
   else if (page === 'settings') renderSettings();
   else if (page === 'archive')     renderArchive();
   else if (page === 'promotions')  renderPromotions();
+  else if (page === 'drone-new')   dneResetForm();
   updateMobileNav(page);
   closeMobileMenu();
 }
@@ -3612,7 +4028,7 @@ function renderDashKPIs() {
       label: 'הזמנות פעילות',
       value: activeOrders.length,
       sub: 'בתהליך כרגע',
-      color: '#F97316',
+      color: '#2563EB',
       trend: activeOrders.length > 0 ? 'up' : 'neutral',
       trendText: `${activeOrders.length} פעילות`
     },
@@ -3641,7 +4057,7 @@ function renderDashPipeline() {
   const statusConfig = [
     { status: 'ממתין לאישור',  color: '#F59E0B', icon: '⏳' },
     { status: 'מתוכנן',        color: '#8B5CF6', icon: '📅' },
-    { status: 'צולם',          color: '#F97316', icon: '📷' },
+    { status: 'צולם',          color: '#2563EB', icon: '📷' },
     { status: 'בעיבוד',        color: '#3B82F6', icon: '⚙️' },
     { status: 'ממתין למסירה',  color: '#EF4444', icon: '📦' },
     { status: 'נמסר',          color: '#10B981', icon: '✅' },
@@ -3790,15 +4206,59 @@ function renderDashUpcoming() {
 // ══════════════════════════════════════════════════
 //  LISTINGS
 // ══════════════════════════════════════════════════
+function _currentMonth() {
+  const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const now = new Date();
+  return { mo: months[now.getMonth()], yr: String(now.getFullYear()) };
+}
+
+function _buildListingRow(l) {
+  const cust = store.customers.find(c => c.id === l.customer || c.id === l.customerId || `${c.first} ${c.last}`.trim() === l.customer);
+  const phone = cust?.phone || '';
+  const waPhone = phone.replace(/[^0-9]/g,'').replace(/^0/,'972');
+  const waLink = phone ? `https://wa.me/${waPhone}?text=${encodeURIComponent('שלום ' + (cust?.first||'') + ', בנוגע לנכס ב' + l.address)}` : '';
+  const sel = (window._bulkSelected||new Set()).has(l.id);
+  return `
+  <tr data-listing-id="${h(l.id)}" class="js-open-listing${sel?' row-selected':''}">
+    <td data-stop-propagation="1" style="padding-right:14px;">
+      <input type="checkbox" ${sel?'checked':''} onchange="toggleBulkRow('${l.id}',this.checked)">
+    </td>
+    <td>
+      <div class="listing-thumb">
+        <div class="thumb-img">${l.photoUrls && l.photoUrls[0] ? `<img src="${l.photoUrls[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : '🏠'}</div>
+        <div>
+          <div class="thumb-address">${h(l.address)}</div>
+          <div class="thumb-sub">${h(l.city)}${l.state ? ' · ' + h(l.state) : ''} · ${l.beds} חד' · ${l.photos||0} תמונות</div>
+        </div>
+      </div>
+    </td>
+    <td onclick="showStatusMenu('${h(l.id)}', this, event)" style="cursor:pointer;" title="לחץ לשינוי סטטוס">
+      <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
+    </td>
+    <td style="font-size:12px; color:var(--text-muted)">${h(l.pkg)}</td>
+    <td data-stop-propagation="1">
+      <div class="dlv-wrap">
+        <span class="dlv-dot${l.deliveredPhotos?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','photos',this)" title="תמונות — לחץ להחלפה">📸</span>
+        <span class="dlv-dot${l.deliveredVideo?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','video',this)" title="וידאו — לחץ להחלפה">🎬</span>
+        <span class="dlv-dot${l.deliveredFloorplan?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','floorplan',this)" title="תוכנית קומה — לחץ להחלפה">📐</span>
+      </div>
+    </td>
+    <td style="font-size:12px; color:var(--text-muted)">${cust ? `${h(cust.first)} ${h(cust.last)}` : (l.customer || '—')}</td>
+    <td style="font-size:12px; color:var(--text-muted)">${l.created}</td>
+    <td class="row-actions" data-stop-propagation="1">
+      ${phone ? `<a class="row-action" href="tel:${phone}" title="חייג">📞</a>` : ''}
+      ${waLink ? `<a class="row-action" href="${waLink}" target="_blank" title="WhatsApp">💬</a>` : ''}
+      <span class="row-action ra-del" onclick="deleteListingInline('${h(l.id)}')" title="מחק נכס">🗑️</span>
+      <span class="row-action ra-primary js-open-listing" data-listing-id="${h(l.id)}" title="פתח פרטים">→</span>
+    </td>
+  </tr>`;
+}
+
 function renderListings() {
+  const { mo: _mo, yr: _yr } = _currentMonth();
   let list = store.listings;
   if (filterStatus) list = list.filter(l => l.status === filterStatus);
-  if (_statCardFilter === '__month__') {
-    const _months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-    const _now = new Date();
-    const _mo = _months[_now.getMonth()], _yr = String(_now.getFullYear());
-    list = list.filter(l => l.created && l.created.includes(_mo) && l.created.includes(_yr));
-  }
+  if (_statCardFilter === '__month__') list = list.filter(l => l.created && l.created.includes(_mo) && l.created.includes(_yr));
   if (searchQuery) list = list.filter(l => _matchSearch(l, searchQuery));
 
   // Highlight active stat card
@@ -3810,28 +4270,26 @@ function renderListings() {
   else if (_statCardFilter === 'נמסר') document.getElementById('statcard-delivered')?.classList.add('active-filter');
   else if (_statCardFilter === '__month__') document.getElementById('statcard-month')?.classList.add('active-filter');
 
-  const pending = store.listings.filter(l => l.status === 'ממתין למסירה').length;
-  const delivered = store.listings.filter(l => l.status === 'נמסר').length;
-  const _months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-  const _now = new Date();
-  const _mo = _months[_now.getMonth()], _yr = String(_now.getFullYear());
-  const monthCount = store.listings.filter(l => l.created && l.created.includes(_mo) && l.created.includes(_yr)).length;
-  renderTodayBanner();
-  document.getElementById('stat-total').textContent = store.listings.length;
-  document.getElementById('stat-pending').textContent = pending;
-  document.getElementById('stat-delivered').textContent = delivered;
-  document.getElementById('stat-month').textContent = monthCount;
-  document.getElementById('stat-month-sub').textContent = `${_mo} ${_yr}`;
-  // Revenue: sum prices of delivered listings this month
+  const pending    = store.listings.filter(l => l.status === 'ממתין למסירה').length;
+  const delivered  = store.listings.filter(l => l.status === 'נמסר').length;
+  const isThisMonth = l => l.created && l.created.includes(_mo) && l.created.includes(_yr);
+  const monthCount = store.listings.filter(isThisMonth).length;
   const monthRevenue = store.listings
-    .filter(l => l.status === 'נמסר' && l.created && l.created.includes(_mo) && l.created.includes(_yr))
+    .filter(l => l.status === 'נמסר' && isThisMonth(l))
     .reduce((sum, l) => {
       const pkg = store.packages.find(p => p.id === l.pkgId || p.name === l.pkg);
       return sum + (l.price || pkg?.price || 0);
     }, 0);
-  document.getElementById('stat-revenue').textContent = monthRevenue ? `₪${monthRevenue.toLocaleString()}` : '₪0';
-  document.getElementById('stat-revenue-sub').textContent = `${store.listings.filter(l => l.status === 'נמסר' && l.created && l.created.includes(_mo) && l.created.includes(_yr)).length} נכסים שנמסרו`;
-  document.getElementById('listings-badge').textContent = store.listings.length;
+
+  renderTodayBanner();
+  document.getElementById('stat-total').textContent      = store.listings.length;
+  document.getElementById('stat-pending').textContent    = pending;
+  document.getElementById('stat-delivered').textContent  = delivered;
+  document.getElementById('stat-month').textContent      = monthCount;
+  document.getElementById('stat-month-sub').textContent  = `${_mo} ${_yr}`;
+  document.getElementById('stat-revenue').textContent    = monthRevenue ? `₪${monthRevenue.toLocaleString()}` : '₪0';
+  document.getElementById('stat-revenue-sub').textContent = `${store.listings.filter(l => l.status === 'נמסר' && isThisMonth(l)).length} נכסים שנמסרו`;
+  document.getElementById('listings-badge').textContent  = store.listings.length;
   document.getElementById('listing-count-label').textContent = list.length;
 
   // Sync view toggle buttons
@@ -3870,47 +4328,7 @@ function renderListings() {
     </td></tr>`;
     return;
   }
-  tbody.innerHTML = list.map(l => {
-    const cust = store.customers.find(c => c.id === l.customer || c.id === l.customerId || `${c.first} ${c.last}`.trim() === l.customer);
-    const phone = cust?.phone || '';
-    const waPhone = phone.replace(/[^0-9]/g,'').replace(/^0/,'972');
-    const waLink = phone ? `https://wa.me/${waPhone}?text=${encodeURIComponent('שלום ' + (cust?.first||'') + ', בנוגע לנכס ב' + l.address)}` : '';
-    const sel = (window._bulkSelected||new Set()).has(l.id);
-    return `
-    <tr data-listing-id="${h(l.id)}" class="js-open-listing${sel?' row-selected':''}">
-      <td data-stop-propagation="1" style="padding-right:14px;">
-        <input type="checkbox" ${sel?'checked':''} onchange="toggleBulkRow('${l.id}',this.checked)">
-      </td>
-      <td>
-        <div class="listing-thumb">
-          <div class="thumb-img">${l.photoUrls && l.photoUrls[0] ? `<img src="${l.photoUrls[0]}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` : '🏠'}</div>
-          <div>
-            <div class="thumb-address">${h(l.address)}</div>
-            <div class="thumb-sub">${h(l.city)}${l.state ? ' · ' + h(l.state) : ''} · ${l.beds} חד' · ${l.photos||0} תמונות</div>
-          </div>
-        </div>
-      </td>
-      <td onclick="showStatusMenu('${h(l.id)}', this, event)" style="cursor:pointer;" title="לחץ לשינוי סטטוס">
-        <span class="badge ${badgeClass(l.status)}">${h(l.status)}</span>
-      </td>
-      <td style="font-size:12px; color:var(--text-muted)">${h(l.pkg)}</td>
-      <td data-stop-propagation="1">
-        <div class="dlv-wrap">
-          <span class="dlv-dot${l.deliveredPhotos?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','photos',this)" title="תמונות — לחץ להחלפה">📸</span>
-          <span class="dlv-dot${l.deliveredVideo?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','video',this)" title="וידאו — לחץ להחלפה">🎬</span>
-          <span class="dlv-dot${l.deliveredFloorplan?' dlv-on':''}" onclick="toggleDelivery('${h(l.id)}','floorplan',this)" title="תוכנית קומה — לחץ להחלפה">📐</span>
-        </div>
-      </td>
-      <td style="font-size:12px; color:var(--text-muted)">${cust ? `${h(cust.first)} ${h(cust.last)}` : (l.customer || '—')}</td>
-      <td style="font-size:12px; color:var(--text-muted)">${l.created}</td>
-      <td class="row-actions" data-stop-propagation="1">
-        ${phone ? `<a class="row-action" href="tel:${phone}" title="חייג">📞</a>` : ''}
-        ${waLink ? `<a class="row-action" href="${waLink}" target="_blank" title="WhatsApp">💬</a>` : ''}
-        <span class="row-action ra-del" onclick="deleteListingInline('${h(l.id)}')" title="מחק נכס">🗑️</span>
-        <span class="row-action ra-primary js-open-listing" data-listing-id="${h(l.id)}" title="פתח פרטים">→</span>
-      </td>
-    </tr>`;
-  }).join('');
+  tbody.innerHTML = list.map(_buildListingRow).join('');
   _updateBulkBar();
 }
 
@@ -3930,8 +4348,28 @@ function badgeClass(status) {
 function filterByStatus(val) { filterStatus = val; _statCardFilter = val || ''; renderListings(); }
 
 let _ordersFilter = ''; // '' | status | '__unpaid__'
+let _ordersType = 'all'; // 'all' | 'realestate' | 'drone'
+
 function filterOrders(val) {
   _ordersFilter = (_ordersFilter === val) ? '' : val;
+  renderOrders();
+}
+
+function filterOrdersType(type) {
+  _ordersType = type;
+  // Segment button active state
+  document.querySelectorAll('.otype-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('otype-' + (type === 'realestate' ? 'realestate' : type));
+  if (btn) btn.classList.add('active');
+  // Show/hide real-estate filter tabs and action buttons
+  const showRE    = (type !== 'drone');
+  const showDrone = (type !== 'realestate');
+  const reOfilt   = document.getElementById('realestate-ofilt');
+  const reActions = document.getElementById('orders-actions-realestate');
+  const drActions = document.getElementById('orders-actions-drone');
+  if (reOfilt)   reOfilt.style.display   = showRE    ? '' : 'none';
+  if (reActions) reActions.style.display = showRE    ? 'flex' : 'none';
+  if (drActions) drActions.style.display = showDrone ? 'flex' : 'none';
   renderOrders();
 }
 
@@ -4059,7 +4497,7 @@ const KANBAN_COLS = [
   { status:'ממתין לאישור', color:'#F59E0B' },
   { status:'מתוכנן',       color:'#3B82F6' },
   { status:'צולם',         color:'#8B5CF6' },
-  { status:'בעיבוד',       color:'#F97316' },
+  { status:'בעיבוד',       color:'#2563EB' },
   { status:'ממתין למסירה', color:'#EC4899' },
   { status:'נמסר',         color:'#10B981' },
   { status:'בוטל',         color:'#9CA3AF' },
@@ -4163,10 +4601,10 @@ function openInvoice(id) {
   body { font-family: 'Heebo', Arial, sans-serif; color: #111; background: #fff; direction: rtl; }
   .page { max-width: 720px; margin: 0 auto; padding: 48px 40px; }
   .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-  .logo-name { font-size: 24px; font-weight: 700; color: #F97316; }
+  .logo-name { font-size: 24px; font-weight: 700; color: #2563EB; }
   .logo-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
   .biz-info { text-align: left; font-size: 12px; color: #6B7280; line-height: 1.8; }
-  .inv-title { text-align: center; font-size: 28px; font-weight: 700; color: #F97316; margin-bottom: 6px; letter-spacing: -0.5px; }
+  .inv-title { text-align: center; font-size: 28px; font-weight: 700; color: #2563EB; margin-bottom: 6px; letter-spacing: -0.5px; }
   .inv-num { text-align: center; font-size: 13px; color: #9CA3AF; margin-bottom: 36px; }
   .meta-row { display: flex; gap: 40px; margin-bottom: 32px; }
   .meta-box { flex: 1; background: #F9FAFB; border-radius: 10px; padding: 16px 20px; }
@@ -4174,13 +4612,13 @@ function openInvoice(id) {
   .meta-val { font-size: 14px; font-weight: 600; color: #111; }
   .meta-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
   table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-  thead tr { background: #F97316; color: #fff; }
+  thead tr { background: #2563EB; color: #fff; }
   th { padding: 10px 14px; font-size: 12px; font-weight: 600; text-align: right; }
   td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
   tr:last-child td { border-bottom: none; }
-  .total-row { background: #FFF7ED; }
-  .total-label { font-weight: 700; color: #F97316; }
-  .total-price { font-size: 20px; font-weight: 700; color: #F97316; }
+  .total-row { background: #EFF6FF; }
+  .total-label { font-weight: 700; color: #2563EB; }
+  .total-price { font-size: 20px; font-weight: 700; color: #2563EB; }
   .footer { margin-top: 40px; text-align: center; font-size: 11px; color: #9CA3AF; border-top: 1px solid #F3F4F6; padding-top: 20px; }
   .status-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #D1FAE5; color: #065F46; }
   @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
@@ -4338,7 +4776,7 @@ function renderCmdResults(q) {
     }
   }
 
-  el.innerHTML = html || `<div class="cmd-empty">לא נמצאו תוצאות עבור "${q}"</div>`;
+  el.innerHTML = html || `<div class="cmd-empty">לא נמצאו תוצאות עבור "${h(q)}"</div>`;
 
   // Attach click handlers
   el.querySelectorAll('.cmd-item[data-cmd-action]').forEach(item => {
@@ -4482,7 +4920,7 @@ function openListing(id) {
   ).join('') + (photoCount < 9 ? `<div class="photo-cell">➕</div>` : '');
 
   document.getElementById('videos-list').innerHTML = l.videos
-    ? l.videos.map(v => `<div style="padding:10px;background:var(--surface2);border-radius:6px;margin-bottom:8px;font-size:13px;">🎬 ${v}</div>`).join('')
+    ? l.videos.map(v => `<div style="padding:10px;background:var(--surface2);border-radius:6px;margin-bottom:8px;font-size:13px;">🎬 ${h(v)}</div>`).join('')
     : '<div style="color:var(--text-muted);font-size:13px;margin-top:8px;">לא הועלו סרטונים</div>';
 
   renderPipeline(l);
@@ -4510,6 +4948,7 @@ function switchTab(tab) {
 
 function saveListing() {
   if (!currentListing) return;
+  currentListing.name     = document.getElementById('panel-name').value;
   currentListing.address  = document.getElementById('panel-address').value;
 
   currentListing.city     = document.getElementById('panel-city').value;
@@ -5345,7 +5784,7 @@ function renderExamplesList() {
         return `<div style="position:relative;">
           <img src="${p.url}" onerror="this.src=''" onclick="openLightbox('${p.url}')" title="${p.caption || ''}">
           <div style="position:absolute;top:4px;left:4px;display:flex;gap:3px;">
-            <button onclick="editExample(${idx})" title="ערוך" style="width:22px;height:22px;border-radius:50%;background:rgba(249,115,22,0.85);color:#fff;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">✏️</button>
+            <button onclick="editExample(${idx})" title="ערוך" style="width:22px;height:22px;border-radius:50%;background:rgba(37,99,235,0.85);color:#fff;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">✏️</button>
             <button onclick="removeExample(${idx})" title="הסר" style="width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">✕</button>
           </div>
           ${p.caption ? `<div style="font-size:10px;color:var(--text-muted);padding:3px 4px;background:var(--surface2);text-align:center;">${p.caption}</div>` : ''}
@@ -5844,7 +6283,7 @@ function setStatusInline(id, newStatus, menu) {
   saveStore();
   renderListings();
   if (currentListing && currentListing.id === id) {
-    document.getElementById('panel-status-badge').innerHTML = `<span class="badge ${badgeClass(newStatus)}">${newStatus}</span>`;
+    document.getElementById('panel-status-badge').innerHTML = `<span class="badge ${badgeClass(newStatus)}">${h(newStatus)}</span>`;
     renderPipeline(l);
   }
   menu && menu.remove();
@@ -5884,11 +6323,11 @@ function triggerUpload(type) {
         } else if (type === 'videos') {
           const list = document.getElementById('videos-list');
           if (list) list.insertAdjacentHTML('beforeend',
-            `<div style="padding:10px;background:var(--surface3);border-radius:6px;margin-bottom:8px;font-size:13px;">🎬 <a href="${url}" target="_blank" style="color:var(--blue);">${file.name}</a></div>`);
+            `<div style="padding:10px;background:var(--surface3);border-radius:6px;margin-bottom:8px;font-size:13px;">🎬 <a href="${url}" target="_blank" style="color:var(--blue);">${h(file.name)}</a></div>`);
         } else {
           const list = document.getElementById('floors-list');
           if (list) list.insertAdjacentHTML('beforeend',
-            `<div style="padding:10px;background:var(--surface3);border-radius:6px;margin-bottom:8px;font-size:13px;">📐 <a href="${url}" target="_blank" style="color:var(--blue);">${file.name}</a></div>`);
+            `<div style="padding:10px;background:var(--surface3);border-radius:6px;margin-bottom:8px;font-size:13px;">📐 <a href="${url}" target="_blank" style="color:var(--blue);">${h(file.name)}</a></div>`);
         }
       } catch(e) {
         console.error('Upload failed:', e);
@@ -6115,21 +6554,28 @@ const saveStore = (() => {
     try {
       const small = {
         lastModified: store.lastModified,
-        settings: store.settings,
-        packages: store.packages,
-        services: store.services,
-        addons:   store.addons,
-        schedule: store.schedule,
-        orders:      store.orders || [],
-        promotions:  store.promotions || [],
+        settings:    store.settings,
+        packages:    store.packages,
+        services:    store.services,
+        addons:      store.addons,
+        schedule:    store.schedule,
+        orders:      store.orders      || [],
+        promotions:  store.promotions  || [],
         archive:     store.archive,
       };
-      const batch = db.batch();
-      batch.set(db.collection('store').doc('data'), small);
-      store.listings.forEach(l  => batch.set(db.collection('listings').doc(l.id), l));
-      store.customers.forEach(c => batch.set(db.collection('customers').doc(c.id), c));
-      (store.companies || []).forEach(co => batch.set(db.collection('companies').doc(co.id), co));
-      await batch.commit();
+      const ops = [];
+      ops.push({ ref: db.collection('store').doc('data'), data: small });
+      store.listings.forEach(l  => ops.push({ ref: db.collection('listings').doc(l.id),  data: l }));
+      store.customers.forEach(c => ops.push({ ref: db.collection('customers').doc(c.id), data: c }));
+      (store.companies || []).forEach(co => ops.push({ ref: db.collection('companies').doc(co.id), data: co }));
+      const CHUNK = 490;
+      const batches = [];
+      for (let i = 0; i < ops.length; i += CHUNK) {
+        const b = db.batch();
+        ops.slice(i, i + CHUNK).forEach(({ ref, data }) => b.set(ref, data));
+        batches.push(b.commit());
+      }
+      await Promise.all(batches);
     } catch(e) {
       console.warn('Firestore write failed, saved locally only', e);
       toast('שגיאת ענן — נשמר מקומית', 'warning');
@@ -6628,6 +7074,331 @@ function createOrderFromCRM() {
   toast('ההזמנה נוצרה! אשר אותה כדי ליצור נכס', 'success');
 }
 
+// ── Drone order creation from CRM ─────────────────────────────────────────
+
+function openNewDroneOrderModal() {
+  // Clear all fields
+  ['ndo-first','ndo-last','ndo-phone','ndo-email','ndo-company',
+   'ndo-site-name','ndo-site-address','ndo-area','ndo-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('ndo-mission-type').value = 'survey';
+  // Default date: tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('ndo-pref-date').value = tomorrow.toISOString().slice(0, 10);
+  openModal('new-drone-order-modal');
+}
+
+function openDroneShareLinkModal() {
+  const base = window.location.href.replace(/[?#].*$/, '').replace(/photodesk\.html$/, '');
+  const link = base + 'drone-booking.html';
+  document.getElementById('share-link-input').value = link;
+  document.getElementById('wa-share-btn').onclick = function() {
+    const text = encodeURIComponent(
+      'שלום 👋\nלהזמנת סקר/מיפוי אווירי מ-' +
+      (store.settings && store.settings.businessName || 'Sisa Aero') +
+      ', אנא מלא את הטופס הבא:\n' + link
+    );
+    window.open('https://wa.me/?text=' + text, '_blank');
+  };
+  openModal('share-link-modal');
+}
+
+// ── Drone New Order Page (dne*) ────────────────────────────────────────────
+
+let _dneStep = 1;
+let _dneKmlData = null;
+let _dneLeafletMap = null;
+
+const DNE_MISSION_LABELS = {
+  'roof-scan':'סקר גגות (RGB + תרמי)', thermal:'בדיקה תרמית',
+  'solar-survey':'סקר סולארי', infrastructure:'בדיקת תשתית',
+  mapping:'מיפוי ואורתופוטו', other:'אחר',
+};
+
+function openNewDroneOrderModal() {
+  navigate('drone-new');
+}
+
+function dneResetForm() {
+  _dneStep = 1;
+  _dneKmlData = null;
+  if (_dneLeafletMap) { _dneLeafletMap.remove(); _dneLeafletMap = null; }
+  // Reset stepper
+  [1,2,3,4].forEach(i => {
+    const s = document.getElementById('dne-s' + i);
+    if (s) { s.classList.remove('active','done'); if (i === 1) s.classList.add('active'); }
+    const p = document.getElementById('dne-panel-' + i);
+    if (p) { p.classList.remove('active'); if (i === 1) p.classList.add('active'); }
+  });
+  // Clear fields
+  ['dne-first','dne-last','dne-phone','dne-email','dne-company',
+   'dne-site-name','dne-site-address','dne-area','dne-flight-params','dne-extra-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.querySelectorAll('input[name="dne-mission"]').forEach(r => r.checked = false);
+  document.getElementById('dne-date-flex').value = 'week';
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('dne-pref-date').value = tomorrow.toISOString().slice(0, 10);
+  dneRemoveKML(null);
+  [1,2,3,4].forEach(i => dneHideErr(i));
+}
+
+function dneGoStep(n) {
+  const prev = document.getElementById('dne-panel-' + _dneStep);
+  const prevS = document.getElementById('dne-s' + _dneStep);
+  if (prev) prev.classList.remove('active');
+  if (prevS) { prevS.classList.remove('active'); prevS.classList.add('done'); }
+  _dneStep = n;
+  const next = document.getElementById('dne-panel-' + n);
+  const nextS = document.getElementById('dne-s' + n);
+  if (next) next.classList.add('active');
+  if (nextS) { nextS.classList.remove('done'); nextS.classList.add('active'); }
+  const page = document.getElementById('page-drone-new');
+  if (page) page.scrollTop = 0;
+  if (n === 4) dneRenderReview();
+}
+
+function dneValidate1() {
+  const first = (document.getElementById('dne-first').value || '').trim();
+  const last  = (document.getElementById('dne-last').value  || '').trim();
+  const phone = (document.getElementById('dne-phone').value || '').trim();
+  if (!first) return dneShowErr(1, 'נא למלא שם פרטי');
+  if (!last)  return dneShowErr(1, 'נא למלא שם משפחה');
+  if (!phone) return dneShowErr(1, 'נא למלא מספר טלפון');
+  dneHideErr(1);
+  dneGoStep(2);
+}
+
+function dneValidate2() {
+  const mType = document.querySelector('input[name="dne-mission"]:checked');
+  if (!mType) return dneShowErr(2, 'נא לבחור סוג משימה');
+  if (!(document.getElementById('dne-site-name').value || '').trim())    return dneShowErr(2, 'נא למלא שם הפרויקט / האתר');
+  if (!(document.getElementById('dne-site-address').value || '').trim()) return dneShowErr(2, 'נא למלא כתובת האתר');
+  dneHideErr(2);
+  dneGoStep(3);
+}
+
+function dneShowErr(step, msg) {
+  const el = document.getElementById('dne-err-' + step);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function dneHideErr(step) {
+  const el = document.getElementById('dne-err-' + step);
+  if (el) { el.textContent = ''; el.classList.remove('show'); }
+}
+
+// ── KML ──────────────────────────────────────────────
+function dneHandleKML(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { toast('הקובץ גדול מדי (מקסימום 5MB)', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = e => dneProcessKML(e.target.result, file.name, file.size);
+  reader.readAsText(file);
+}
+
+function dneProcessKML(text, fileName, fileSize) {
+  const parsed = dneParseKML(text);
+  _dneKmlData = { ...parsed, fileName, rawText: text };
+  const zone = document.getElementById('dne-kml-zone');
+  zone.classList.add('has-file');
+  document.getElementById('dne-kml-zone-icon').textContent = '✅';
+  document.getElementById('dne-kml-zone-title').textContent = 'קובץ KML נטען בהצלחה';
+  document.getElementById('dne-kml-zone-sub').textContent = parsed.name || fileName;
+  document.getElementById('dne-kml-fi').classList.add('show');
+  document.getElementById('dne-kml-fname').textContent = fileName;
+  document.getElementById('dne-kml-fsize').textContent = dneFormatBytes(fileSize);
+  if (parsed.coords.length > 0) {
+    document.getElementById('dne-map-wrap').classList.add('show');
+    dneRenderMap(parsed.coords, parsed.name || fileName);
+    if (parsed.center) {
+      const gmUrl = 'https://maps.google.com/maps?q=' + parsed.center.lat + ',' + parsed.center.lng + '&z=15&t=k';
+      document.getElementById('dne-gmaps-btn').href = gmUrl;
+    }
+  }
+  const earthBtn = document.getElementById('dne-earth-btn');
+  earthBtn.href = 'data:application/vnd.google-earth.kml+xml;charset=utf-8,' + encodeURIComponent(text);
+  earthBtn.setAttribute('download', fileName);
+}
+
+function dneParseKML(text) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, 'text/xml');
+  const nameNode = doc.querySelector('Document > name, Folder > name, Placemark > name');
+  const name = nameNode ? nameNode.textContent.trim() : '';
+  const coords = [];
+  doc.querySelectorAll('coordinates').forEach(node => {
+    node.textContent.trim().split(/\s+/).forEach(triplet => {
+      const parts = triplet.split(',');
+      const lng = parseFloat(parts[0]), lat = parseFloat(parts[1]);
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) coords.push([lat, lng]);
+    });
+  });
+  let center = null;
+  if (coords.length > 0) {
+    center = { lat: coords.reduce((s, c) => s + c[0], 0) / coords.length,
+               lng: coords.reduce((s, c) => s + c[1], 0) / coords.length };
+  }
+  return { name, coords, center };
+}
+
+function dneRenderMap(coords, title) {
+  if (!window.L) return; // Leaflet not yet loaded
+  if (_dneLeafletMap) { _dneLeafletMap.remove(); _dneLeafletMap = null; }
+  _dneLeafletMap = L.map('dne-map');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '\u00a9 <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(_dneLeafletMap);
+  if (coords.length === 1) {
+    _dneLeafletMap.setView(coords[0], 16);
+    L.marker(coords[0]).addTo(_dneLeafletMap).bindPopup(title).openPopup();
+  } else {
+    const poly = L.polygon(coords, { color: '#2563EB', weight: 2.5, fillColor: '#3B82F6', fillOpacity: 0.18 }).addTo(_dneLeafletMap);
+    poly.bindPopup('<strong>' + title + '</strong>').openPopup();
+    _dneLeafletMap.fitBounds(poly.getBounds(), { padding: [24, 24] });
+  }
+}
+
+function dneRemoveKML(e) {
+  if (e) e.stopPropagation();
+  _dneKmlData = null;
+  const zone = document.getElementById('dne-kml-zone');
+  if (zone) { zone.classList.remove('has-file'); }
+  const zoneIcon = document.getElementById('dne-kml-zone-icon');
+  if (zoneIcon) zoneIcon.textContent = '📍';
+  const zoneTitle = document.getElementById('dne-kml-zone-title');
+  if (zoneTitle) zoneTitle.textContent = 'גרור קובץ KML לכאן';
+  const zoneSub = document.getElementById('dne-kml-zone-sub');
+  if (zoneSub) zoneSub.textContent = 'או לחץ לבחור קובץ · .kml, .kmz';
+  const fi = document.getElementById('dne-kml-fi');
+  if (fi) fi.classList.remove('show');
+  const mapWrap = document.getElementById('dne-map-wrap');
+  if (mapWrap) mapWrap.classList.remove('show');
+  const fileInput = document.getElementById('dne-kml-file');
+  if (fileInput) fileInput.value = '';
+  if (_dneLeafletMap) { _dneLeafletMap.remove(); _dneLeafletMap = null; }
+}
+
+function dneAddChip(text) {
+  const ta = document.getElementById('dne-flight-params');
+  const pos = ta.selectionStart;
+  const before = ta.value.substring(0, pos), after = ta.value.substring(pos);
+  const sep = (before.length > 0 && !before.endsWith('\n')) ? '\n' : '';
+  ta.value = before + sep + text + after;
+  const newPos = pos + sep.length + text.length;
+  ta.setSelectionRange(newPos, newPos);
+  ta.focus();
+}
+
+function dneFormatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+  return (b / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// ── REVIEW ────────────────────────────────────────────
+function dneRenderReview() {
+  const mType = document.querySelector('input[name="dne-mission"]:checked');
+  const tbody = document.getElementById('dne-review-table');
+  tbody.textContent = '';
+  const fullName = ((document.getElementById('dne-first').value || '') + ' ' + (document.getElementById('dne-last').value || '')).trim();
+  const areaVal = (document.getElementById('dne-area').value || '').trim();
+  const areaUnit = document.getElementById('dne-area-unit').value;
+  const rows = [
+    ['שם איש קשר', fullName || '—'],
+    ['טלפון', document.getElementById('dne-phone').value || '—'],
+    ['אימייל', document.getElementById('dne-email').value || '—'],
+    ['חברה', document.getElementById('dne-company').value || '—'],
+    ['סוג משימה', mType ? (DNE_MISSION_LABELS[mType.value] || mType.value) : '—'],
+    ['שם הפרויקט', document.getElementById('dne-site-name').value],
+    ['כתובת', document.getElementById('dne-site-address').value],
+    ['תאריך מועדף', document.getElementById('dne-pref-date').value || 'לא צוין'],
+    ['שטח', areaVal ? (areaVal + ' ' + areaUnit) : '—'],
+    ['קובץ KML', _dneKmlData ? ('✅ ' + _dneKmlData.fileName) : '—'],
+  ];
+  rows.forEach(function(pair) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td'); td1.textContent = pair[0];
+    const td2 = document.createElement('td'); td2.textContent = pair[1];
+    tr.appendChild(td1); tr.appendChild(td2); tbody.appendChild(tr);
+  });
+  const params = (document.getElementById('dne-flight-params').value || '').trim();
+  if (params) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td'); td1.textContent = 'פרמטרי טיסה'; td1.style.verticalAlign = 'top';
+    const td2 = document.createElement('td'); td2.textContent = params; td2.style.cssText = 'font-size:12px;white-space:pre-wrap;color:var(--text-muted);';
+    tr.appendChild(td1); tr.appendChild(td2); tbody.appendChild(tr);
+  }
+}
+
+// ── SUBMIT ────────────────────────────────────────────
+async function dneSubmit() {
+  const btn = document.getElementById('dne-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'שומר...';
+  dneHideErr(4);
+  const mType = document.querySelector('input[name="dne-mission"]:checked');
+  const order = {
+    contactFirst: (document.getElementById('dne-first').value || '').trim(),
+    contactLast:  (document.getElementById('dne-last').value  || '').trim(),
+    phone:        (document.getElementById('dne-phone').value || '').trim(),
+    email:        (document.getElementById('dne-email').value || '').trim(),
+    company:      (document.getElementById('dne-company').value || '').trim(),
+    missionType:  mType ? mType.value : null,
+    siteName:     (document.getElementById('dne-site-name').value    || '').trim(),
+    siteAddress:  (document.getElementById('dne-site-address').value || '').trim(),
+    prefDate:     document.getElementById('dne-pref-date').value || null,
+    dateFlex:     document.getElementById('dne-date-flex').value,
+    areaSize:     parseFloat(document.getElementById('dne-area').value) || null,
+    areaUnit:     document.getElementById('dne-area-unit').value,
+    kmlFileName:  _dneKmlData ? _dneKmlData.fileName : null,
+    kmlCoords:    _dneKmlData ? _dneKmlData.coords.slice(0, 500).map(c => ({ lat: c[0], lng: c[1] })) : null,
+    kmlCenter:    _dneKmlData ? _dneKmlData.center : null,
+    kmlAreaName:  _dneKmlData ? _dneKmlData.name : null,
+    flightParams: (document.getElementById('dne-flight-params').value || '').trim(),
+    notes:        (document.getElementById('dne-extra-notes').value   || '').trim(),
+    status:       'pending',
+    source:       'crm',
+    createdAt:    Date.now(),
+  };
+  try {
+    await db.collection('drone_orders').add(order);
+    toast('הזמנת ההנדסה נשמרה! 🚁', 'success');
+    navigate('orders');
+    filterOrdersType('drone');
+  } catch(err) {
+    dneShowErr(4, 'שגיאה בשמירה: ' + (err.message || 'נסה שוב'));
+    btn.disabled = false;
+    btn.textContent = '✅ שמור הזמנה';
+  }
+}
+
+// ── KML drag-and-drop setup (runs once on load) ───────
+(function dneDragDrop() {
+  document.addEventListener('DOMContentLoaded', function() {
+    const zone = document.getElementById('dne-kml-zone');
+    if (!zone) return;
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => dneProcessKML(ev.target.result, file.name, file.size);
+      reader.readAsText(file);
+    });
+  });
+})();
+
+// ── End Drone New Page ────────────────────────────────
+
 // Sync mutable order fields back to listing (if listing still exists)
 function _syncOrderToListing(o) {
   const l = store.listings.find(x => x.id === o.id);
@@ -6647,146 +7418,265 @@ function _migrateOrdersFromListings() {
   });
 }
 
-function renderOrders() {
-  const pending  = loadPendingBookings();
-  const active   = store.orders.filter(o => ORDER_PIPELINE.includes(o.status));
-  const listEl   = document.getElementById('orders-list');
+// ── Order card helpers ────────────────────────────────────────────────
+const _ORDER_NEXT_STATUS = { 'מתוכנן':'צולם', 'צולם':'בעיבוד', 'בעיבוד':'ממתין למסירה', 'ממתין למסירה':'נמסר' };
+const _ORDER_NEXT_LABEL  = { 'מתוכנן':'צולם ✓', 'צולם':'בעיבוד ✓', 'בעיבוד':'ממתין למסירה ✓', 'ממתין למסירה':'נמסר ✓' };
+const _toDate = v => { if (!v) return null; if (typeof v?.toDate === 'function') return v.toDate(); const d = new Date(v); return isNaN(d) ? null : d; };
 
-  updateOrdersBadge();
-
-  // ── Update tab counts ─────────────────────────
+function _updateOrderTabCounts(pending, active) {
+  const scEl = id => document.getElementById(id);
   const inProcessing = active.filter(o => ['מתוכנן','צולם','בעיבוד'].includes(o.status));
   const waitDelivery = active.filter(o => o.status === 'ממתין למסירה');
   const unpaidOrders = active.filter(o => !o.paymentStatus || o.paymentStatus === 'unpaid');
-  const scEl = id => document.getElementById(id);
   if (scEl('osc-val-all'))        scEl('osc-val-all').textContent        = pending.length + active.length;
   if (scEl('osc-val-approval'))   scEl('osc-val-approval').textContent   = pending.length;
   if (scEl('osc-val-processing')) scEl('osc-val-processing').textContent = inProcessing.length;
   if (scEl('osc-val-pending'))    scEl('osc-val-pending').textContent    = waitDelivery.length;
   if (scEl('osc-val-unpaid'))     scEl('osc-val-unpaid').textContent     = unpaidOrders.length;
-
-  // ── Active filter tab highlight ───────────────
-  ['ofilt-all','ofilt-approval','ofilt-processing','ofilt-pending','ofilt-unpaid'].forEach(id => {
-    scEl(id)?.classList.remove('active');
-  });
+  ['ofilt-all','ofilt-approval','ofilt-processing','ofilt-pending','ofilt-unpaid'].forEach(id => scEl(id)?.classList.remove('active'));
   if      (_ordersFilter === '')               scEl('ofilt-all')?.classList.add('active');
   else if (_ordersFilter === 'ממתין לאישור')  scEl('ofilt-approval')?.classList.add('active');
   else if (_ordersFilter === 'בעיבוד')        scEl('ofilt-processing')?.classList.add('active');
   else if (_ordersFilter === 'ממתין למסירה')  scEl('ofilt-pending')?.classList.add('active');
   else if (_ordersFilter === '__unpaid__')     scEl('ofilt-unpaid')?.classList.add('active');
+}
 
-  // ── Apply filter ──────────────────────────────
-  let filteredPending = pending;
-  let filteredActive  = active;
+function _applyOrdersFilter(pending, active) {
+  if (_ordersFilter === 'ממתין לאישור') return { filteredPending: pending, filteredActive: [] };
+  if (_ordersFilter === 'בעיבוד')       return { filteredPending: [], filteredActive: active.filter(o => ['מתוכנן','צולם','בעיבוד'].includes(o.status)) };
+  if (_ordersFilter === 'ממתין למסירה') return { filteredPending: [], filteredActive: active.filter(o => o.status === 'ממתין למסירה') };
+  if (_ordersFilter === '__unpaid__')    return { filteredPending: pending, filteredActive: active.filter(o => !o.paymentStatus || o.paymentStatus === 'unpaid') };
+  return { filteredPending: pending, filteredActive: active };
+}
 
-  if (_ordersFilter === 'ממתין לאישור') {
-    filteredActive = [];
-  } else if (_ordersFilter === 'בעיבוד') {
-    filteredPending = [];
-    filteredActive  = active.filter(o => ['מתוכנן','צולם','בעיבוד'].includes(o.status));
-  } else if (_ordersFilter === 'ממתין למסירה') {
-    filteredPending = [];
-    filteredActive  = active.filter(o => o.status === 'ממתין למסירה');
-  } else if (_ordersFilter === '__unpaid__') {
-    filteredPending = pending.filter(() => true);
-    filteredActive  = active.filter(o => !o.paymentStatus || o.paymentStatus === 'unpaid');
+function _buildPendingCard(b) {
+  const p = b.property || {}, bc = b.client || {};
+  const cl = bc.isExisting ? (store.customers.find(c => c.id === bc.id) || {first:'?', last:''}) : bc;
+  const name = ((cl.first||'')+' '+(cl.last||'')).trim();
+  const sDate = _toDate(b.shootDate);
+  const shootStr  = sDate ? sDate.toLocaleDateString('he-IL', {day:'numeric', month:'short'}) : '';
+  const shootTime = sDate ? sDate.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}) : '';
+  const pkg = b.package || {};
+  return `
+    <div class="kanban-card" data-stop-propagation="1" style="cursor:default;">
+      <div class="kanban-card-addr">${h(p.address)||'בקשת הזמנה'}${p.city?', '+h(p.city):''}</div>
+      <div class="kanban-card-meta">
+        ${name ? '👤 '+h(name) : ''}
+        ${shootStr ? (name?'<br>':'')+'📅 '+shootStr+(shootTime?' '+shootTime:'') : ''}
+        ${pkg.name ? '<br>📦 '+h(pkg.name) : ''}
+        ${p.rooms ? '<br>🏠 '+h(String(p.rooms))+" חד'" : ''}
+      </div>
+      <div style="display:flex;gap:5px;margin-top:10px;">
+        <button class="btn btn-primary" style="font-size:11px;padding:4px 8px;flex:1;" onclick="approveBooking('${h(b.id)}')">✓ אשר</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 6px;" onclick="viewBooking('${h(b.id)}')">פרטים</button>
+        <button class="btn btn-danger" style="font-size:11px;padding:4px 6px;" onclick="rejectBooking('${h(b.id)}')">✕</button>
+      </div>
+    </div>`;
+}
+
+function _buildActiveOrderCard(l) {
+  const custObj = l.customer ? (store.customers.find(c => c.id === l.customer) || {first:'', last:''}) : null;
+  const custLabel = custObj ? (custObj.first+' '+custObj.last).trim() : '';
+  const next = _ORDER_NEXT_STATUS[l.status];
+  const nextLbl = _ORDER_NEXT_LABEL[l.status];
+  const payLbl = {'unpaid':'לא שולם','deposit':'מקדמה','paid':'שולם'}[l.paymentStatus||'unpaid'];
+  const payClass = 'pay-'+(l.paymentStatus||'unpaid');
+  const shootStr = l.shootDate ? new Date(l.shootDate).toLocaleDateString('he-IL', {day:'numeric', month:'short'}) : '';
+  return `
+    <div class="kanban-card js-open-listing" data-listing-id="${h(l.id)}">
+      <div class="kanban-card-addr">${h(l.address)}${l.city?', '+h(l.city):''}</div>
+      <div class="kanban-card-meta">
+        ${custLabel ? '👤 '+h(custLabel) : ''}
+        ${shootStr ? (custLabel?'<br>':'')+'📅 '+shootStr : ''}
+        ${l.pkg ? '<br>📦 '+h(l.pkg) : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:8px;flex-wrap:wrap;" data-stop-propagation="1">
+        <span class="pay-badge ${payClass}" onclick="cyclePayment('${h(l.id)}')" style="font-size:10px;cursor:pointer;">${h(payLbl)}</span>
+        <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredPhotos')" title="תמונות">📸</span>
+        <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredVideo')" title="סרטון">🎬</span>
+        <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredFloorplan')" title="תוכנית">📐</span>
+      </div>
+      ${next ? `<button class="btn btn-primary" style="width:100%;font-size:11px;padding:5px;margin-top:8px;" data-stop-propagation="1" onclick="advanceStatus('${h(l.id)}','${h(next)}')">${h(nextLbl)}</button>` : ''}
+    </div>`;
+}
+
+// ── Drone orders pipeline ──────────────────────────────────────────────────
+const DRONE_PIPELINE   = ['pending','confirmed','in_flight','processing','delivered'];
+const DRONE_NEXT_STATUS = { pending:'confirmed', confirmed:'in_flight', in_flight:'processing', processing:'delivered' };
+const DRONE_COL_META   = {
+  pending:    { label:'ממתין לאישור', emoji:'⏳' },
+  confirmed:  { label:'אושר',         emoji:'✅' },
+  in_flight:  { label:'בטיסה',        emoji:'🚁' },
+  processing: { label:'בעיבוד',       emoji:'⚙️' },
+  delivered:  { label:'נמסר',         emoji:'📦' },
+};
+const DRONE_NEXT_LABEL  = { pending:'אשר ✓', confirmed:'המריא ✓', in_flight:'בעיבוד ✓', processing:'נמסר ✓' };
+
+function _buildDroneCard(d) {
+  const next     = DRONE_NEXT_STATUS[d.status];
+  const nextLbl  = DRONE_NEXT_LABEL[d.status];
+  const dateStr  = d.prefDate ? new Date(d.prefDate).toLocaleDateString('he-IL', {day:'numeric', month:'short'}) : '';
+  const missionLabels = { survey:'סקר', mapping:'מיפוי', inspection:'בדיקה', photo:'צילום', thermal:'תרמי', lidar:'LiDAR' };
+  const missionLbl = missionLabels[d.missionType] || d.missionType || '';
+  const card = document.createElement('div');
+  card.className = 'kanban-card kanban-card--drone';
+  card.dataset.droneId = d.id;
+  const addr = document.createElement('div');
+  addr.className = 'kanban-card-addr';
+  addr.textContent = (d.siteName || d.siteAddress || 'הזמנת דרון');
+  card.appendChild(addr);
+  const meta = document.createElement('div');
+  meta.className = 'kanban-card-meta';
+  const lines = [];
+  if (d.phone) lines.push('📞 ' + d.phone);
+  if (dateStr) lines.push('📅 ' + dateStr);
+  if (missionLbl) lines.push('🛩 ' + missionLbl);
+  meta.textContent = lines.join(' · ');
+  card.appendChild(meta);
+  if (next) {
+    const advBtn = document.createElement('button');
+    advBtn.className = 'btn btn-primary';
+    advBtn.style.cssText = 'width:100%;font-size:11px;padding:5px;margin-top:8px;';
+    advBtn.textContent = nextLbl;
+    advBtn.addEventListener('click', (e) => { e.stopPropagation(); advanceDroneStatus(d.id, next); });
+    card.appendChild(advBtn);
   }
+  return card;
+}
 
-  const total = filteredPending.length + filteredActive.length;
+function advanceDroneStatus(droneId, newStatus) {
+  db.collection('drone_orders').doc(droneId).update({ status: newStatus })
+    .catch(err => console.error('advanceDroneStatus:', err));
+}
 
-  if (!total) {
-    listEl.innerHTML = `
-      <div class="empty-state" style="padding:40px 20px;">
-        <div class="empty-state-box">
-          <div class="empty-icon">📋</div>
-          <div class="empty-title">${_ordersFilter ? 'אין הזמנות בקטגוריה זו' : 'אין הזמנות פעילות'}</div>
-          <div class="empty-sub">${_ordersFilter ? 'נסה לבחור קטגוריה אחרת' : 'שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן'}</div>
-        </div>
-      </div>`;
+// ── End drone pipeline ─────────────────────────────────────────────────────
+
+function renderDroneKanban(listEl) {
+  const droneOrders = window._droneOrders || [];
+  const active = droneOrders.filter(d => DRONE_PIPELINE.includes(d.status));
+  listEl.innerHTML = '';
+  if (!active.length) {
+    const wrap = document.createElement('div');
+    wrap.className = 'empty-state';
+    wrap.style.cssText = 'padding:40px 20px;';
+    const box = document.createElement('div');
+    box.className = 'empty-state-box';
+    const icon = document.createElement('div');
+    icon.className = 'empty-icon';
+    icon.textContent = '🚁';
+    const title = document.createElement('div');
+    title.className = 'empty-title';
+    title.textContent = 'אין הזמנות הנדסה';
+    const sub = document.createElement('div');
+    sub.className = 'empty-sub';
+    sub.textContent = 'הזמנות דרון יופיעו כאן';
+    box.append(icon, title, sub);
+    wrap.appendChild(box);
+    listEl.appendChild(wrap);
+    return;
+  }
+  const board = document.createElement('div');
+  board.className = 'kanban-board';
+  board.style.cssText = 'overflow-x:auto;-webkit-overflow-scrolling:touch;';
+  const colColors = { pending:'#F59E0B', confirmed:'#10B981', in_flight:'#3B82F6', processing:'#8B5CF6', delivered:'#6B7280' };
+  DRONE_PIPELINE.forEach(key => {
+    const meta  = DRONE_COL_META[key];
+    const cards = active.filter(d => d.status === key);
+    const col   = document.createElement('div');
+    col.className = 'kanban-col';
+    const hdr = document.createElement('div');
+    hdr.className = 'kanban-col-header';
+    hdr.style.cssText = 'border-color:' + colColors[key] + ';color:' + colColors[key] + ';';
+    hdr.textContent = meta.emoji + ' ' + meta.label;
+    const cnt = document.createElement('span');
+    cnt.className = 'kanban-col-count';
+    cnt.style.background = colColors[key];
+    cnt.textContent = String(cards.length);
+    hdr.appendChild(cnt);
+    col.appendChild(hdr);
+    if (cards.length) {
+      cards.forEach(d => col.appendChild(_buildDroneCard(d)));
+    } else {
+      const emptyEl = document.createElement('div');
+      emptyEl.className = 'kanban-empty';
+      emptyEl.textContent = 'אין הזמנות';
+      col.appendChild(emptyEl);
+    }
+    board.appendChild(col);
+  });
+  listEl.appendChild(board);
+}
+
+function renderOrders() {
+  const pending = loadPendingBookings();
+  const active  = store.orders.filter(o => ORDER_PIPELINE.includes(o.status));
+  const listEl  = document.getElementById('orders-list');
+
+  updateOrdersBadge();
+  _updateOrderTabCounts(pending, active);
+
+  // Drone-only view — skip real-estate logic entirely
+  if (_ordersType === 'drone') {
+    renderDroneKanban(listEl);
     return;
   }
 
-  const nextStatus = { 'מתוכנן':'צולם', 'צולם':'בעיבוד', 'בעיבוד':'ממתין למסירה', 'ממתין למסירה':'נמסר' };
-  const nextLabel  = { 'מתוכנן':'צולם ✓', 'צולם':'בעיבוד ✓', 'בעיבוד':'ממתין למסירה ✓', 'ממתין למסירה':'נמסר ✓' };
-  const _d = v => { if (!v) return null; if (v && typeof v.toDate==='function') return v.toDate(); const d=new Date(v); return isNaN(d)?null:d; };
+  const { filteredPending, filteredActive } = _applyOrdersFilter(pending, active);
+  const total = filteredPending.length + filteredActive.length;
+  const showDrone = (_ordersType === 'all');
 
-  const columns = [
-    { key:'ממתין לאישור', label:'⏳ ממתין לאישור', color:'#F59E0B', isPending:true,  cards: filteredPending },
-    { key:'מתוכנן',       label:'📅 מתוכנן',       color:'#8B5CF6', isPending:false, cards: filteredActive.filter(o=>o.status==='מתוכנן') },
-    { key:'צולם',         label:'📸 צולם',          color:'#F97316', isPending:false, cards: filteredActive.filter(o=>o.status==='צולם') },
-    { key:'בעיבוד',       label:'⚙️ בעיבוד',        color:'#3B82F6', isPending:false, cards: filteredActive.filter(o=>o.status==='בעיבוד') },
-    { key:'ממתין למסירה', label:'🚀 ממתין למסירה', color:'#EF4444', isPending:false, cards: filteredActive.filter(o=>o.status==='ממתין למסירה') },
-  ];
-
-  const colsHtml = columns.map(col => {
-    let cardsHtml = '';
-
-    if (col.isPending) {
-      col.cards.forEach(b => {
-        const p = b.property||{}, bc = b.client||{};
-        const cl = bc.isExisting ? (store.customers.find(c=>c.id===bc.id)||{first:'?',last:''}) : bc;
-        const name = ((cl.first||'')+' '+(cl.last||'')).trim();
-        const sDate = _d(b.shootDate);
-        const shootStr = sDate ? sDate.toLocaleDateString('he-IL',{day:'numeric',month:'short'}) : '';
-        const shootTime = sDate ? sDate.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}) : '';
-        const pkg = b.package||{};
-        cardsHtml += `
-          <div class="kanban-card" data-stop-propagation="1" style="cursor:default;">
-            <div class="kanban-card-addr">${h(p.address)||'בקשת הזמנה'}${p.city?', '+h(p.city):''}</div>
-            <div class="kanban-card-meta">
-              ${name ? '👤 '+h(name) : ''}
-              ${shootStr ? (name?'<br>':'')+'📅 '+shootStr+(shootTime?' '+shootTime:'') : ''}
-              ${pkg.name ? '<br>📦 '+h(pkg.name) : ''}
-              ${p.rooms ? '<br>🏠 '+h(String(p.rooms))+" חד'" : ''}
-            </div>
-            <div style="display:flex;gap:5px;margin-top:10px;">
-              <button class="btn btn-primary" style="font-size:11px;padding:4px 8px;flex:1;" onclick="approveBooking('${h(b.id)}')">✓ אשר</button>
-              <button class="btn btn-ghost" style="font-size:11px;padding:4px 6px;" onclick="viewBooking('${h(b.id)}')">פרטים</button>
-              <button class="btn btn-danger" style="font-size:11px;padding:4px 6px;" onclick="rejectBooking('${h(b.id)}')">✕</button>
-            </div>
-          </div>`;
-      });
-    } else {
-      col.cards.forEach(l => {
-        const custObj = l.customer ? (store.customers.find(c=>c.id===l.customer)||{first:'',last:''}) : null;
-        const custLabel = custObj ? (custObj.first+' '+custObj.last).trim() : '';
-        const next = nextStatus[l.status];
-        const nextLbl = nextLabel[l.status];
-        const payLbl = {'unpaid':'לא שולם','deposit':'מקדמה','paid':'שולם'}[l.paymentStatus||'unpaid'];
-        const payClass = 'pay-'+(l.paymentStatus||'unpaid');
-        const shootStr = l.shootDate ? new Date(l.shootDate).toLocaleDateString('he-IL',{day:'numeric',month:'short'}) : '';
-        cardsHtml += `
-          <div class="kanban-card js-open-listing" data-listing-id="${h(l.id)}">
-            <div class="kanban-card-addr">${h(l.address)}${l.city?', '+h(l.city):''}</div>
-            <div class="kanban-card-meta">
-              ${custLabel ? '👤 '+h(custLabel) : ''}
-              ${shootStr ? (custLabel?'<br>':'')+'📅 '+shootStr : ''}
-              ${l.pkg ? '<br>📦 '+h(l.pkg) : ''}
-            </div>
-            <div style="display:flex;align-items:center;gap:5px;margin-top:8px;flex-wrap:wrap;" data-stop-propagation="1">
-              <span class="pay-badge ${payClass}" onclick="cyclePayment('${h(l.id)}')" style="font-size:10px;cursor:pointer;">${h(payLbl)}</span>
-              <span class="deliver-chip ${l.deliveredPhotos?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredPhotos')" title="תמונות">📸</span>
-              <span class="deliver-chip ${l.deliveredVideo?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredVideo')" title="סרטון">🎬</span>
-              <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredFloorplan')" title="תוכנית">📐</span>
-            </div>
-            ${next ? `<button class="btn btn-primary" style="width:100%;font-size:11px;padding:5px;margin-top:8px;" data-stop-propagation="1" onclick="advanceStatus('${h(l.id)}','${h(next)}')">${h(nextLbl)}</button>` : ''}
-          </div>`;
-      });
+  if (!total) {
+    if (!showDrone) {
+      const emptyTitle = _ordersFilter ? 'אין הזמנות בקטגוריה זו' : 'אין הזמנות פעילות';
+      const emptySub   = _ordersFilter ? 'נסה לבחור קטגוריה אחרת' : 'שלח ללקוחות את לינק ההזמנה — ההזמנות יופיעו כאן';
+      listEl.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.className = 'empty-state';
+      wrap.style.cssText = 'padding:40px 20px;';
+      const box = document.createElement('div');
+      box.className = 'empty-state-box';
+      const icon = document.createElement('div');
+      icon.className = 'empty-icon';
+      icon.textContent = '📋';
+      const ttl = document.createElement('div');
+      ttl.className = 'empty-title';
+      ttl.textContent = emptyTitle;
+      const sub = document.createElement('div');
+      sub.className = 'empty-sub';
+      sub.textContent = emptySub;
+      box.append(icon, ttl, sub);
+      wrap.appendChild(box);
+      listEl.appendChild(wrap);
+      return;
     }
+    listEl.innerHTML = '';
+  } else {
+    const columns = [
+      { key:'ממתין לאישור', label:'⏳ ממתין לאישור', color:'#F59E0B', isPending:true,  cards: filteredPending },
+      { key:'מתוכנן',       label:'📅 מתוכנן',       color:'#8B5CF6', isPending:false, cards: filteredActive.filter(o=>o.status==='מתוכנן') },
+      { key:'צולם',         label:'📸 צולם',          color:'#2563EB', isPending:false, cards: filteredActive.filter(o=>o.status==='צולם') },
+      { key:'בעיבוד',       label:'⚙️ בעיבוד',        color:'#3B82F6', isPending:false, cards: filteredActive.filter(o=>o.status==='בעיבוד') },
+      { key:'ממתין למסירה', label:'🚀 ממתין למסירה', color:'#EF4444', isPending:false, cards: filteredActive.filter(o=>o.status==='ממתין למסירה') },
+    ];
+    const colsHtml = columns.map(col => {
+      const cardsHtml = col.cards.length
+        ? col.cards.map(c => col.isPending ? _buildPendingCard(c) : _buildActiveOrderCard(c)).join('')
+        : '<div class="kanban-empty">אין הזמנות</div>';
+      return `<div class="kanban-col"><div class="kanban-col-header" style="border-color:${col.color};color:${col.color};">${col.label}<span class="kanban-col-count" style="background:${col.color};">${col.cards.length}</span></div>${cardsHtml}</div>`;
+    }).join('');
+    listEl.innerHTML = `<div class="kanban-board" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">${colsHtml}</div>`;
+  }
 
-    if (!cardsHtml) cardsHtml = '<div class="kanban-empty">אין הזמנות</div>';
-
-    return `
-      <div class="kanban-col">
-        <div class="kanban-col-header" style="border-color:${col.color};color:${col.color};">
-          ${col.label}
-          <span class="kanban-col-count" style="background:${col.color};">${col.cards.length}</span>
-        </div>
-        ${cardsHtml}
-      </div>`;
-  }).join('');
-
-  listEl.innerHTML = `<div class="kanban-board" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">${colsHtml}</div>`;
+  // In 'all' mode append drone kanban below real-estate kanban
+  if (showDrone) {
+    const hdr = document.createElement('div');
+    hdr.className = 'kanban-section-header';
+    hdr.textContent = '🚁 הזמנות הנדסה';
+    listEl.appendChild(hdr);
+    const droneWrap = document.createElement('div');
+    listEl.appendChild(droneWrap);
+    renderDroneKanban(droneWrap);
+  }
 }
 
 function loadPendingBookings() {
@@ -6799,70 +7689,51 @@ function savePendingBookings(list) {
   try { localStorage.setItem('photoDesk_pending', JSON.stringify(list)); } catch(e) {}
 }
 
+function _findOrCreateCustomer(clientData) {
+  if (clientData.isExisting) return clientData.id;
+  const existing = store.customers.find(c =>
+    c.phone === clientData.phone || (clientData.email && c.email === clientData.email)
+  );
+  if (existing) {
+    existing.listings = (existing.listings || 0) + 1;
+    return existing.id;
+  }
+  store.customers.push({
+    id: clientData.id,
+    first: clientData.first,
+    last: clientData.last,
+    email: clientData.email || '',
+    phone: clientData.phone || '',
+    company: clientData.company || '',
+    listings: 1
+  });
+  return clientData.id;
+}
+
+function _listingFromBooking(b, customerId) {
+  const p = b.property;
+  return {
+    id: 'L' + Date.now(),
+    address: p.address, city: p.city, state: p.neighborhood || '',
+    zip: '', beds: +p.rooms || 0, baths: +p.baths || 0,
+    stories: +p.floor || 1, area: +p.area || 0, lot: 0, year: +p.year || 0,
+    pkg: b.package.name, pkgId: b.package.id || '', price: b.package.price || 0,
+    status: 'מתוכנן', customer: customerId, mls: '',
+    created: new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'}),
+    photos: 0, desc: '', notes: p.notes || '', agent: '',
+    shootDate: b.shootDate || '', paymentStatus: 'unpaid', paymentAmount: 0,
+    payReqSent: false, invoiceSent: false,
+    deliveredPhotos: false, deliveredVideo: false, deliveredFloorplan: false
+  };
+}
+
 function approveBooking(id) {
   const pending = loadPendingBookings();
   const b = pending.find(x => x.id === id);
   if (!b) return;
 
-  // Add customer if new
-  let customerId = '';
-  if (b.client.isExisting) {
-    customerId = b.client.id;
-  } else {
-    const existingCust = store.customers.find(c =>
-      c.phone === b.client.phone || (b.client.email && c.email === b.client.email)
-    );
-    if (existingCust) {
-      customerId = existingCust.id;
-      existingCust.listings = (existingCust.listings || 0) + 1;
-    } else {
-      customerId = b.client.id;
-      store.customers.push({
-        id: customerId,
-        first: b.client.first,
-        last:  b.client.last,
-        email: b.client.email || '',
-        phone: b.client.phone || '',
-        company: b.client.company || '',
-        listings: 1
-      });
-    }
-  }
-
-  // Create listing
-  const p = b.property;
-  store.listings.unshift({
-    id: 'L' + Date.now(),
-    address: p.address,
-    city: p.city,
-    state: p.neighborhood || '',
-    zip: '',
-    beds: +p.rooms || 0,
-    baths: +p.baths || 0,
-    stories: +p.floor || 1,
-    area: +p.area || 0,
-    lot: 0,
-    year: +p.year || 0,
-    pkg: b.package.name,
-    pkgId: b.package.id || '',
-    price: b.package.price || 0,
-    status: 'מתוכנן',
-    customer: customerId,
-    mls: '',
-    created: new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'}),
-    photos: 0,
-    desc: '',
-    notes: p.notes || '',
-    agent: '',
-    shootDate: b.shootDate || '',
-    paymentStatus: 'unpaid',
-    paymentAmount: 0,
-    payReqSent: false,
-    invoiceSent: false,
-    deliveredPhotos: false,
-    deliveredVideo: false,
-    deliveredFloorplan: false
-  });
+  const customerId = _findOrCreateCustomer(b.client);
+  store.listings.unshift(_listingFromBooking(b, customerId));
 
   // Also create an order entry (independent from listing)
   _ensureOrder(store.listings[0]);
@@ -6959,6 +7830,12 @@ function updateOrdersBadge() {
   } else {
     badge.style.display = 'none';
   }
+  // Sync mobile badge
+  const mobBadge = document.getElementById('mob-orders-badge');
+  if (mobBadge) {
+    mobBadge.textContent = pendingCount;
+    mobBadge.style.display = pendingCount > 0 ? 'flex' : 'none';
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -6973,6 +7850,8 @@ function renderSettings() {
   document.getElementById('settings-service-area').value    = s.serviceArea || '';
   const gcEl = document.getElementById('settings-drive-script-url');
   if (gcEl) gcEl.value = s.driveScriptUrl || '';
+  const aiEl = document.getElementById('settings-ai-cleaner-url');
+  if (aiEl) aiEl.value = s.aiCleanerUrl || '';
   const preview = document.getElementById('logo-preview');
   if (s.logo) {
     const img = document.createElement('img');
@@ -6994,6 +7873,8 @@ function saveSettings() {
   store.settings.serviceArea       = document.getElementById('settings-service-area').value.trim();
   const gcEl = document.getElementById('settings-drive-script-url');
   if (gcEl) store.settings.driveScriptUrl = gcEl.value.trim();
+  const aiEl = document.getElementById('settings-ai-cleaner-url');
+  if (aiEl) store.settings.aiCleanerUrl = aiEl.value.trim();
   saveStore();
   applySidebarSettings();
   const btn = document.getElementById('settings-save-btn');
@@ -7274,8 +8155,60 @@ async function loginUser() {
 function logoutUser() {
   if (!confirm('להתנתק?')) return;
   if (window._bookingsUnsub) { window._bookingsUnsub(); window._bookingsUnsub = null; }
-  auth.signOut();
+  if (window._droneUnsub) { window._droneUnsub(); window._droneUnsub = null; }
+  auth.signOut().catch(e => console.error('signOut error', e));
   _appInited = false;
+}
+
+// ══════════════════════════════════════════════════
+//  TOOLS & OFFICE LINKS
+// ══════════════════════════════════════════════════
+function openAICleaner() {
+  const url = store.settings?.aiCleanerUrl || 'http://localhost:3001/declutter-dev';
+  window.open(url, '_blank');
+}
+
+function _clientBaseUrl() {
+  const h = window.location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') {
+    return window.location.origin + '/';
+  }
+  return 'https://edmuntas.github.io/photodesk/apps/frontend/';
+}
+
+function openClientPage(file) {
+  window.open(_clientBaseUrl() + file, '_blank');
+}
+
+function copyClientLink(file) {
+  const url = _clientBaseUrl() + file;
+  navigator.clipboard.writeText(url).then(() => toast('הקישור הועתק ✓', 'success'));
+}
+
+// ── MOBILE ──────────────────────────────────────
+function _updateMobileNav(page) {
+  document.querySelectorAll('.mob-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('mob-btn-' + page);
+  if (btn) btn.classList.add('active');
+}
+
+function mobileQuickAction() {
+  // Show a small bottom sheet with quick actions
+  const sheet = document.getElementById('mob-quick-sheet');
+  if (sheet) { sheet.style.display = sheet.style.display === 'flex' ? 'none' : 'flex'; return; }
+  const el = document.createElement('div');
+  el.id = 'mob-quick-sheet';
+  el.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;z-index:300;min-width:220px;box-shadow:var(--shadow-lg);';
+  el.innerHTML = `
+    <div style="font-size:13px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;">פעולה מהירה</div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="navigate('orders');openNewOrderModal&&openNewOrderModal();document.getElementById('mob-quick-sheet').remove();">➕ הזמנה חדשה</button>
+    <button class="btn" style="width:100%;justify-content:center;" onclick="navigate('listings');openNewListingModal();document.getElementById('mob-quick-sheet').remove();">🏠 נכס חדש</button>
+    <button class="btn" style="width:100%;justify-content:center;" onclick="navigate('customers');document.getElementById('mob-quick-sheet').remove();">👤 לקוח חדש</button>
+  `;
+  document.body.appendChild(el);
+  document.addEventListener('click', function closeSheet(e) {
+    if (!el.contains(e.target) && !e.target.closest('.mob-fab')) { el.remove(); document.removeEventListener('click', closeSheet); }
+  }, { capture: true });
 }
 
 // ══════════════════════════════════════════════════
@@ -7383,6 +8316,12 @@ async function _initApp() {
       if (currentPage === 'orders') renderOrders();
       updateOrdersBadge();
     }, err => console.warn('Firestore listener error:', err));
+
+  window._droneUnsub = db.collection('drone_orders')
+    .onSnapshot(snapshot => {
+      window._droneOrders = snapshot.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      if (currentPage === 'orders') renderOrders();
+    }, err => console.warn('Drone orders listener error:', err));
 }
 
 // ══════════════════════════════════════════════════
@@ -7416,7 +8355,7 @@ async function createDriveFolders() {
       : new Date().toLocaleDateString('he-IL').replace(/\//g, '-');
 
     const url = new URL(scriptUrl);
-    url.searchParams.set('address',  l.address  || 'Нכס');
+    url.searchParams.set('address',  l.address  || 'נכס');
     url.searchParams.set('client',   clientName);
     url.searchParams.set('date',     dateStr);
     url.searchParams.set('biz',      bizName);
@@ -7430,9 +8369,11 @@ async function createDriveFolders() {
     l.driveRootUrl      = data.driveRootUrl;
     l.driveRawUrl       = data.driveRawUrl;
     l.driveEditUrl      = data.driveEditUrl;
+    l.driveAiUrl        = data.driveAiUrl;
     l.driveWatermarkUrl = data.driveWatermarkUrl;
-    l.driveExportUrl    = data.driveExportUrl;
     l.driveMiscUrl      = data.driveMiscUrl;
+    l.driveEditShareUrl = data.driveEditShareUrl;
+    l.driveAiShareUrl   = data.driveAiShareUrl;
     l.driveShareUrl     = data.driveShareUrl;
 
     _ensureOrder(l);
@@ -7498,28 +8439,39 @@ function _renderDriveSection(l) {
 
   // Upload buttons — primary actions
   if (l.driveRawUrl)
-    linksEl.appendChild(makeLink('📤', 'העלה RAW', l.driveRawUrl, true));
+    linksEl.appendChild(makeLink('📤', '01 העלה RAW', l.driveRawUrl, true));
   if (l.driveEditUrl)
-    linksEl.appendChild(makeLink('✏️', 'העלה מעובדים', l.driveEditUrl, true));
+    linksEl.appendChild(makeLink('🎞️', '02 העלה אחרי עריכה', l.driveEditUrl, true));
+  if (l.driveAiUrl)
+    linksEl.appendChild(makeLink('🤖', '03 העלה אחרי AI', l.driveAiUrl, true));
   if (l.driveWatermarkUrl)
-    linksEl.appendChild(makeLink('🖼️', 'העלה עם לוגו', l.driveWatermarkUrl, true));
-  if (l.driveExportUrl)
-    linksEl.appendChild(makeLink('📦', 'ייצוא ללקוח', l.driveExportUrl, false));
+    linksEl.appendChild(makeLink('🖼️', '04 העלה עם לוגו', l.driveWatermarkUrl, true));
 
-  // Copy share link button
-  const shareUrl = l.driveShareUrl || l.driveExportUrl;
-  if (shareUrl) {
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'btn';
-    copyBtn.style.cssText = 'font-size:12px; width:100%; box-sizing:border-box;';
-    copyBtn.textContent = '🔗 העתק קישור שיתוף ללקוח';
-    copyBtn.onclick = () => {
-      navigator.clipboard.writeText(shareUrl)
-        .then(() => toast('קישור שיתוף הועתק ✓', 'success'))
-        .catch(() => toast('לא ניתן להעתיק — ' + shareUrl, 'error'));
+  // Separator
+  const sep = document.createElement('div');
+  sep.style.cssText = 'height:1px; background:var(--border); margin:4px 0;';
+  linksEl.appendChild(sep);
+
+  // Share links — two versions for client comparison
+  const makeCopyBtn = (label, url) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'font-size:12px; width:100%; box-sizing:border-box;';
+    btn.textContent = label;
+    btn.onclick = () => {
+      navigator.clipboard.writeText(url)
+        .then(() => toast('קישור הועתק ✓', 'success'))
+        .catch(() => toast('לא ניתן להעתיק — ' + url, 'error'));
     };
-    linksEl.appendChild(copyBtn);
-  }
+    return btn;
+  };
+
+  const editShare = l.driveEditShareUrl || l.driveEditUrl;
+  const aiShare   = l.driveAiShareUrl   || l.driveAiUrl;
+  if (editShare)
+    linksEl.appendChild(makeCopyBtn('🔗 שתף עריכה ללקוח', editShare));
+  if (aiShare)
+    linksEl.appendChild(makeCopyBtn('🤖 שתף AI ללקוח', aiShare));
 
   // Root folder link (secondary)
   if (l.driveRootUrl) {
@@ -7531,6 +8483,8 @@ function _renderDriveSection(l) {
   if (createBtn) createBtn.textContent = '🔄 צור תיקיות מחדש';
 }
 </script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <!-- COMMAND PALETTE -->
 <div id="cmd-overlay" class="cmd-overlay" style="display:none;" onclick="if(event.target===this)closeCmdPalette()">
