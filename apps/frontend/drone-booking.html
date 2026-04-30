@@ -297,6 +297,48 @@
     text-transform: uppercase; letter-spacing: 0.5px;
     margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
   }
+
+  /* FILE UPLOAD ZONES */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 22px 16px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--surface2); position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone.has-files { border-color: var(--green); background: var(--green-light); }
+  .upload-zone-icon { font-size: 28px; margin-bottom: 6px; }
+  .upload-zone-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .upload-zone-sub { font-size: 11px; color: var(--text-muted); }
+  .upload-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 10px; padding: 6px 14px;
+    background: var(--accent-light); color: var(--accent);
+    border: 1px solid rgba(37,99,235,0.25); border-radius: 20px;
+    font-size: 12px; font-weight: 700; font-family: 'Heebo', sans-serif;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .upload-btn:hover { background: var(--accent); color: #fff; }
+
+  /* FILE LIST */
+  .file-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .file-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 12px;
+    transition: border-color 0.15s;
+  }
+  .file-item.uploading { opacity: 0.75; }
+  .file-item-icon { font-size: 15px; flex-shrink: 0; }
+  .file-item-name { font-size: 12px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-item-size { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+  .file-item-remove { border: none; background: none; font-size: 14px; cursor: pointer; color: var(--text-dim); padding: 2px 4px; transition: color 0.15s; }
+  .file-item-remove:hover { color: var(--red); }
+
+  /* UPLOAD PROGRESS */
+  .progress-bar { width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.2s; border-radius: 2px; }
+  .upload-error { font-size: 11px; color: var(--red); margin-top: 5px; display: none; }
+  .upload-error.show { display: block; }
 </style>
 </head>
 <body>
@@ -513,6 +555,32 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📄</div>
+        <div>
+          <div class="card-title">מסמכי משימה</div>
+          <div class="card-sub">תוכניות, מפרטים, דרישות — PDF, Word, תמונות (אופציונלי)</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="upload-zone" id="brief-zone">
+          <input type="file" id="brief-file-input" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none">
+          <div class="upload-zone-icon">📄</div>
+          <div class="upload-zone-title">גרור קבצים לכאן</div>
+          <div class="upload-zone-sub">PDF, DOCX, JPG, PNG · עד 5 קבצים · 10MB לקובץ</div>
+          <button type="button" class="upload-btn" onclick="event.stopPropagation();document.getElementById('brief-file-input').click()">📎 העלה קובץ</button>
+        </div>
+        <div class="upload-error" id="brief-error"></div>
+        <div class="file-list" id="brief-file-list"></div>
+        <div class="form-group" style="margin-top:14px">
+          <label class="form-label">תיאור המשימה</label>
+          <textarea class="form-textarea" id="mission-brief-text"
+            placeholder="תיאור המשימה — מה לצלם, מאיזה זווית, דרישות מיוחדות..."></textarea>
+        </div>
+      </div>
+    </div>
+
     <div id="error-step2" class="error-box"></div>
 
     <div class="nav-btns">
@@ -598,6 +666,27 @@
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📎</div>
+        <div>
+          <div class="card-title">אישורי טיסה</div>
+          <div class="card-sub">אישורי CAAI, טופסי רשות, אישורי כניסה לאזור (אופציונלי)</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="upload-zone" id="permits-zone">
+          <input type="file" id="permits-file-input" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+          <div class="upload-zone-icon">📎</div>
+          <div class="upload-zone-title">גרור אישורים לכאן</div>
+          <div class="upload-zone-sub">PDF, JPG, PNG · עד 10 קבצים · 20MB לקובץ</div>
+          <button type="button" class="upload-btn" onclick="event.stopPropagation();document.getElementById('permits-file-input').click()">📎 העלה אישור</button>
+        </div>
+        <div class="upload-error" id="permits-error"></div>
+        <div class="file-list" id="permits-file-list"></div>
+      </div>
+    </div>
+
     <div id="error-step3" class="error-box"></div>
 
     <div class="nav-btns">
@@ -646,6 +735,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
@@ -658,11 +748,15 @@ const firebaseConfig = {
   appId:             "1:445351440545:web:14895fba95a5c9001c00e0"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db      = firebase.firestore();
+const storage = firebase.storage();
+const orderId = db.collection('drone_orders').doc().id; // pre-generate for storage paths
 
-let currentStep = 1;
-let leafletMap = null;
-let kmlData = null;
+let currentStep       = 1;
+let leafletMap        = null;
+let kmlData           = null;
+let missionBriefFiles = []; // [{name, size, url, uploadedAt}]
+let flightPermitFiles = []; // [{name, size, url, uploadedAt}]
 
 // ── STEP 1 VALIDATION ──────────────────────────
 function validateStep1() {
@@ -862,6 +956,13 @@ function renderReview() {
     ['קובץ KML',      kmlData ? ('\u2705 ' + kmlData.fileName) : '—'],
   ];
 
+  const doneBriefs   = missionBriefFiles.filter(function(f) { return f.url; });
+  const donePermits  = flightPermitFiles.filter(function(f) { return f.url; });
+  const briefText    = v('mission-brief-text');
+  if (doneBriefs.length)  rows.push(['\uD83D\uDCC4 מסמכי משימה',  doneBriefs.length + ' קבצים']);
+  if (donePermits.length) rows.push(['\uD83D\uDCCE אישורי טיסה', donePermits.length + ' קבצים']);
+  if (briefText) rows.push(['תיאור משימה', briefText.length > 100 ? briefText.slice(0, 100) + '…' : briefText]);
+
   rows.forEach(function(pair) {
     const tr = document.createElement('tr');
     const td1 = document.createElement('td');
@@ -928,14 +1029,22 @@ async function submitOrder() {
     kmlCoords:    kmlData ? kmlData.coords.slice(0, 500).map(function(c) { return { lat: c[0], lng: c[1] }; }) : null,
     kmlCenter:    kmlData ? kmlData.center : null,
     kmlAreaName:  kmlData ? kmlData.name : null,
-    flightParams: v('flight-params'),
-    notes:        v('extra-notes'),
+    flightParams:      v('flight-params'),
+    notes:             v('extra-notes'),
+    missionBriefText:  v('mission-brief-text') || null,
+    missionBriefFiles: missionBriefFiles.filter(function(f) { return f.url; }).map(function(f) {
+      return { name: f.name, url: f.url, uploadedAt: f.uploadedAt };
+    }),
+    flightPermits:     flightPermitFiles.filter(function(f) { return f.url; }).map(function(f) {
+      return { fileName: f.name, fileUrl: f.url, uploadedAt: f.uploadedAt };
+    }),
     status:       'pending',
     createdAt:    firebase.firestore.FieldValue.serverTimestamp(),
   };
 
   try {
-    const ref = await db.collection('drone_orders').add(order);
+    await db.collection('drone_orders').doc(orderId).set(order);
+    const ref = { id: orderId };
     const shortRef = ref.id.slice(-6).toUpperCase();
     document.getElementById('main-container').style.display  = 'none';
     document.querySelector('.stepper-wrap').style.display    = 'none';
@@ -969,6 +1078,185 @@ function hideError(id) {
   const el = document.getElementById(id);
   if (el) el.classList.remove('show');
 }
+
+// ── FILE UPLOAD ─────────────────────────────────
+function uploadStorageFile(file, storagePath, onProgress) {
+  return new Promise(function(resolve, reject) {
+    var ref  = storage.ref(storagePath);
+    var task = ref.put(file);
+    task.on('state_changed',
+      function(snap) { if (onProgress) onProgress(snap.bytesTransferred / snap.totalBytes * 100); },
+      reject,
+      function() { task.snapshot.ref.getDownloadURL().then(resolve).catch(reject); }
+    );
+  });
+}
+
+function renderFileList(containerId, fileArr, removeCallback) {
+  var list = document.getElementById(containerId);
+  list.textContent = '';
+  fileArr.forEach(function(f, idx) {
+    var item = document.createElement('div');
+    item.className = 'file-item';
+    item.style.flexDirection = 'column';
+    item.style.alignItems = 'stretch';
+
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;';
+
+    var icon = document.createElement('span');
+    icon.className = 'file-item-icon';
+    icon.textContent = f.url ? '✅' : '⏳';
+    row.appendChild(icon);
+
+    var name = document.createElement('span');
+    name.className = 'file-item-name';
+    name.textContent = f.name;
+    row.appendChild(name);
+
+    var size = document.createElement('span');
+    size.className = 'file-item-size';
+    size.textContent = formatBytes(f.size);
+    row.appendChild(size);
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'file-item-remove';
+    removeBtn.textContent = '✕';
+    removeBtn.setAttribute('aria-label', 'הסר קובץ');
+    (function(i) { removeBtn.onclick = function() { removeCallback(i); }; })(idx);
+    row.appendChild(removeBtn);
+
+    item.appendChild(row);
+
+    if (!f.url) {
+      var pb = document.createElement('div');
+      pb.className = 'progress-bar';
+      pb.id = 'pb-' + containerId + '-' + idx;
+      var pf = document.createElement('div');
+      pf.className = 'progress-fill';
+      pf.style.width = '0%';
+      pb.appendChild(pf);
+      item.appendChild(pb);
+    }
+
+    list.appendChild(item);
+  });
+}
+
+const BRIEF_MAX_FILES  = 5;
+const BRIEF_MAX_BYTES  = 10 * 1024 * 1024;
+const BRIEF_EXT_RE     = /\.(pdf|doc|docx|jpg|jpeg|png)$/i;
+const PERMIT_MAX_FILES = 10;
+const PERMIT_MAX_BYTES = 20 * 1024 * 1024;
+const PERMIT_EXT_RE    = /\.(pdf|jpg|jpeg|png)$/i;
+
+async function handleBriefFiles(fileList) {
+  hideError('brief-error');
+  const files = Array.from(fileList);
+  if (missionBriefFiles.length + files.length > BRIEF_MAX_FILES) {
+    showError('brief-error', 'מקסימום ' + BRIEF_MAX_FILES + ' קבצים');
+    return;
+  }
+  for (const f of files) {
+    if (!BRIEF_EXT_RE.test(f.name)) { showError('brief-error', 'סוג קובץ לא נתמך: ' + f.name); return; }
+    if (f.size > BRIEF_MAX_BYTES)   { showError('brief-error', 'הקובץ ' + f.name + ' גדול מ-10MB'); return; }
+  }
+  const startIdx = missionBriefFiles.length;
+  files.forEach(function(f) { missionBriefFiles.push({ name: f.name, size: f.size, url: null, uploadedAt: null }); });
+  renderFileList('brief-file-list', missionBriefFiles, removeBriefFile);
+
+  for (let j = 0; j < files.length; j++) {
+    const idx  = startIdx + j;
+    const file = files[j];
+    const path = 'drone_orders/' + orderId + '/mission_brief/' + Date.now() + '_' + file.name;
+    try {
+      const url = await uploadStorageFile(file, path, function(pct) {
+        const bar = document.getElementById('pb-brief-file-list-' + idx);
+        if (bar) bar.querySelector('.progress-fill').style.width = pct + '%';
+      });
+      missionBriefFiles[idx].url = url;
+      missionBriefFiles[idx].uploadedAt = new Date().toISOString();
+      renderFileList('brief-file-list', missionBriefFiles, removeBriefFile);
+    } catch(err) {
+      showError('brief-error', 'שגיאה בהעלאת ' + file.name);
+      missionBriefFiles.splice(idx, 1);
+      renderFileList('brief-file-list', missionBriefFiles, removeBriefFile);
+    }
+  }
+}
+
+async function handlePermitFiles(fileList) {
+  hideError('permits-error');
+  const files = Array.from(fileList);
+  if (flightPermitFiles.length + files.length > PERMIT_MAX_FILES) {
+    showError('permits-error', 'מקסימום ' + PERMIT_MAX_FILES + ' קבצים');
+    return;
+  }
+  for (const f of files) {
+    if (!PERMIT_EXT_RE.test(f.name)) { showError('permits-error', 'סוג קובץ לא נתמך: ' + f.name); return; }
+    if (f.size > PERMIT_MAX_BYTES)   { showError('permits-error', 'הקובץ ' + f.name + ' גדול מ-20MB'); return; }
+  }
+  const startIdx = flightPermitFiles.length;
+  files.forEach(function(f) { flightPermitFiles.push({ name: f.name, size: f.size, url: null, uploadedAt: null }); });
+  renderFileList('permits-file-list', flightPermitFiles, removePermitFile);
+
+  for (let j = 0; j < files.length; j++) {
+    const idx  = startIdx + j;
+    const file = files[j];
+    const path = 'drone_orders/' + orderId + '/permits/' + Date.now() + '_' + file.name;
+    try {
+      const url = await uploadStorageFile(file, path, function(pct) {
+        const bar = document.getElementById('pb-permits-file-list-' + idx);
+        if (bar) bar.querySelector('.progress-fill').style.width = pct + '%';
+      });
+      flightPermitFiles[idx].url = url;
+      flightPermitFiles[idx].uploadedAt = new Date().toISOString();
+      renderFileList('permits-file-list', flightPermitFiles, removePermitFile);
+    } catch(err) {
+      showError('permits-error', 'שגיאה בהעלאת ' + file.name);
+      flightPermitFiles.splice(idx, 1);
+      renderFileList('permits-file-list', flightPermitFiles, removePermitFile);
+    }
+  }
+}
+
+function removeBriefFile(idx) {
+  missionBriefFiles.splice(idx, 1);
+  renderFileList('brief-file-list', missionBriefFiles, removeBriefFile);
+}
+function removePermitFile(idx) {
+  flightPermitFiles.splice(idx, 1);
+  renderFileList('permits-file-list', flightPermitFiles, removePermitFile);
+}
+
+// ── UPLOAD ZONE EVENTS ─────────────────────────
+(function setupUploadZones() {
+  function wireZone(zoneId, inputId, handler) {
+    var zone  = document.getElementById(zoneId);
+    var input = document.getElementById(inputId);
+    if (!zone || !input) return;
+    input.addEventListener('change', function() {
+      if (input.files.length) handler(input.files);
+      input.value = '';
+    });
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) handler(e.dataTransfer.files);
+    });
+  }
+  wireZone('brief-zone',   'brief-file-input',  handleBriefFiles);
+  wireZone('permits-zone', 'permits-file-input', handlePermitFiles);
+})();
 
 </script>
 </body>
