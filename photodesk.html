@@ -5258,6 +5258,7 @@ async function convertBookingToListing(booking) {
     beds:          +p.rooms    || 0,
     baths:         +p.baths    || 0,
     floor:         +p.floor    || 0,
+    entrance:      p.entrance  || '',
     area:          +p.area     || 0,
     plotArea:      p.plotArea  || null,
     year:          +p.year     || 0,
@@ -8616,10 +8617,22 @@ function renderBookingDetail(b) {
   document.getElementById('booking-detail-address').textContent = addrFull || '—';
 
   const typeName = p.typeName || p.type || '—';
-  const areaStr  = p.area ? `${p.area} מ"ר` : '—';
-  const plotStr  = p.plotArea ? ` · מגרש ${p.plotArea} מ"ר` : '';
-  document.getElementById('booking-detail-rooms').textContent =
-    `${typeName} · ${p.rooms || '—'} חד' · ${p.baths || '—'} אמבט' · קומה ${p.floor || '—'} · ${areaStr}${plotStr}`;
+  const isPlot = p.type === 'plot';
+  const HOUSE_T = ['villa', 'cottage', 'farm', 'detach', 'urban'];
+  const isHouse = HOUSE_T.includes(p.type);
+  const parts = [typeName];
+  if (isPlot) {
+    if (p.plotArea) parts.push(`מגרש ${p.plotArea} מ"ר`);
+  } else {
+    if (p.rooms) parts.push(`${p.rooms} חד'`);
+    if (p.baths) parts.push(`${p.baths} אמבט'`);
+    if (!isHouse && p.floor) parts.push(`קומה ${p.floor}`);
+    if (!isHouse && p.entrance) parts.push(`כניסה ${p.entrance}`);
+    if (p.area) parts.push(`${p.area} מ"ר`);
+    if (isHouse && p.plotArea) parts.push(`מגרש ${p.plotArea} מ"ר`);
+  }
+  if (p.year) parts.push(`${p.year}`);
+  document.getElementById('booking-detail-rooms').textContent = parts.join(' · ');
 
   const clientName = c.isExisting
     ? '(לקוח קיים)'
