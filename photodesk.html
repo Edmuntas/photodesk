@@ -7754,13 +7754,16 @@ function _buildPendingCard(b) {
   const shootStr  = sDate ? sDate.toLocaleDateString('he-IL', {day:'numeric', month:'short'}) : '';
   const shootTime = sDate ? sDate.toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}) : '';
   const pkg = b.package || {};
+  const svcArr = Array.isArray(b.services) ? b.services : [];
+  const svcLabel = svcArr.map(s => SERVICE_LABELS[s] || h(s)).join(' · ');
+  const pkgLine = pkg.name ? h(pkg.name) : svcLabel;
   return `
     <div class="kanban-card" data-stop-propagation="1" style="cursor:default;">
       <div class="kanban-card-addr">${h(p.address)||'בקשת הזמנה'}${p.city?', '+h(p.city):''}</div>
       <div class="kanban-card-meta">
         ${name ? '👤 '+h(name) : ''}
         ${shootStr ? (name?'<br>':'')+'📅 '+shootStr+(shootTime?' '+shootTime:'') : ''}
-        ${pkg.name ? '<br>📦 '+h(pkg.name) : ''}
+        ${pkgLine ? '<br>📦 '+pkgLine : ''}
         ${p.rooms ? '<br>🏠 '+h(String(p.rooms))+" חד'" : ''}
       </div>
       <div style="display:flex;gap:5px;margin-top:10px;">
@@ -8532,16 +8535,23 @@ function _findOrCreateCustomer(clientData) {
 }
 
 function _listingFromBooking(b, customerId) {
-  const p = b.property;
+  const p = b.property || {};
+  const services = Array.isArray(b.services) ? b.services : [];
+  const pkgLabel = services.map(s => SERVICE_LABELS[s] || s).join(' · ') || (b.package && b.package.name) || '';
+  const extra = [];
+  if (p.typeName)  extra.push(`סוג: ${p.typeName}`);
+  if (p.entrance)  extra.push(`כניסה: ${p.entrance}`);
+  if (p.plotArea)  extra.push(`מגרש: ${p.plotArea} מ"ר`);
+  const notes = [p.notes, extra.join(' · ')].filter(Boolean).join('\n');
   return {
     id: 'L' + Date.now(),
     address: p.address, city: p.city, state: p.neighborhood || '',
     zip: '', beds: +p.rooms || 0, baths: +p.baths || 0,
-    stories: +p.floor || 1, area: +p.area || 0, lot: 0, year: +p.year || 0,
-    pkg: b.package.name, pkgId: b.package.id || '', price: b.package.price || 0,
+    stories: +p.floor || 1, area: +p.area || 0, lot: +p.plotArea || 0, year: +p.year || 0,
+    pkg: pkgLabel, pkgId: (b.package && b.package.id) || '', price: +(b.package && b.package.price) || 0,
     status: 'מתוכנן', customer: customerId, mls: '',
     created: new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'}),
-    photos: 0, desc: '', notes: p.notes || '', agent: '',
+    photos: 0, desc: '', notes, agent: '',
     shootDate: b.shootDate || '', paymentStatus: 'unpaid', paymentAmount: 0,
     payReqSent: false, invoiceSent: false,
     deliveredPhotos: false, deliveredVideo: false, deliveredFloorplan: false
