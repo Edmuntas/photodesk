@@ -726,17 +726,18 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
   <!-- ══ STEP 2: PROPERTY ════════════ -->
   <div class="step-panel" id="panel-2">
 
+    <!-- 1. Address -->
     <div class="card">
       <div class="card-header">
-        <div class="card-icon">🏠</div>
+        <div class="card-icon">📍</div>
         <div>
-          <div class="card-title">פרטי הנכס</div>
-          <div class="card-sub">כתובת, סוג ומאפיינים</div>
+          <div class="card-title">כתובת הנכס</div>
+          <div class="card-sub">מיקום וגישה</div>
         </div>
       </div>
       <div class="card-body">
         <div class="form-group">
-          <label class="form-label"><span class="required-star">* </span>כתובת הנכס</label>
+          <label class="form-label"><span class="required-star">* </span>כתובת</label>
           <input class="form-input" id="prop-address" placeholder="רחוב הרצל 10, דירה 4">
         </div>
         <div class="form-row">
@@ -756,38 +757,10 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
             <a id="bk-waze-btn" target="_blank" style="flex:1; text-align:center; padding:6px 10px; background:var(--surface); border:1px solid var(--border); border-radius:6px; font-size:13px; text-decoration:none; color:var(--text);">🚗 Waze</a>
           </div>
         </div>
-        <div class="form-row-3">
-          <div class="form-group">
-            <label class="form-label">חדרים</label>
-            <input class="form-input" type="number" id="prop-rooms" placeholder="3" min="1">
-          </div>
-          <div class="form-group">
-            <label class="form-label">אמבטיות</label>
-            <input class="form-input" type="number" id="prop-baths" placeholder="1" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">קומה</label>
-            <input class="form-input" type="number" id="prop-floor" placeholder="2" min="0">
-          </div>
-        </div>
-        <div class="form-row-3">
-          <div class="form-group">
-            <label class="form-label" id="prop-area-label">שטח דירה (מ"ר)</label>
-            <input class="form-input" type="number" id="prop-area" placeholder="85" min="1">
-          </div>
-          <div class="form-group" id="prop-plot-area-wrap" style="display:none;">
-            <label class="form-label">שטח מגרש (מ"ר)</label>
-            <input class="form-input" type="number" id="prop-plot-area" placeholder="500" min="1">
-          </div>
-          <div class="form-group">
-            <label class="form-label">שנת בנייה</label>
-            <input class="form-input" type="number" id="prop-year" placeholder="2010">
-          </div>
-        </div>
       </div>
     </div>
 
-    <!-- Property type -->
+    <!-- 2. Property type -->
     <div class="card">
       <div class="card-header">
         <div class="card-icon">🏷️</div>
@@ -800,6 +773,49 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
         <select class="form-select" id="prop-type" onchange="onPropTypeChange()" style="width:100%;font-size:15px;">
           <!-- options rendered by JS -->
         </select>
+      </div>
+    </div>
+
+    <!-- 3. Property details (conditional fields) -->
+    <div class="card" id="prop-details-card">
+      <div class="card-header">
+        <div class="card-icon">📐</div>
+        <div>
+          <div class="card-title">פרטי הנכס</div>
+          <div class="card-sub" id="prop-details-sub">בחר תחילה את סוג הנכס</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group" id="prop-rooms-wrap">
+            <label class="form-label">חדרים</label>
+            <input class="form-input" type="number" id="prop-rooms" placeholder="3" min="1">
+          </div>
+          <div class="form-group" id="prop-baths-wrap">
+            <label class="form-label">אמבטיות</label>
+            <input class="form-input" type="number" id="prop-baths" placeholder="1" min="0">
+          </div>
+          <div class="form-group" id="prop-floor-wrap">
+            <label class="form-label">קומה</label>
+            <input class="form-input" type="number" id="prop-floor" placeholder="2" min="0">
+          </div>
+          <div class="form-group" id="prop-entrance-wrap">
+            <label class="form-label">כניסה <span style="color:var(--text-muted);font-weight:400;">(אופציונלי)</span></label>
+            <input class="form-input" id="prop-entrance" placeholder="א" maxlength="3">
+          </div>
+          <div class="form-group" id="prop-area-wrap">
+            <label class="form-label" id="prop-area-label">שטח דירה (מ"ר)</label>
+            <input class="form-input" type="number" id="prop-area" placeholder="85" min="1">
+          </div>
+          <div class="form-group" id="prop-plot-area-wrap" style="display:none;">
+            <label class="form-label">שטח מגרש (מ"ר)</label>
+            <input class="form-input" type="number" id="prop-plot-area" placeholder="500" min="1">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:12px; max-width: calc(50% - 6px);">
+          <label class="form-label">שנת בנייה</label>
+          <input class="form-input" type="number" id="prop-year" placeholder="2010">
+        </div>
       </div>
     </div>
 
@@ -928,7 +944,8 @@ const PROPERTY_TYPES = [
   { id:'other',       icon:'🏘️', name:'אחר' },
 ];
 
-const HOUSE_TYPES = new Set(['villa', 'cottage', 'farm', 'detach', 'urban', 'plot']);
+const HOUSE_TYPES = new Set(['villa', 'cottage', 'farm', 'detach', 'urban']);
+const PLOT_TYPES = new Set(['plot']);
 
 let selectedPropType = null;
 let foundClientId = null;
@@ -1022,6 +1039,7 @@ function loadSettings() {
   const s = loadSettings();
   document.getElementById('header-business').textContent = s.businessName || 'Edmont RE media';
   renderPropTypes();
+  updatePropertyTypeFields();
   document.getElementById('prop-address').addEventListener('input', onAddressChange);
   document.getElementById('prop-city').addEventListener('input', onAddressChange);
 })();
@@ -1048,14 +1066,45 @@ function renderPropTypes() {
 
 function onPropTypeChange() {
   selectedPropType = document.getElementById('prop-type').value || null;
-  updatePlotAreaVisibility();
+  updatePropertyTypeFields();
 }
 
-function updatePlotAreaVisibility() {
-  const isHouse = HOUSE_TYPES.has(selectedPropType);
-  document.getElementById('prop-plot-area-wrap').style.display = isHouse ? '' : 'none';
-  document.getElementById('prop-area-label').textContent = isHouse ? 'שטח בית (מ"ר)' : 'שטח דירה (מ"ר)';
-  if (!isHouse) document.getElementById('prop-plot-area').value = '';
+function updatePropertyTypeFields() {
+  const t = selectedPropType;
+  const isHouse = HOUSE_TYPES.has(t);
+  const isPlot = PLOT_TYPES.has(t);
+  const isApt = !!t && !isHouse && !isPlot;
+  const showAll = !t;
+  const setVis = (id, v) => { const el = document.getElementById(id); if (el) el.style.display = v ? '' : 'none'; };
+
+  setVis('prop-rooms-wrap',     showAll || isApt || isHouse);
+  setVis('prop-baths-wrap',     showAll || isApt || isHouse);
+  setVis('prop-floor-wrap',     showAll || isApt);
+  setVis('prop-entrance-wrap',  showAll || isApt);
+  setVis('prop-area-wrap',      showAll || isApt || isHouse);
+  setVis('prop-plot-area-wrap', isHouse || isPlot);
+
+  document.getElementById('prop-area-label').textContent =
+    isHouse ? 'שטח בית (מ"ר)' : 'שטח דירה (מ"ר)';
+
+  document.getElementById('prop-details-sub').textContent =
+    !t ? 'בחר תחילה את סוג הנכס' :
+    isPlot ? 'שטח המגרש' :
+    isHouse ? 'חדרים, שטחים, שנת בנייה' :
+    'חדרים, קומה, כניסה, שטח';
+
+  if (isPlot || isHouse) {
+    document.getElementById('prop-floor').value = '';
+    document.getElementById('prop-entrance').value = '';
+  }
+  if (isPlot) {
+    document.getElementById('prop-rooms').value = '';
+    document.getElementById('prop-baths').value = '';
+    document.getElementById('prop-area').value = '';
+  }
+  if (isApt || (!t)) {
+    document.getElementById('prop-plot-area').value = '';
+  }
 }
 
 // ── WIZARD NAVIGATION ──────────────────────────────
@@ -1111,9 +1160,14 @@ function validateStep(step) {
       alert('נא לבחור סוג נכס');
       return false;
     }
-    const required = ['prop-address', 'prop-city', 'prop-rooms', 'prop-area'];
-    if (HOUSE_TYPES.has(selectedPropType)) {
+    const isHouse = HOUSE_TYPES.has(selectedPropType);
+    const isPlot = PLOT_TYPES.has(selectedPropType);
+    const required = ['prop-address', 'prop-city'];
+    if (isPlot) {
       required.push('prop-plot-area');
+    } else {
+      required.push('prop-rooms', 'prop-area');
+      if (isHouse) required.push('prop-plot-area');
     }
     let anyError = false;
     required.forEach(id => {
@@ -1274,6 +1328,7 @@ async function submitBooking() {
       rooms:    +document.getElementById('prop-rooms').value     || 0,
       baths:    +document.getElementById('prop-baths').value     || 0,
       floor:    +document.getElementById('prop-floor').value     || 0,
+      entrance:     document.getElementById('prop-entrance').value.trim(),
       area:     +document.getElementById('prop-area').value      || 0,
       plotArea: (+document.getElementById('prop-plot-area').value) || null,
       year:     +document.getElementById('prop-year').value      || 0,
