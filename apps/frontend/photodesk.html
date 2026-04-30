@@ -619,6 +619,71 @@
     display: none;
   }
 
+  /* -- DRONE JOB PANEL ---------------------------------------- */
+  #drone-panel-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(3px);
+    z-index: 998;
+    display: none;
+  }
+  #drone-panel-overlay.open { display: block; }
+
+  #drone-panel {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(460px, 100vw);
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+  #drone-panel.open { transform: translateX(0); }
+
+  #drone-panel .dp-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  #drone-panel .dp-tab {
+    padding: 10px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s;
+    margin-bottom: -1px;
+  }
+  #drone-panel .dp-tab:hover:not(.active) { color: var(--text); }
+  #drone-panel .dp-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  #drone-panel .dp-tab-content {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+  }
+  #drone-panel .dp-tab-content.active { display: block; }
+
+  #drone-panel-map { height: 260px; z-index: 1; }
+
+  .kml-area-label {
+    background: rgba(37,99,235,0.85) !important;
+    border: none !important;
+    color: #fff !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 2px 7px !important;
+    border-radius: 4px !important;
+  }
+
   .panel-topbar {
     display: flex;
     align-items: center;
@@ -3398,6 +3463,56 @@
 <!-- /PANEL OVERLAY -->
 </div>
 
+<!-- DRONE PANEL OVERLAY -->
+<div id="drone-panel-overlay" onclick="closeDronePanel()"></div>
+
+<!-- DRONE JOB PANEL -->
+<div id="drone-panel" onclick="event.stopPropagation()">
+  <!-- Topbar -->
+  <div class="panel-topbar">
+    <div class="panel-close" onclick="closeDronePanel()">&#x2715;</div>
+    <div class="panel-header-info">
+      <div id="dp-title" style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);">&#x1F681; &#x05E2;&#x05D1;&#x05D5;&#x05D3;&#x05EA; &#x05E8;&#x05D7;&#x05E4;&#x05DF;</div>
+      <div id="dp-sub" style="font-size:12px;color:var(--text-muted);margin-top:2px;"></div>
+    </div>
+    <span id="dp-status-badge"></span>
+  </div>
+  <!-- Pipeline strip -->
+  <div id="dp-pipeline" style="padding:10px 20px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;overflow-x:auto;flex-shrink:0;"></div>
+  <!-- Tab bar -->
+  <div class="dp-tabs">
+    <div class="dp-tab active" onclick="switchDroneTab('info')">&#x05DE;&#x05D9;&#x05D3;&#x05E2;</div>
+    <div class="dp-tab" onclick="switchDroneTab('map')">&#x05DE;&#x05E4;&#x05D4; / KML</div>
+    <div class="dp-tab" onclick="switchDroneTab('files')">&#x05E7;&#x05D1;&#x05E6;&#x05D9;&#x05DD;</div>
+    <div class="dp-tab" onclick="switchDroneTab('notes')">&#x05D4;&#x05E2;&#x05E8;&#x05D5;&#x05EA;</div>
+  </div>
+  <!-- Tab: Info (populated dynamically by _buildDpInfoTab) -->
+  <div class="dp-tab-content active" id="dp-tab-info"></div>
+  <!-- Tab: Map -->
+  <div class="dp-tab-content" id="dp-tab-map">
+    <div id="drone-panel-map"></div>
+    <div id="dp-nav-bar" style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--border);">
+      <div id="dp-address-label" style="flex:1;font-size:12px;color:var(--text-muted);"></div>
+      <a id="dp-waze-link" href="#" target="_blank" style="background:var(--accent);color:#fff;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">&#x1F535; Waze</a>
+      <a id="dp-gmaps-link" href="#" target="_blank" style="background:#4285f4;color:#fff;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">&#x1F5FA; Maps</a>
+    </div>
+    <div id="dp-kml-info" style="padding:10px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-muted);"></div>
+    <div style="padding:10px 0;font-size:10px;color:var(--text-dim);">&#x1F52E; &#x05D2;&#x05D5;&#x05E9;/&#x05D7;&#x05DC;&#x05E7;&#x05D4; &#x2014; &#x05D1;&#x05E2;&#x05EA;&#x05D9;&#x05D3;: &#x05D7;&#x05D9;&#x05D1;&#x05D5;&#x05E8; &#x05DC;&#x05E8;&#x05E9;&#x05DD; &#x05D4;&#x05DE;&#x05E7;&#x05E8;&#x05E7;&#x05E2;&#x05D9;&#x05DF; &#x05D4;&#x05D9;&#x05E9;&#x05E8;&#x05D0;&#x05DC;&#x05D9;</div>
+  </div>
+  <!-- Tab: Files (placeholder) -->
+  <div class="dp-tab-content" id="dp-tab-files">
+    <div style="text-align:center;padding:48px 20px;color:var(--text-muted);font-size:13px;">&#x1F4CE; &#x05D4;&#x05E2;&#x05DC;&#x05D0;&#x05EA; &#x05E7;&#x05D1;&#x05E6;&#x05D9;&#x05DD; &#x2014; &#x05D1;&#x05E7;&#x05E8;&#x05D5;&#x05D1;</div>
+  </div>
+  <!-- Tab: Notes -->
+  <div class="dp-tab-content" id="dp-tab-notes">
+    <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;">&#x05D4;&#x05E2;&#x05E8;&#x05D5;&#x05EA; &#x05E4;&#x05E0;&#x05D9;&#x05DE;&#x05D9;&#x05D5;&#x05EA; &#x2014; &#x05DC;&#x05D0; &#x05D2;&#x05DC;&#x05D5;&#x05D9; &#x05DC;&#x05DC;&#x05E7;&#x05D5;&#x05D7;</div>
+    <textarea id="dp-notes" style="width:100%;height:180px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;color:var(--text);resize:vertical;font-family:inherit;" placeholder="&#x05D4;&#x05E2;&#x05E8;&#x05D5;&#x05EA; &#x05E4;&#x05E0;&#x05D9;&#x05DE;&#x05D9;&#x05D5;&#x05EA;..."></textarea>
+    <button class="btn btn-primary" style="margin-top:10px;" onclick="saveDroneNotes()">&#x05E9;&#x05DE;&#x05D5;&#x05E8; &#x05D4;&#x05E2;&#x05E8;&#x05D5;&#x05EA;</button>
+  </div>
+  <!-- Footer -->
+  <div id="dp-footer" style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--surface);flex-shrink:0;"></div>
+</div>
+
 <!-- NEW LISTING MODAL -->
 <div class="modal-bg" id="new-listing-modal">
   <div class="modal" style="max-width:520px;">
@@ -4827,6 +4942,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (document.getElementById('cmd-overlay').style.display !== 'none') {
       closeCmdPalette();
+    } else if (document.getElementById('drone-panel')?.classList.contains('open')) {
+      closeDronePanel();
     } else if (document.getElementById('listing-panel').classList.contains('open')) {
       closePanel();
     } else if (document.getElementById('customer-panel')?.classList.contains('open')) {
@@ -5062,9 +5179,167 @@ function createListing() {
   );
 }
 
+async function convertBookingToListing(booking) {
+  if (!booking) { toast('הזמנה לא נמצאה', 'error'); return null; }
+  if (booking.listingId) {
+    toast('כבר קיים נכס לפניה זו', 'warn');
+    return booking.listingId;
+  }
+
+  const c = booking.client || {};
+  const p = booking.property || {};
+
+  let customer = null;
+  let customerCreated = false;
+
+  if (c.isExisting && c.id) {
+    customer = store.customers.find(x => x.id === c.id) || null;
+    if (!customer) {
+      toast('לקוח קיים לא נמצא — בדוק את ההזמנה', 'error');
+      return null;
+    }
+  } else {
+    customer = findCustomerByPhone(c.phone);
+    if (!customer) {
+      customerCreated = true;
+      customer = {
+        id:        c.id || ('C' + Date.now()),
+        first:     c.first || '',
+        last:      c.last  || '',
+        phone:     c.phone || '',
+        email:     c.email || '',
+        company:   c.company || '',
+        companyId: '',
+        source:    'booking_form',
+        listings:  0,
+        createdAt: new Date().toISOString()
+      };
+      if (c.company) {
+        const co = findCompanyByName(c.company);
+        if (co) customer.companyId = co.id;
+      }
+      store.customers.unshift(customer);
+    }
+  }
+
+  const listingId = 'L' + Date.now();
+  const customerName = ((customer.first || '') + ' ' + (customer.last || '')).trim();
+  const listing = {
+    id:            listingId,
+    customerId:    customer.id,
+    bookingId:     booking.id,
+    customer:      customerName,
+    agent:         customerName,
+    address:       p.address || '',
+    city:          p.city    || '',
+    state:         '',
+    zip:           '',
+    neighborhood:  p.neighborhood || '',
+    coords:        p.coords || null,
+    propertyType:  p.type     || '',
+    typeName:      p.typeName || '',
+    beds:          +p.rooms    || 0,
+    baths:         +p.baths    || 0,
+    floor:         +p.floor    || 0,
+    area:          +p.area     || 0,
+    plotArea:      p.plotArea  || null,
+    year:          +p.year     || 0,
+    stories:       1,
+    lot:           0,
+    notes:         p.notes || '',
+    services:      Array.isArray(booking.services) ? booking.services : [],
+    pkg:           '',
+    pkgId:         '',
+    price:         null,
+    status:        'in_progress',
+    shootDate:     booking.shootDate || '',
+    mls:           '', photos: 0, desc: '',
+    paymentStatus: 'unpaid', paymentAmount: 0,
+    payReqSent:    false, invoiceSent: false,
+    deliveredPhotos: false, deliveredVideo: false, deliveredFloorplan: false,
+    created:       new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'})
+  };
+  store.listings.unshift(listing);
+
+  try {
+    await db.collection('listings').doc(listingId).set(listing);
+    if (customerCreated) {
+      await db.collection('customers').doc(customer.id).set(customer);
+    }
+  } catch (err) {
+    console.error('Failed to write listing/customer to Firestore:', err);
+    toast('שגיאה ברישום הנכס לפיירסטור — נסה שוב', 'error');
+    return null;
+  }
+
+  saveStore();
+
+  try {
+    await db.collection('bookings').doc(booking.id).update({
+      customerId: customer.id,
+      listingId:  listingId,
+      status:     'converted'
+    });
+    booking.customerId = customer.id;
+    booking.listingId  = listingId;
+    booking.status     = 'converted';
+  } catch (err) {
+    console.error('Failed to update booking after conversion:', err);
+    toast('נכס נוצר אך עדכון הזמנה נכשל — בדוק רשת', 'warn');
+  }
+
+  toast(`✅ נכס ${listingId} נוצר${customerCreated ? ' + לקוח חדש' : ''}`, 'success');
+  return listingId;
+}
+
+async function convertCurrentBookingToListing() {
+  if (!_currentBooking) return;
+  const btn = document.getElementById('booking-detail-convert-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ יוצר...';
+  const listingId = await convertBookingToListing(_currentBooking);
+  if (listingId) {
+    renderBookingDetail(_currentBooking);
+    if (typeof renderListings === 'function') renderListings();
+  } else {
+    btn.disabled = false;
+    btn.textContent = '🏠 צור נכס מההזמנה';
+  }
+}
+
+function openConvertedListing() {
+  if (!_currentBooking || !_currentBooking.listingId) return;
+  closeModal('booking-detail-modal');
+  if (typeof navigate === 'function') navigate('listings');
+  setTimeout(() => {
+    const row = document.querySelector(`[data-listing-id="${_currentBooking.listingId}"]`);
+    if (row && typeof row.click === 'function') row.click();
+  }, 200);
+}
+
 // ══════════════════════════════════════════════════
 //  CUSTOMERS
 // ══════════════════════════════════════════════════
+function normalizePhone(phone) {
+  if (!phone) return '';
+  let digits = String(phone).replace(/\D/g, '');
+  if (digits.startsWith('972')) digits = '0' + digits.slice(3);
+  return digits.slice(-10);
+}
+
+function findCustomerByPhone(phone) {
+  const norm = normalizePhone(phone);
+  if (!norm) return null;
+  return store.customers.find(c => normalizePhone(c.phone) === norm) || null;
+}
+
+function findCompanyByName(name) {
+  if (!name || !store.companies) return null;
+  const trimmed = name.trim().toLowerCase();
+  if (!trimmed) return null;
+  return store.companies.find(co => (co.name || '').trim().toLowerCase() === trimmed) || null;
+}
+
 // ── auto-migrate customers to companies ──────────
 function migrateToCompanies() {
   if (!store.companies) store.companies = [];
@@ -7569,7 +7844,6 @@ function advanceDroneStatus(droneId, newStatus) {
 
 function rejectDroneOrder(droneId) {
   db.collection('drone_orders').doc(droneId).update({ status: 'rejected' })
-    .then(() => closeModal('drone-detail-modal'))
     .catch(err => console.error('rejectDroneOrder:', err));
 }
 
@@ -7649,6 +7923,409 @@ function openDroneOrder(droneId) {
 }
 
 // ── End drone pipeline ─────────────────────────────────────────────────────
+
+// ================================================
+//  DRONE JOB PANEL
+// ================================================
+const DRONE_PANEL_STEPS = [
+  { key:'pending',    icon:'\u23F3', label:'\u05E7\u05D9\u05D1\u05D5\u05DC'  },
+  { key:'confirmed',  icon:'\u2705', label:'\u05D0\u05D9\u05E9\u05D5\u05E8'  },
+  { key:'in_flight',  icon:'\uD83D\uDE81', label:'\u05D8\u05D9\u05E1\u05D4'   },
+  { key:'processing', icon:'\u2699\uFE0F', label:'\u05E2\u05D9\u05D1\u05D5\u05D3'  },
+  { key:'delivered',  icon:'\uD83D\uDCE6', label:'\u05E0\u05DE\u05E1\u05E8'   },
+];
+const DRONE_STATUS_COLOR = {
+  pending:'var(--amber)', confirmed:'var(--green)', in_flight:'var(--accent)',
+  processing:'var(--accent)', delivered:'var(--green)', rejected:'var(--red)'
+};
+let _currentDroneJob = null;
+let _dronePanelMap   = null;
+
+function openDronePanel(droneId) {
+  const d = (window._droneOrders || []).find(function(o) { return o.id === droneId; });
+  if (!d) return;
+  if (_dronePanelMap) { _dronePanelMap.remove(); _dronePanelMap = null; }
+  _currentDroneJob = d;
+
+  document.getElementById('dp-title').textContent = d.siteName || d.siteAddress || '\u05E2\u05D1\u05D5\u05D3\u05EA \u05E8\u05D7\u05E4\u05DF';
+  const subParts = [d.siteAddress, d.prefDate ? new Date(d.prefDate).toLocaleDateString('he-IL') : null].filter(Boolean);
+  document.getElementById('dp-sub').textContent = subParts.join(' \u00B7 ');
+
+  const SLBL = {
+    pending:'\u05DE\u05DE\u05EA\u05D9\u05DF \u23F3',
+    confirmed:'\u05D0\u05D5\u05E9\u05E8 \u2705',
+    in_flight:'\u05D1\u05D8\u05D9\u05E1\u05D4 \uD83D\uDE81',
+    processing:'\u05D1\u05E2\u05D9\u05D1\u05D5\u05D3 \u2699\uFE0F',
+    delivered:'\u05E0\u05DE\u05E1\u05E8 \uD83D\uDCE6',
+    rejected:'\u05E0\u05D3\u05D7\u05D4 \u274C'
+  };
+  const col = DRONE_STATUS_COLOR[d.status] || 'var(--accent)';
+  const badge = document.getElementById('dp-status-badge');
+  badge.textContent = SLBL[d.status] || d.status;
+  badge.style.cssText = 'display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;' +
+    'background:color-mix(in srgb,' + col + ' 15%,transparent);color:' + col + ';' +
+    'border:1px solid color-mix(in srgb,' + col + ' 30%,transparent);';
+
+  renderDronePipeline(d);
+  _buildDpInfoTab(d);
+  _updateDpNavLinks(d);
+  document.getElementById('dp-notes').value = d.notes || '';
+  _buildDpFooter(d);
+  switchDroneTab('info');
+
+  document.getElementById('drone-panel').classList.add('open');
+  document.getElementById('drone-panel-overlay').classList.add('open');
+}
+
+function closeDronePanel() {
+  document.getElementById('drone-panel').classList.remove('open');
+  document.getElementById('drone-panel-overlay').classList.remove('open');
+  if (_dronePanelMap) { _dronePanelMap.remove(); _dronePanelMap = null; }
+  _currentDroneJob = null;
+}
+
+function switchDroneTab(tab) {
+  document.querySelectorAll('#drone-panel .dp-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('#drone-panel .dp-tab-content').forEach(function(c) { c.classList.remove('active'); });
+  const tabEl = document.querySelector('#drone-panel .dp-tab[onclick="switchDroneTab(\'' + tab + '\')"]');
+  if (tabEl) tabEl.classList.add('active');
+  const contentEl = document.getElementById('dp-tab-' + tab);
+  if (contentEl) contentEl.classList.add('active');
+  if (tab === 'map' && _currentDroneJob && !_dronePanelMap) {
+    setTimeout(function() { initDroneMap(_currentDroneJob); }, 60);
+  }
+}
+
+function _saveDpField(field, value) {
+  if (!_currentDroneJob) return;
+  db.collection('drone_orders').doc(_currentDroneJob.id).update({ [field]: value })
+    .catch(function(err) { console.error('_saveDpField:', field, err); });
+}
+
+function saveDroneNotes() {
+  if (!_currentDroneJob) return;
+  const val = document.getElementById('dp-notes').value;
+  db.collection('drone_orders').doc(_currentDroneJob.id).update({ notes: val })
+    .then(function() { toast('\u05D4\u05E2\u05E8\u05D5\u05EA \u05E0\u05E9\u05DE\u05E8\u05D5 \u2713'); })
+    .catch(function(err) { console.error('saveDroneNotes:', err); });
+}
+
+function renderDronePipeline(d) {
+  const container = document.getElementById('dp-pipeline');
+  container.textContent = '';
+  const statusOrder = DRONE_PANEL_STEPS.map(function(s) { return s.key; });
+  const currentIdx  = statusOrder.indexOf(d.status);
+
+  DRONE_PANEL_STEPS.forEach(function(step, i) {
+    const isCompleted = i < currentIdx;
+    const isCurrent   = i === currentIdx;
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;align-items:center;';
+
+    const dot = document.createElement('div');
+    dot.style.cssText = 'text-align:center;cursor:pointer;';
+    dot.title = step.label;
+
+    const circle = document.createElement('div');
+    circle.style.cssText = 'width:28px;height:28px;border-radius:50%;margin:0 auto 3px;' +
+      'display:flex;align-items:center;justify-content:center;' +
+      (isCompleted ? 'font-size:11px;' : 'font-size:13px;') +
+      (isCompleted || isCurrent
+        ? 'background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent);color:#fff;'
+        : 'background:var(--surface2);border:2px solid var(--border);opacity:0.5;');
+    circle.textContent = isCompleted ? '\u2713' : step.icon;
+
+    const label = document.createElement('div');
+    label.style.cssText = 'font-size:9px;' +
+      (isCurrent || isCompleted ? 'color:var(--accent);font-weight:600;' : 'color:var(--text-muted);');
+    label.textContent = step.label;
+
+    dot.appendChild(circle);
+    dot.appendChild(label);
+    dot.addEventListener('click', (function(stepKey, stepIdx) {
+      return function() {
+        if (stepIdx > currentIdx && _currentDroneJob) {
+          advanceDroneStatus(_currentDroneJob.id, stepKey);
+          closeDronePanel();
+        }
+      };
+    })(step.key, i));
+
+    wrapper.appendChild(dot);
+    if (i < DRONE_PANEL_STEPS.length - 1) {
+      const line = document.createElement('div');
+      line.style.cssText = 'width:26px;height:2px;margin-bottom:14px;background:' +
+        (isCompleted ? 'var(--accent)' : 'var(--border)') + ';';
+      wrapper.appendChild(line);
+    }
+    container.appendChild(wrapper);
+  });
+}
+
+function _buildDpInfoTab(d) {
+  const MLBL = {
+    'roof-scan':'\u05E1\u05E7\u05E8 \u05D2\u05D2\u05D5\u05EA',
+    'thermal':'\u05EA\u05E8\u05DE\u05D5\u05D2\u05E8\u05E4\u05D9\u05D4',
+    'solar-survey':'\u05E4\u05E0\u05DC\u05D9\u05DD \u05E1\u05D5\u05DC\u05E8\u05D9\u05D9\u05DD',
+    'infrastructure':'\u05D1\u05D3\u05D9\u05E7\u05EA \u05EA\u05E9\u05EA\u05D9\u05EA',
+    'mapping':'\u05DE\u05D9\u05E4\u05D5\u05D9',
+    'construction':'\u05E0\u05D9\u05D8\u05D5\u05E8 \u05D1\u05E0\u05D9\u05D9\u05D4',
+    'agriculture':'\u05E1\u05E7\u05E8 \u05D7\u05E7\u05DC\u05D0\u05D9',
+    'pet-search':'\u05D7\u05D9\u05E4\u05D5\u05E9 \u05D7\u05D9\u05D5\u05EA \u05D0\u05D1\u05D5\u05D3\u05D5\u05EA',
+    'aerial-photo':'\u05E6\u05D9\u05DC\u05D5\u05DD \u05D0\u05D5\u05D5\u05D9\u05E8\u05D9',
+    'other':'\u05D0\u05D7\u05E8'
+  };
+
+  // Build static skeleton — field values set via DOM below (no user data in HTML strings)
+  const tab = document.getElementById('dp-tab-info');
+  const frag = document.createDocumentFragment();
+
+  function sectionTitle(text) {
+    const el = document.createElement('div');
+    el.style.cssText = 'font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;';
+    el.textContent = text;
+    return el;
+  }
+  function fieldWrap(label, inputId, spanTwo) {
+    const wrap = document.createElement('div');
+    if (spanTwo) wrap.style.gridColumn = 'span 2';
+    const lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:10px;color:var(--text-muted);margin-bottom:3px;';
+    lbl.textContent = label;
+    const inp = document.createElement('input');
+    inp.className = 'form-input';
+    inp.id = inputId;
+    wrap.appendChild(lbl);
+    wrap.appendChild(inp);
+    return { wrap, inp };
+  }
+
+  tab.textContent = '';
+
+  frag.appendChild(sectionTitle('\u05DC\u05E7\u05D5\u05D7'));
+  const grid1 = document.createElement('div');
+  grid1.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;';
+
+  const { wrap: w1, inp: iFirst }   = fieldWrap('\u05E9\u05DD \u05E4\u05E8\u05D8\u05D9',  'dp-firstName', false);
+  const { wrap: w2, inp: iLast }    = fieldWrap('\u05E9\u05DD \u05DE\u05E9\u05E4\u05D7\u05D4', 'dp-lastName',  false);
+  const { wrap: w3, inp: iPhone }   = fieldWrap('\u05D8\u05DC\u05E4\u05D5\u05DF',           'dp-phone',     false);
+  const { wrap: w4, inp: iEmail }   = fieldWrap('\u05D0\u05D9\u05DE\u05D9\u05D9\u05DC',     'dp-email',     false);
+  const { wrap: w5, inp: iCompany } = fieldWrap('\u05D7\u05D1\u05E8\u05D4',                 'dp-company',   true);
+  iPhone.type = 'tel';
+  iEmail.type = 'email';
+
+  iFirst.addEventListener('blur',   function() { _saveDpField('firstName',   this.value); });
+  iLast.addEventListener('blur',    function() { _saveDpField('lastName',    this.value); });
+  iPhone.addEventListener('blur',   function() { _saveDpField('phone',       this.value); });
+  iEmail.addEventListener('blur',   function() { _saveDpField('email',       this.value); });
+  iCompany.addEventListener('blur', function() { _saveDpField('company',     this.value); });
+
+  grid1.appendChild(w1); grid1.appendChild(w2);
+  grid1.appendChild(w3); grid1.appendChild(w4);
+  grid1.appendChild(w5);
+  frag.appendChild(grid1);
+
+  frag.appendChild(sectionTitle('\u05DE\u05E9\u05D9\u05DE\u05D4'));
+  const grid2 = document.createElement('div');
+  grid2.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;';
+
+  // Mission type (read-only display)
+  const mWrap = document.createElement('div');
+  const mLbl = document.createElement('div');
+  mLbl.style.cssText = 'font-size:10px;color:var(--text-muted);margin-bottom:3px;';
+  mLbl.textContent = '\u05E1\u05D5\u05D2 \u05DE\u05E9\u05D9\u05DE\u05D4';
+  const mVal = document.createElement('div');
+  mVal.className = 'form-input';
+  mVal.id = 'dp-missionType';
+  mVal.style.opacity = '0.7';
+  mWrap.appendChild(mLbl); mWrap.appendChild(mVal);
+
+  // Preferred date
+  const dWrap = document.createElement('div');
+  const dLbl = document.createElement('div');
+  dLbl.style.cssText = 'font-size:10px;color:var(--text-muted);margin-bottom:3px;';
+  dLbl.textContent = '\u05EA\u05D0\u05E8\u05D9\u05DA \u05DE\u05D5\u05E2\u05D3\u05E3';
+  const iDate = document.createElement('input');
+  iDate.className = 'form-input';
+  iDate.id = 'dp-prefDate';
+  iDate.type = 'date';
+  iDate.addEventListener('blur', function() { _saveDpField('prefDate', this.value); });
+  dWrap.appendChild(dLbl); dWrap.appendChild(iDate);
+
+  const { wrap: w6, inp: iSiteName }    = fieldWrap('\u05E9\u05DD \u05D0\u05EA\u05E8',                          'dp-siteName',    true);
+  const { wrap: w7, inp: iSiteAddress } = fieldWrap('\u05DB\u05EA\u05D5\u05D1\u05EA \u05D0\u05EA\u05E8',        'dp-siteAddress', true);
+  const { wrap: w8, inp: iArea }        = fieldWrap('\u05E9\u05D8\u05D7 \u05DE\u05E9\u05D5\u05E2\u05E8 (\u05D3\u05D5\u05E0\u05DD)', 'dp-siteArea', false);
+
+  iSiteName.addEventListener('blur',    function() { _saveDpField('siteName',    this.value); });
+  iSiteAddress.addEventListener('blur', function() { _saveDpField('siteAddress', this.value); });
+  iArea.addEventListener('blur',        function() { _saveDpField('siteArea',    this.value); });
+
+  // Flex date select
+  const fWrap = document.createElement('div');
+  const fLbl = document.createElement('div');
+  fLbl.style.cssText = 'font-size:10px;color:var(--text-muted);margin-bottom:3px;';
+  fLbl.textContent = '\u05D2\u05DE\u05D9\u05E9\u05D5\u05EA';
+  const iFlexDate = document.createElement('select');
+  iFlexDate.className = 'form-input';
+  iFlexDate.id = 'dp-flexDate';
+  [['', '\u2014'], ['yes', '\u05DB\u05DF'], ['no', '\u05DC\u05D0']].forEach(function(pair) {
+    const opt = document.createElement('option');
+    opt.value = pair[0]; opt.textContent = pair[1];
+    iFlexDate.appendChild(opt);
+  });
+  iFlexDate.addEventListener('change', function() { _saveDpField('flexDate', this.value); });
+  fWrap.appendChild(fLbl); fWrap.appendChild(iFlexDate);
+
+  // Flight params textarea
+  const fpWrap = document.createElement('div');
+  fpWrap.style.gridColumn = 'span 2';
+  const fpLbl = document.createElement('div');
+  fpLbl.style.cssText = 'font-size:10px;color:var(--text-muted);margin-bottom:3px;';
+  fpLbl.textContent = '\u05E4\u05E8\u05DE\u05D8\u05E8\u05D9 \u05D8\u05D9\u05E1\u05D4';
+  const iFlightParams = document.createElement('textarea');
+  iFlightParams.className = 'form-input';
+  iFlightParams.id = 'dp-flightParams';
+  iFlightParams.style.cssText = 'height:70px;resize:vertical;';
+  iFlightParams.addEventListener('blur', function() { _saveDpField('flightParams', this.value); });
+  fpWrap.appendChild(fpLbl); fpWrap.appendChild(iFlightParams);
+
+  grid2.appendChild(mWrap); grid2.appendChild(dWrap);
+  grid2.appendChild(w6); grid2.appendChild(w7);
+  grid2.appendChild(w8); grid2.appendChild(fWrap);
+  grid2.appendChild(fpWrap);
+  frag.appendChild(grid2);
+  tab.appendChild(frag);
+
+  // Set values via DOM (safe — no user data in HTML)
+  iFirst.value          = d.firstName    || '';
+  iLast.value           = d.lastName     || '';
+  iPhone.value          = d.phone        || '';
+  iEmail.value          = d.email        || '';
+  iCompany.value        = d.company      || '';
+  mVal.textContent      = MLBL[d.missionType] || d.missionType || '\u2014';
+  iDate.value           = d.prefDate     || '';
+  iSiteName.value       = d.siteName     || '';
+  iSiteAddress.value    = d.siteAddress  || '';
+  iArea.value           = d.siteArea     || '';
+  iFlightParams.value   = d.flightParams || '';
+  if (d.flexDate) iFlexDate.value = d.flexDate;
+}
+
+function _buildDpFooter(d) {
+  const footer = document.getElementById('dp-footer');
+  footer.textContent = '';
+  const next    = DRONE_NEXT_STATUS[d.status];
+  const nextLbl = DRONE_NEXT_LABEL[d.status];
+  if (next) {
+    const advBtn = document.createElement('button');
+    advBtn.className = 'btn btn-primary';
+    advBtn.style.flex = '1';
+    advBtn.textContent = nextLbl;
+    advBtn.addEventListener('click', function() { advanceDroneStatus(d.id, next); closeDronePanel(); });
+    footer.appendChild(advBtn);
+  }
+  if (d.status === 'pending') {
+    const rejBtn = document.createElement('button');
+    rejBtn.className = 'btn btn-danger';
+    rejBtn.textContent = '\u05E1\u05E8\u05D1 \u2715';
+    rejBtn.addEventListener('click', function() { rejectDroneOrder(d.id); closeDronePanel(); });
+    footer.appendChild(rejBtn);
+  }
+}
+
+function _updateDpNavLinks(d) {
+  const addr = d.siteAddress || '';
+  document.getElementById('dp-address-label').textContent = addr ? '\uD83D\uDCCD ' + addr : '';
+  document.getElementById('dp-waze-link').href = addr
+    ? 'https://waze.com/ul?q=' + encodeURIComponent(addr) : '#';
+  document.getElementById('dp-gmaps-link').href = d.siteCoords
+    ? 'https://maps.google.com/?q=' + d.siteCoords.lat + ',' + d.siteCoords.lng
+    : (addr ? 'https://maps.google.com/?q=' + encodeURIComponent(addr) : '#');
+  document.getElementById('dp-kml-info').textContent = d.kmlFileName
+    ? '\uD83D\uDCCE ' + d.kmlFileName : '\u05D0\u05D9\u05DF \u05E7\u05D5\u05D1\u05E5 KML';
+}
+
+async function geocodeAddress(address) {
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?q='
+      + encodeURIComponent(address) + '&format=json&limit=1';
+    const resp = await fetch(url, { headers: { 'Accept-Language': 'he', 'User-Agent': 'PhotoDesk-CRM/1.0' } });
+    if (!resp.ok) throw new Error('Nominatim ' + resp.status);
+    const data = await resp.json();
+    if (data && data[0]) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+  } catch(e) { console.warn('geocodeAddress failed:', e); }
+  return null;
+}
+
+async function initDroneMap(d) {
+  if (!window.L) return;
+  const container = document.getElementById('drone-panel-map');
+  if (!container) return;
+  if (_dronePanelMap) { _dronePanelMap.remove(); _dronePanelMap = null; }
+
+  _dronePanelMap = L.map('drone-panel-map');
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Esri World Imagery', maxZoom: 20 }
+  ).addTo(_dronePanelMap);
+
+  let hasBounds = false;
+
+  // KML polygon — coords in Firestore are [{lat,lng}] objects, Leaflet needs [[lat,lng]]
+  if (d.kmlCoords && d.kmlCoords.length > 2) {
+    const latlngs = d.kmlCoords.map(function(c) { return [c.lat, c.lng]; });
+    const poly = L.polygon(latlngs, {
+      color: '#3b82f6', weight: 2.5, dashArray: '6, 3',
+      fillColor: '#2563eb', fillOpacity: 0.18
+    }).addTo(_dronePanelMap);
+    if (d.siteArea) {
+      poly.bindTooltip(
+        '\u05D0\u05D6\u05D5\u05E8 \u05D8\u05D9\u05E1\u05D4 \u2014 ' + String(d.siteArea).replace(/[<>&"]/g, '') + ' \u05D3\u05F3',
+        { permanent: true, direction: 'center', className: 'kml-area-label' }
+      );
+    }
+    _dronePanelMap.fitBounds(poly.getBounds(), { padding: [24, 24] });
+    hasBounds = true;
+  }
+
+  // Address marker — use cached siteCoords or geocode on demand
+  const addr = d.siteAddress;
+  if (addr) {
+    let coords = d.siteCoords || null;
+    if (!coords) {
+      coords = await geocodeAddress(addr);
+      if (coords) {
+        // Cache only if the same order is still open
+        if (_currentDroneJob && _currentDroneJob.id === d.id) {
+          _currentDroneJob.siteCoords = coords;
+          db.collection('drone_orders').doc(d.id).update({ siteCoords: coords })
+            .catch(function(err) { console.warn('siteCoords cache failed:', err); });
+          _updateDpNavLinks(Object.assign({}, d, { siteCoords: coords }));
+        }
+      }
+    }
+    if (coords && _dronePanelMap) {
+      L.marker([coords.lat, coords.lng]).addTo(_dronePanelMap)
+        .bindPopup(addr);
+      if (!hasBounds) {
+        _dronePanelMap.setView([coords.lat, coords.lng], 15);
+        hasBounds = true;
+      }
+    }
+  }
+
+  // Fallback: center of Israel
+  if (!hasBounds && _dronePanelMap) {
+    _dronePanelMap.setView([31.7683, 35.2137], 8);
+  }
+
+  // Force tile refresh — container was display:none during slide animation
+  setTimeout(function() {
+    if (_dronePanelMap) _dronePanelMap.invalidateSize();
+  }, 100);
+}
 
 function renderDroneKanban(listEl) {
   const droneOrders = window._droneOrders || [];
@@ -7778,6 +8455,33 @@ function renderOrders() {
   }
 }
 
+const STATUS_BADGE = {
+  pending:   { bg:'#FEF3C7', fg:'#92400E', label:'pending' },
+  confirmed: { bg:'#DBEAFE', fg:'#1E40AF', label:'confirmed' },
+  shot:      { bg:'#E0E7FF', fg:'#3730A3', label:'shot' },
+  converted: { bg:'#D1FAE5', fg:'#065F46', label:'converted' },
+  cancelled: { bg:'#FEE2E2', fg:'#991B1B', label:'cancelled' }
+};
+
+const SERVICE_LABELS = {
+  photo_signature: '📷 סיגנצ\'ר',
+  video:           '🎬 וידאו',
+  drone:           '🚁 רחפן',
+  '3d_tour':       '🌐 סיור 3D',
+  floor_plan:      '📐 תוכנית קומה',
+  golden_hour:     '🌅 שעת הזהב'
+};
+
+const FLEX_LABELS_HE = {
+  exact:               'תאריך קבוע',
+  'flexible-week':     'גמיש — תוך שבוע',
+  'flexible-2weeks':   'גמיש — תוך שבועיים',
+  asap:                'מוקדם ככל האפשר'
+};
+
+let _currentBooking = null;
+let _bdMap = null, _bdMarker = null;
+
 function loadPendingBookings() {
   return window._pendingBookings ||
     (() => { try { return JSON.parse(localStorage.getItem('photoDesk_pending') || '[]'); } catch(e) { return []; } })();
@@ -7874,17 +8578,98 @@ function rejectBooking(id) {
 function viewBooking(id) {
   const b = loadPendingBookings().find(x => x.id === id);
   if (!b) return;
-  const p = b.property;
-  const c = b.client;
-  const clientStr = c.isExisting ? 'לקוח קיים' : `${h(c.first)} ${h(c.last)} · ${c.phone}${c.company ? ' · ' + c.company : ''}`;
-  // Open booking detail modal
+  renderBookingDetail(b);
+}
+
+function renderBookingDetail(b) {
+  _currentBooking = b;
+  const p = b.property || {};
+  const c = b.client || {};
+
   document.getElementById('booking-detail-id').textContent = b.id;
-  document.getElementById('booking-detail-address').textContent = `${p.address}, ${p.city}${p.neighborhood ? ' ('+p.neighborhood+')' : ''}`;
-  document.getElementById('booking-detail-rooms').textContent = `${p.rooms||'—'} חד' · ${p.area ? p.area+' מ"ר' : '—'}`;
-  document.getElementById('booking-detail-client').textContent = clientStr;
-  document.getElementById('booking-detail-pkg').textContent = b.package.name;
-  document.getElementById('booking-detail-date').textContent = b.shootDate || 'לא צוין';
+
+  const sb = STATUS_BADGE[b.status] || STATUS_BADGE.pending;
+  const badgeEl = document.getElementById('booking-detail-status-badge');
+  badgeEl.style.background = sb.bg;
+  badgeEl.style.color = sb.fg;
+  badgeEl.textContent = sb.label;
+
+  const addrParts = [p.address, p.city].filter(Boolean).join(', ');
+  const addrFull = p.neighborhood ? `${addrParts} (${p.neighborhood})` : addrParts;
+  document.getElementById('booking-detail-address').textContent = addrFull || '—';
+
+  const typeName = p.typeName || p.type || '—';
+  const areaStr  = p.area ? `${p.area} מ"ר` : '—';
+  const plotStr  = p.plotArea ? ` · מגרש ${p.plotArea} מ"ר` : '';
+  document.getElementById('booking-detail-rooms').textContent =
+    `${typeName} · ${p.rooms || '—'} חד' · ${p.baths || '—'} אמבט' · קומה ${p.floor || '—'} · ${areaStr}${plotStr}`;
+
+  const clientName = c.isExisting
+    ? '(לקוח קיים)'
+    : ((c.first || '') + ' ' + (c.last || '')).trim();
+  const clientParts = [clientName, c.phone].filter(Boolean).join(' · ');
+  const clientExtra = [c.email, c.company].filter(Boolean).join(' · ');
+  document.getElementById('booking-detail-client').textContent =
+    clientExtra ? `${clientParts} · ${clientExtra}` : (clientParts || '—');
+
+  const services = Array.isArray(b.services) ? b.services : [];
+  const servicesEl = document.getElementById('booking-detail-services');
+  servicesEl.replaceChildren();
+  document.getElementById('booking-detail-services-wrap').style.display = services.length ? '' : 'none';
+  services.forEach(s => {
+    const chip = document.createElement('span');
+    chip.style.cssText = 'background:#fff;padding:4px 10px;border-radius:4px;font-size:11px;';
+    chip.textContent = SERVICE_LABELS[s] || s;
+    servicesEl.appendChild(chip);
+  });
+
+  const flexLabel = b.flexibility ? ` · ${FLEX_LABELS_HE[b.flexibility] || b.flexibility}` : '';
+  document.getElementById('booking-detail-date').textContent = (b.shootDate || 'לא צוין') + flexLabel;
+
   document.getElementById('booking-detail-notes').textContent = p.notes || 'אין';
+
+  const mapWrap = document.getElementById('booking-detail-map-wrap');
+  if (p.coords && typeof p.coords.lat === 'number' && typeof p.coords.lng === 'number' && window.L) {
+    mapWrap.style.display = '';
+    setTimeout(() => {
+      if (!_bdMap) {
+        _bdMap = L.map('booking-detail-map').setView([p.coords.lat, p.coords.lng], 16);
+        L.tileLayer(
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          { attribution: 'Esri World Imagery', maxZoom: 20 }
+        ).addTo(_bdMap);
+      } else {
+        _bdMap.setView([p.coords.lat, p.coords.lng], 16);
+      }
+      if (_bdMarker) _bdMap.removeLayer(_bdMarker);
+      _bdMarker = L.marker([p.coords.lat, p.coords.lng]).addTo(_bdMap);
+      _bdMap.invalidateSize();
+    }, 100);
+  } else {
+    mapWrap.style.display = 'none';
+  }
+
+  const convertBtn = document.getElementById('booking-detail-convert-btn');
+  const openBtn    = document.getElementById('booking-detail-open-listing-btn');
+  const infoBlock  = document.getElementById('booking-detail-listing-info');
+  if (b.listingId) {
+    convertBtn.style.display = 'none';
+    openBtn.style.display    = '';
+    infoBlock.style.display  = '';
+    document.getElementById('booking-detail-listing-id').textContent = b.listingId;
+  } else {
+    convertBtn.style.display = '';
+    openBtn.style.display    = 'none';
+    infoBlock.style.display  = 'none';
+  }
+
+  document.getElementById('booking-detail-delete-btn').onclick = () => {
+    if (confirm(`למחוק הזמנה ${b.id}?`)) {
+      db.collection('bookings').doc(b.id).delete().catch(()=>{});
+      closeModal('booking-detail-modal');
+    }
+  };
+
   openModal('booking-detail-modal');
 }
 
@@ -8209,7 +8994,7 @@ document.addEventListener('click', e => {
   const droneEl    = e.target.closest('[data-drone-id]');
   if (listingEl  && !e.target.closest('[data-stop-propagation]')) openListing(listingEl.dataset.listingId);
   if (customerEl && !e.target.closest('[data-stop-propagation]')) openCustomer(customerEl.dataset.customerId);
-  if (droneEl    && !e.target.closest('button')) openDroneOrder(droneEl.dataset.droneId);
+  if (droneEl    && !e.target.closest('button')) openDronePanel(droneEl.dataset.droneId);
 });
 
 auth.onAuthStateChanged(async user => {
@@ -8620,38 +9405,59 @@ function _renderDriveSection(l) {
 
 <!-- BOOKING DETAIL MODAL -->
 <div class="modal-bg" id="booking-detail-modal">
-  <div class="modal" style="width:460px;">
+  <div class="modal" style="width:540px; max-height:88vh; overflow-y:auto;">
     <div class="modal-title">
-      <span>📋 פרטי הזמנה — <span id="booking-detail-id" style="color:var(--accent);font-size:14px;"></span></span>
+      <span>📋 פרטי הזמנה — <span id="booking-detail-id" style="color:var(--accent);font-size:14px;"></span>
+        <span id="booking-detail-status-badge" style="margin-right:8px; padding:2px 8px; border-radius:4px; font-size:11px; vertical-align:middle;"></span>
+      </span>
       <span class="modal-close" onclick="closeModal('booking-detail-modal')">✕</span>
     </div>
-    <div style="display:grid;gap:14px;">
+
+    <div style="display:grid; gap:12px;">
+
+      <div id="booking-detail-map-wrap" style="display:none; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border);">
+        <div id="booking-detail-map" style="height:160px;"></div>
+      </div>
+
       <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;">
         <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px;">נכס</div>
         <div style="font-weight:600;font-size:14px;" id="booking-detail-address"></div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:3px;" id="booking-detail-rooms"></div>
       </div>
+
       <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;">
         <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px;">לקוח</div>
         <div style="font-size:13px;" id="booking-detail-client"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px;">חבילה</div>
-          <div style="font-size:13px;font-weight:600;" id="booking-detail-pkg"></div>
-        </div>
-        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px;">מועד רצוי</div>
-          <div style="font-size:13px;" id="booking-detail-date"></div>
-        </div>
+
+      <div id="booking-detail-services-wrap" style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:var(--radius-sm);padding:14px;">
+        <div style="font-size:11px;color:#92400E;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px;">📸 מה לצלם</div>
+        <div id="booking-detail-services" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
       </div>
+
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px;">מועד רצוי</div>
+        <div style="font-size:13px;" id="booking-detail-date"></div>
+      </div>
+
       <div id="booking-detail-notes-wrap" style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px;">
         <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px;">הערות</div>
         <div style="font-size:13px;color:var(--text-muted);" id="booking-detail-notes"></div>
       </div>
+
+      <div id="booking-detail-listing-info" style="display:none; background:#EFF6FF; border:1px solid #2563EB; border-radius:var(--radius-sm); padding:12px; font-size:13px; color:#1E40AF;">
+        🔗 <strong>נכס נוצר:</strong> <span id="booking-detail-listing-id"></span>
+      </div>
+
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('booking-detail-modal')">סגור</button>
+
+    <div class="modal-footer" style="display:flex; justify-content:space-between; gap:8px; margin-top:14px;">
+      <button class="btn btn-ghost" id="booking-detail-delete-btn" style="color:var(--red);">🗑️ מחק</button>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-ghost" onclick="closeModal('booking-detail-modal')">סגור</button>
+        <button class="btn btn-primary" id="booking-detail-convert-btn" onclick="convertCurrentBookingToListing()" style="background:var(--green);">🏠 צור נכס מההזמנה</button>
+        <button class="btn btn-primary" id="booking-detail-open-listing-btn" style="display:none;" onclick="openConvertedListing()">→ פתח נכס</button>
+      </div>
     </div>
   </div>
 </div>
