@@ -3812,6 +3812,22 @@ const db      = firebase.firestore();
 const storage = firebase.storage();
 const auth    = firebase.auth();
 
+// Auth-aware fetch helper — attaches Authorization: Bearer <idToken> if user logged in.
+// Backend middleware verifies token for protected /api/* routes.
+async function authFetch(url, opts = {}) {
+  const user = auth?.currentUser;
+  const headers = { ...(opts.headers || {}) };
+  if (user) {
+    try {
+      const token = await user.getIdToken();
+      headers.Authorization = `Bearer ${token}`;
+    } catch (e) {
+      console.warn('[authFetch] getIdToken failed:', e);
+    }
+  }
+  return fetch(url, { ...opts, headers });
+}
+
 // ══════════════════════════════════════════════════
 //  SECURITY UTILS
 // ══════════════════════════════════════════════════
