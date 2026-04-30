@@ -6,6 +6,7 @@
 <title>הזמנת צילום נדל"ן</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root {
     --bg: #F5F6FA;
@@ -359,122 +360,6 @@
   .lookup-result.found { background: var(--green-light); border: 1px solid rgba(16,185,129,0.25); color: #065f46; display: flex; align-items: center; gap: 8px; }
   .lookup-result.not-found { background: var(--red-light); border: 1px solid rgba(239,68,68,0.2); color: #991b1b; display: block; }
 
-  /* ── PROPERTY TYPE ───────────────── */
-  .prop-type-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 0;
-  }
-
-  .ptype-option { position: relative; cursor: pointer; }
-  .ptype-option input { position: absolute; opacity: 0; width: 0; height: 0; }
-
-  .ptype-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 10px 6px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    background: var(--surface2);
-    min-height: 64px;
-  }
-
-  .ptype-option input:checked + .ptype-label {
-    border-color: var(--accent);
-    background: var(--accent-light);
-    color: var(--accent);
-  }
-
-  .ptype-label:hover { border-color: var(--accent2); background: var(--surface3); }
-
-  .ptype-icon { font-size: 20px; }
-  .ptype-name { font-size: 11px; font-weight: 600; color: var(--text); line-height: 1.2; }
-  .ptype-option input:checked + .ptype-label .ptype-name { color: var(--accent); }
-
-  /* ── PACKAGES ────────────────────── */
-  .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-
-  .pkg-option { position: relative; cursor: pointer; }
-  .pkg-option input { position: absolute; opacity: 0; width: 0; height: 0; }
-
-  .pkg-card {
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 14px;
-    background: var(--surface2);
-    cursor: pointer;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.18s;
-  }
-
-  .pkg-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--pkg-color, var(--accent));
-  }
-
-  .pkg-option input:checked + .pkg-card {
-    border-color: var(--pkg-color, var(--accent));
-    background: #fff;
-    box-shadow: 0 4px 16px rgba(249,115,22,0.12);
-    transform: translateY(-2px);
-  }
-
-  .pkg-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-
-  .pkg-check {
-    position: absolute; top: 10px; left: 10px;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: var(--pkg-color, var(--accent));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; color: #fff; font-weight: 700;
-    opacity: 0; transition: opacity 0.15s;
-  }
-
-  .pkg-option input:checked + .pkg-card .pkg-check { opacity: 1; }
-
-  .pkg-name { font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-  .pkg-price { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 2px; }
-  .pkg-price span { font-size: 11px; font-weight: 400; color: var(--text-muted); }
-  .pkg-duration { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
-  .pkg-services { display: flex; flex-direction: column; gap: 3px; text-align: right; }
-  .pkg-service { font-size: 11px; color: var(--text-muted); }
-  .pkg-service::before { content: '✓ '; color: var(--green); font-weight: 700; }
-
-  /* ── PRICE PREVIEW ───────────────── */
-  .price-preview {
-    display: none;
-    background: linear-gradient(135deg, var(--accent-light), #fff);
-    border: 1.5px solid rgba(249,115,22,0.25);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin-top: 16px;
-    text-align: center;
-    animation: fadeIn 0.2s ease;
-  }
-
-  .price-preview.show { display: block; text-align: right; }
-  .price-preview-label { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; text-align: center; font-weight: 600; }
-  .price-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; border-bottom: 1px dashed rgba(249,115,22,0.15); }
-  .price-row:last-child { border-bottom: none; }
-  .price-row-label { color: var(--text-muted); }
-  .price-row-val { font-weight: 600; color: var(--text); }
-  .price-row.total-row { border-top: 2px solid rgba(249,115,22,0.3); border-bottom: none; margin-top: 4px; padding-top: 8px; }
-  .price-row.total-row .price-row-label { font-size: 14px; font-weight: 700; color: var(--text); }
-  .price-row.total-row .price-row-val { font-size: 22px; font-weight: 800; color: var(--accent); }
-
   /* ── SCHEDULE ────────────────────── */
   .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -626,13 +511,6 @@
     line-height: 1.5;
   }
 
-  .pkg-no-items {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 13px;
-    padding: 32px 0;
-  }
-
   /* ── RESPONSIVE ──────────────────── */
   @media (max-width: 640px) {
     .header { padding: 12px 16px; }
@@ -643,10 +521,8 @@
     .container { padding: 18px 14px 80px; }
     .card-body { padding: 16px; }
     .card-header { padding: 12px 16px; }
-    .packages-grid { grid-template-columns: 1fr; }
     .form-row { grid-template-columns: 1fr; gap: 0; }
     .form-row-3 { grid-template-columns: 1fr 1fr; }
-    .prop-type-grid { grid-template-columns: repeat(3, 1fr); }
     .schedule-grid { grid-template-columns: 1fr; }
     /* Sticky bottom nav buttons */
     .nav-btns {
@@ -666,8 +542,22 @@
   }
 
   @media (max-width: 380px) {
-    .prop-type-grid { grid-template-columns: repeat(2, 1fr); }
     .form-row-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ── SERVICE PILLS ──────────────────── */
+  .service-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 14px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .service-pill:has(input:checked) {
+    background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 600;
+  }
+  .service-pill input { width: 18px; height: 18px; cursor: pointer; }
+  @media (max-width: 480px) {
+    #services-grid { grid-template-columns: 1fr; }
   }
 
   /* ── TIME SLOTS ──────────────────── */
@@ -693,6 +583,7 @@
     .time-slot { padding: 8px 10px; font-size: 12px; }
   }
 </style>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -740,7 +631,7 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
     </div>
     <div class="step" id="step-ind-3">
       <div class="step-num" id="step-num-3">3</div>
-      <div class="step-label">חבילה ואישור</div>
+      <div class="step-label">מה לצלם ואישור</div>
     </div>
   </div>
 </div>
@@ -858,6 +749,13 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
             <input class="form-input" id="prop-neighborhood" placeholder="פלורנטין">
           </div>
         </div>
+        <div id="booking-map-wrap" style="display:none; margin-top:12px; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border);">
+          <div id="booking-map" style="height:220px;"></div>
+          <div style="display:flex; gap:8px; padding:8px; background:var(--surface2); border-top:1px solid var(--border);">
+            <a id="bk-gmaps-btn" target="_blank" style="flex:1; text-align:center; padding:6px 10px; background:var(--surface); border:1px solid var(--border); border-radius:6px; font-size:13px; text-decoration:none; color:var(--text);">🗺️ Google Maps</a>
+            <a id="bk-waze-btn" target="_blank" style="flex:1; text-align:center; padding:6px 10px; background:var(--surface); border:1px solid var(--border); border-radius:6px; font-size:13px; text-decoration:none; color:var(--text);">🚗 Waze</a>
+          </div>
+        </div>
         <div class="form-row-3">
           <div class="form-group">
             <label class="form-label">חדרים</label>
@@ -872,10 +770,14 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
             <input class="form-input" type="number" id="prop-floor" placeholder="2" min="0">
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row-3">
           <div class="form-group">
-            <label class="form-label">שטח (מ"ר)</label>
-            <input class="form-input" type="number" id="prop-area" placeholder="85">
+            <label class="form-label" id="prop-area-label">שטח דירה (מ"ר)</label>
+            <input class="form-input" type="number" id="prop-area" placeholder="85" min="1">
+          </div>
+          <div class="form-group" id="prop-plot-area-wrap" style="display:none;">
+            <label class="form-label">שטח מגרש (מ"ר)</label>
+            <input class="form-input" type="number" id="prop-plot-area" placeholder="500" min="1">
           </div>
           <div class="form-group">
             <label class="form-label">שנת בנייה</label>
@@ -891,13 +793,13 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
         <div class="card-icon">🏷️</div>
         <div>
           <div class="card-title">סוג הנכס</div>
-          <div class="card-sub">לידיעתנו בלבד · אינו משפיע על המחיר</div>
+          <div class="card-sub">בחר את סוג הנכס</div>
         </div>
       </div>
       <div class="card-body">
-        <div class="prop-type-grid" id="prop-type-grid">
-          <!-- rendered by JS -->
-        </div>
+        <select class="form-select" id="prop-type" onchange="onPropTypeChange()" style="width:100%;font-size:15px;">
+          <!-- options rendered by JS -->
+        </select>
       </div>
     </div>
 
@@ -915,7 +817,7 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
 
     <div class="nav-btns">
       <button type="button" class="btn-back" onclick="goStep(1)">← חזור</button>
-      <button type="button" class="btn-next" onclick="goStep(3)">המשך — בחר חבילה ←</button>
+      <button type="button" class="btn-next" onclick="goStep(3)">המשך — מה לצלם ←</button>
     </div>
   </div>
 
@@ -924,31 +826,20 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
 
     <div class="card">
       <div class="card-header">
-        <div class="card-icon">📦</div>
+        <div class="card-icon">📸</div>
         <div>
-          <div class="card-title">בחר חבילה</div>
-          <div class="card-sub">בחר חבילה · המחיר כולל מע"מ 18%</div>
+          <div class="card-title">מה לצלם בנכס?</div>
+          <div class="card-sub">בחר לפחות אפשרות אחת</div>
         </div>
       </div>
       <div class="card-body">
-        <div class="packages-grid" id="packages-grid">
-          <!-- Rendered by JS -->
-        </div>
-        <!-- Price preview -->
-        <div class="price-preview" id="price-preview">
-          <div class="price-preview-label">💰 מחיר לצילום</div>
-          <div class="price-row">
-            <span class="price-row-label">מחיר בסיס</span>
-            <span class="price-row-val" id="price-preview-base">₪0</span>
-          </div>
-          <div class="price-row">
-            <span class="price-row-label">מע"מ (18%)</span>
-            <span class="price-row-val" id="price-preview-vat">₪0</span>
-          </div>
-          <div class="price-row total-row">
-            <span class="price-row-label">סה"כ לתשלום</span>
-            <span class="price-row-val" id="price-preview-total">₪0</span>
-          </div>
+        <div id="services-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <label class="service-pill"><input type="checkbox" name="bk-service" value="photo_signature"> 📷 צילום סיגנצ'ר</label>
+          <label class="service-pill"><input type="checkbox" name="bk-service" value="video"> 🎬 וידאו סינמטי</label>
+          <label class="service-pill"><input type="checkbox" name="bk-service" value="drone"> 🚁 צילום רחפן</label>
+          <label class="service-pill"><input type="checkbox" name="bk-service" value="3d_tour"> 🌐 סיור 3D / Virtual</label>
+          <label class="service-pill"><input type="checkbox" name="bk-service" value="floor_plan"> 📐 תוכנית קומה</label>
+          <label class="service-pill"><input type="checkbox" name="bk-service" value="golden_hour"> 🌅 שעת הזהב חוץ</label>
         </div>
       </div>
     </div>
@@ -957,8 +848,8 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
       <div class="card-header">
         <div class="card-icon">📅</div>
         <div>
-          <div class="card-title">תאריך מועדף</div>
-          <div class="card-sub">נאשר בהתאם לזמינות</div>
+          <div class="card-title">תאריך וזמן רצוי</div>
+          <div class="card-sub">הצעה — נתואם בטלפון</div>
         </div>
       </div>
       <div class="card-body">
@@ -1020,97 +911,102 @@ function h(str) { if(str==null)return''; _escB.textContent=String(str); return _
 //  DATA
 // ══════════════════════════════════════════════════
 const PROPERTY_TYPES = [
-  { id:'apt2',   icon:'🏢', name:'דירה 2 חד\'',    mult:1.0 },
-  { id:'apt3',   icon:'🏢', name:'דירה 3 חד\'',    mult:1.1 },
-  { id:'apt4',   icon:'🏢', name:'דירה 4 חד\'',    mult:1.2 },
-  { id:'apt5',   icon:'🏢', name:'דירה 5 חד\'',    mult:1.3 },
-  { id:'apt6p',  icon:'🏢', name:'דירה 6+ חד\'',   mult:1.4 },
-  { id:'garden', icon:'🌿', name:'דירת גן',         mult:1.4 },
-  { id:'mini',   icon:'🏙️', name:'מיני פנטהאוז',   mult:1.5 },
-  { id:'duplex', icon:'🏠', name:'דופלקס',          mult:1.5 },
-  { id:'triplex',icon:'🏠', name:'טריפלקס',         mult:1.6 },
-  { id:'urban',  icon:'🏡', name:'בית עירוני',      mult:1.6 },
-  { id:'pent',   icon:'⭐', name:'פנטהאוז',          mult:1.8 },
-  { id:'cottage',icon:'🏡', name:'קוטג\'',          mult:1.7 },
-  { id:'villa',  icon:'🏰', name:'וילה / בית פרטי', mult:2.0 },
-  { id:'detach', icon:'🏠', name:'בית בודד',         mult:2.0 },
-  { id:'farm',   icon:'🌾', name:'נחלה / משק',       mult:2.5 },
-  { id:'bldg',   icon:'🏗️', name:'בניין מגורים',    mult:3.0 },
-  { id:'comm',   icon:'💼', name:'מסחרי / משרד',    mult:1.3 },
-  { id:'plot',   icon:'📐', name:'מגרש',             mult:0.8 },
-  { id:'other',  icon:'🏘️', name:'אחר',             mult:1.0 },
+  { id:'apt',         icon:'🏢', name:'דירה' },
+  { id:'apt_garden',  icon:'🌿', name:'דירת גן' },
+  { id:'mini_pent',   icon:'🏙️', name:'מיני פנטהאוז' },
+  { id:'duplex',      icon:'🏠', name:'דופלקס' },
+  { id:'triplex',     icon:'🏠', name:'טריפלקס' },
+  { id:'urban',       icon:'🏡', name:'בית עירוני' },
+  { id:'pent',        icon:'⭐', name:'פנטהאוז' },
+  { id:'cottage',     icon:'🏡', name:'קוטג\'' },
+  { id:'villa',       icon:'🏰', name:'וילה / בית פרטי' },
+  { id:'detach',      icon:'🏠', name:'בית בודד' },
+  { id:'farm',        icon:'🌾', name:'נחלה / משק' },
+  { id:'bldg',        icon:'🏗️', name:'בניין מגורים' },
+  { id:'comm',        icon:'💼', name:'מסחרי / משרד' },
+  { id:'plot',        icon:'📐', name:'מגרש' },
+  { id:'other',       icon:'🏘️', name:'אחר' },
 ];
 
-let packages = loadPackages();
-let selectedPackageId = null;
+const HOUSE_TYPES = new Set(['villa', 'cottage', 'farm', 'detach', 'urban', 'plot']);
+
 let selectedPropType = null;
 let foundClientId = null;
 let currentStep = 1;
+let _bookingMap     = null;
+let _bookingMarker  = null;
+let _bookingCoords  = null;
+let _geocodeTimer   = null;
+let _geocodeSeq     = 0;
 
-function loadPackages() {
+
+async function geocodeAddress(address) {
   try {
-    const saved = localStorage.getItem('photoDesk_store');
-    if (saved) {
-      const s = JSON.parse(saved);
-      if (s.packages && s.packages.length)
-        return s.packages.filter(p => p.is_active !== false && p.is_visible !== false);
+    const url = 'https://nominatim.openstreetmap.org/search?q=' +
+      encodeURIComponent(address) + '&format=json&limit=1';
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'PhotoDesk-Booking/1.0',
+        'Accept-Language': 'he'
+      }
+    });
+    if (!resp.ok) {
+      console.warn('geocodeAddress HTTP', resp.status, address);
+      return null;
     }
-  } catch(e) {}
-  return [
-    { id:'P001', name:'חבילה בסיסית', price:800, duration:90,
-      services:['צילום סיגנצ\'ר','תוכנית קומה'], color:'#3B82F6' },
-    { id:'P002', name:'חבילה פרמיום', price:1200, duration:180,
-      services:['וידאו סינמטי','תוכנית קומה','סיור 3D'], color:'#8B5CF6' },
-    { id:'P003', name:'חבילה אינסופית', price:2000, duration:240,
-      services:['צילום סיגנצ\'ר','וידאו סינמטי','תוכנית קומה','סיור 3D'], color:'#F97316' },
-  ];
+    const data = await resp.json();
+    if (!data.length) return null;
+    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch(e) {
+    console.warn('geocodeAddress failed:', e);
+    return null;
+  }
 }
 
-function loadServices() {
-  try {
-    const saved = localStorage.getItem('photoDesk_store');
-    if (saved) {
-      const s = JSON.parse(saved);
-      if (s.services && s.services.length) return s.services;
-    }
-  } catch(e) {}
-  return [];
-}
-const _bkgServices = loadServices();
+function updateBookingMap(coords) {
+  if (!window.L) return;
+  if (!_bookingMap) {
+    _bookingMap = L.map('booking-map').setView([coords.lat, coords.lng], 16);
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Esri World Imagery', maxZoom: 20 }
+    ).addTo(_bookingMap);
+  }
+  if (_bookingMarker) _bookingMap.removeLayer(_bookingMarker);
+  _bookingMarker = L.marker([coords.lat, coords.lng]).addTo(_bookingMap);
+  _bookingMap.setView([coords.lat, coords.lng], 16);
+  setTimeout(() => _bookingMap && _bookingMap.invalidateSize(), 80);
 
-function _bkgFindSvc(name) {
-  return _bkgServices.find(s => s.name === name || s.name.includes(name) || name.includes(s.name)) || null;
+  const q = coords.lat + ',' + coords.lng;
+  document.getElementById('bk-gmaps-btn').href = 'https://maps.google.com/?q=' + q + '&t=k';
+  document.getElementById('bk-waze-btn').href  = 'https://waze.com/ul?ll=' + q + '&navigate=yes';
 }
 
-function openBkgExViewer(svcId) {
-  const svc = _bkgServices.find(s => s.id === svcId);
-  if (!svc || !svc.examples || !svc.examples.length) return;
-  const examples = svc.examples;
-  const photos = examples.filter(e => e.type === 'photo');
-  const others = examples.filter(e => e.type !== 'photo');
-  const EMBED = { youtube: u => { const id=u.match(/(?:v=|youtu\.be\/|\/shorts\/)([^&?/\s]+)/)?.[1]; return id?`https://www.youtube.com/embed/${id}?rel=0`:u; }, vimeo: u => { const id=u.match(/vimeo\.com\/(\d+)/)?.[1]; return id?`https://player.vimeo.com/video/${id}`:u; }, kuula: u => u.replace('/post/','/share/'), matterport: u => { const id=u.match(/[?&]m=([^&]+)/)?.[1]; return id?`https://my.matterport.com/show/?m=${id}&play=1&qs=1`:u; } };
-  let body = '';
-  if (photos.length) body += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px;margin-bottom:10px;">${photos.map(p=>`<img src="${p.url}" onclick="this.closest('.bkg-ex-bg').remove();_bkgLightbox('${p.url}')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:pointer;" onerror="this.style.display='none'">`).join('')}</div>`;
-  others.forEach(ex => {
-    const eu = (EMBED[ex.type] || (u=>u))(ex.url);
-    if (ex.type==='youtube'||ex.type==='vimeo') body += `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;margin-bottom:10px;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
-    else if (ex.type==='kuula'||ex.type==='matterport') body += `<div style="position:relative;padding-bottom:75%;height:0;overflow:hidden;border-radius:8px;margin-bottom:10px;"><iframe src="${eu}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`;
-    else body += `<a href="${ex.url}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface3);border-radius:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:600;margin-bottom:8px;">${ex.type==='instagram'?'📱':'🔗'} ${h(ex.caption||ex.url)}</a>`;
-    if (ex.caption) body += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">💬 ${h(ex.caption)}</div>`;
-  });
-  const ov = document.createElement('div');
-  ov.className = 'bkg-ex-bg';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-  ov.onclick = e => { if(e.target===ov) ov.remove(); };
-  ov.innerHTML = `<div style="background:#fff;border-radius:14px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;"><div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e5e7eb;font-weight:700;font-size:14px;">${svc.icon||'🎯'} דוגמאות — ${h(svc.name)}<button onclick="this.closest('.bkg-ex-bg').remove()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#6b7280;">✕</button></div><div style="padding:16px;">${body}</div></div>`;
-  document.body.appendChild(ov);
+function stripStreetPrefix(s) {
+  return s
+    .replace(/^רחוב\s+/u, '')
+    .replace(/^רח['']\s+/u, '')
+    .replace(/^שדרות?\s+/u, '')
+    .replace(/^שד['']\s+/u, '')
+    .replace(/^סמטת\s+/u, '')
+    .replace(/^דרך\s+/u, '');
 }
-function _bkgLightbox(src) {
-  const d=document.createElement('div');
-  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:10000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-  d.innerHTML=`<img src="${src}" style="max-width:95vw;max-height:95vh;border-radius:8px;">`;
-  d.onclick=()=>d.remove();
-  document.body.appendChild(d);
+
+function onAddressChange() {
+  clearTimeout(_geocodeTimer);
+  _geocodeTimer = setTimeout(async () => {
+    const street = stripStreetPrefix(document.getElementById('prop-address').value.trim());
+    const city = document.getElementById('prop-city').value.trim();
+    const addr = [street, city].filter(Boolean).join(', ');
+    if (addr.length < 5) return;
+    const seq = ++_geocodeSeq;
+    const coords = await geocodeAddress(addr);
+    if (seq !== _geocodeSeq) return;
+    if (!coords) return;
+    document.getElementById('booking-map-wrap').style.display = 'block';
+    updateBookingMap(coords);
+    _bookingCoords = coords;
+  }, 800);
 }
 
 function loadSettings() {
@@ -1126,112 +1022,40 @@ function loadSettings() {
   const s = loadSettings();
   document.getElementById('header-business').textContent = s.businessName || 'Edmont RE media';
   renderPropTypes();
-  renderPackages();
+  document.getElementById('prop-address').addEventListener('input', onAddressChange);
+  document.getElementById('prop-city').addEventListener('input', onAddressChange);
 })();
 
 // ── PROPERTY TYPES ─────────────────────────────────
 function renderPropTypes() {
-  document.getElementById('prop-type-grid').innerHTML = PROPERTY_TYPES.map(pt => `
-    <label class="ptype-option">
-      <input type="radio" name="prop-type" value="${pt.id}" onchange="selectPropType('${pt.id}')">
-      <span class="ptype-label">
-        <span class="ptype-icon">${pt.icon}</span>
-        <span class="ptype-name">${pt.name}</span>
-      </span>
-    </label>
-  `).join('');
+  const propTypeSelect = document.getElementById('prop-type');
+  propTypeSelect.replaceChildren();
+
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  placeholder.textContent = '— בחר סוג —';
+  propTypeSelect.appendChild(placeholder);
+
+  PROPERTY_TYPES.forEach(pt => {
+    const opt = document.createElement('option');
+    opt.value = pt.id;
+    opt.textContent = pt.icon + ' ' + pt.name;
+    propTypeSelect.appendChild(opt);
+  });
 }
 
-function selectPropType(id) {
-  selectedPropType = id;
-  updatePricePreview();
+function onPropTypeChange() {
+  selectedPropType = document.getElementById('prop-type').value || null;
+  updatePlotAreaVisibility();
 }
 
-// ── PACKAGES ───────────────────────────────────────
-function renderPackages() {
-  const grid = document.getElementById('packages-grid');
-  if (!packages.length) {
-    grid.innerHTML = '<div class="pkg-no-items">אין חבילות מוגדרות</div>';
-    return;
-  }
-  const BKG_COLORS = { youtube:'#FF0000', vimeo:'#1AB7EA', instagram:'#E1306C', kuula:'#6366F1', matterport:'#FF5A1F', link:'#6B7280' };
-  const BKG_LABELS = { youtube:'🎬 YouTube', vimeo:'🎬 Vimeo', instagram:'📱 Instagram', kuula:'🌐 360°', matterport:'🏠 3D', link:'🔗 קישור' };
-
-  grid.innerHTML = packages.map(p => {
-    // Collect all examples from this package's services
-    const allExamples = (p.services||[]).flatMap(sName => {
-      const svc = _bkgFindSvc(sName);
-      return (svc?.examples||[]).map(ex => ({ ...ex, svcId: svc.id, svcName: svc.name }));
-    });
-    const photos = allExamples.filter(e => e.type === 'photo');
-    const media  = [...new Map(allExamples.filter(e => e.type!=='photo').map(e => [e.type+'_'+e.svcId, e])).values()];
-    let exPreview = '';
-    if (allExamples.length) {
-      // Group by service for viewer buttons
-      const svcIds = [...new Set(allExamples.map(e=>e.svcId).filter(Boolean))];
-      exPreview = `<div style="margin-top:10px;border:1.5px dashed rgba(255,255,255,0.35);border-radius:8px;overflow:hidden;">`;
-      if (photos.length) {
-        exPreview += `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(0,0,0,0.15);">`;
-        photos.slice(0,4).forEach(ph => {
-          exPreview += `<div style="aspect-ratio:1;background:url('${ph.url}') center/cover;cursor:pointer;" onclick="event.preventDefault();event.stopPropagation();openBkgExViewer('${ph.svcId}')"></div>`;
-        });
-        if (photos.length>4) exPreview += `<div style="aspect-ratio:1;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">+${photos.length-4}</div>`;
-        exPreview += `</div>`;
-      }
-      if (media.length) {
-        exPreview += `<div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px 4px;">`;
-        media.forEach(m => {
-          const c = BKG_COLORS[m.type]||'#6B7280';
-          exPreview += `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${c}28;color:${c};font-weight:600;cursor:pointer;" onclick="event.preventDefault();event.stopPropagation();openBkgExViewer('${m.svcId}')">${BKG_LABELS[m.type]||m.type}</span>`;
-        });
-        exPreview += `</div>`;
-      }
-      exPreview += `<div style="font-size:11px;color:rgba(255,255,255,0.6);padding:3px 8px;border-top:1px solid rgba(255,255,255,0.15);text-align:center;background:rgba(0,0,0,0.1);">📎 ${allExamples.length} דוגמ${allExamples.length===1?'ה':'אות'} · לחץ לצפייה</div>`;
-      exPreview += `</div>`;
-    }
-    return `
-    <label class="pkg-option">
-      <input type="radio" name="package" value="${p.id}" onchange="selectPackage('${p.id}')">
-      <div class="pkg-card" style="--pkg-color:${p.color||'#F97316'}">
-        <div class="pkg-check">✓</div>
-        <div class="pkg-name">${h(p.name)}</div>
-        <div class="pkg-price">₪${p.price.toLocaleString('he-IL')}<span> + מע"מ /צילום</span></div>
-        <div class="pkg-duration">⏱ ${fmtDur(p.duration)}</div>
-        <div class="pkg-services">${(p.services||[]).map(s => `<div class="pkg-service">${s}</div>`).join('')}</div>
-        ${exPreview}
-      </div>
-    </label>`;
-  }).join('');
-}
-
-function fmtDur(min) {
-  if (!min) return '—';
-  const h = Math.floor(min/60), m = min % 60;
-  const hStr = h === 1 ? 'שעה' : h > 1 ? h + ' שע\'' : '';
-  const mStr = m ? m + ' דק\'' : '';
-  return hStr && mStr ? hStr + ' ' + mStr : hStr || mStr || min + ' דק\'';
-}
-
-function selectPackage(id) {
-  selectedPackageId = id;
-  updatePricePreview();
-}
-
-// ── PRICE PREVIEW ──────────────────────────────────
-const VAT_RATE = 0.18;
-
-function updatePricePreview() {
-  const prev = document.getElementById('price-preview');
-  if (!selectedPackageId) { prev.classList.remove('show'); return; }
-  const pkg = packages.find(p => p.id === selectedPackageId);
-  if (!pkg) return;
-  const base  = pkg.price;
-  const vat   = Math.round(base * VAT_RATE);
-  const total = base + vat;
-  document.getElementById('price-preview-base').textContent  = '₪' + base.toLocaleString('he-IL');
-  document.getElementById('price-preview-vat').textContent   = '₪' + vat.toLocaleString('he-IL');
-  document.getElementById('price-preview-total').textContent = '₪' + total.toLocaleString('he-IL');
-  prev.classList.add('show');
+function updatePlotAreaVisibility() {
+  const isHouse = HOUSE_TYPES.has(selectedPropType);
+  document.getElementById('prop-plot-area-wrap').style.display = isHouse ? '' : 'none';
+  document.getElementById('prop-area-label').textContent = isHouse ? 'שטח בית (מ"ר)' : 'שטח דירה (מ"ר)';
+  if (!isHouse) document.getElementById('prop-plot-area').value = '';
 }
 
 // ── WIZARD NAVIGATION ──────────────────────────────
@@ -1283,16 +1107,29 @@ function validateStep(step) {
     }
   }
   if (step === 2) {
-    const address = document.getElementById('prop-address').value.trim();
-    const city    = document.getElementById('prop-city').value.trim();
-    ['prop-address','prop-city'].forEach(id => {
-      document.getElementById(id).classList.toggle('error', !document.getElementById(id).value.trim());
+    if (!selectedPropType) {
+      alert('נא לבחור סוג נכס');
+      return false;
+    }
+    const required = ['prop-address', 'prop-city', 'prop-rooms', 'prop-area'];
+    if (HOUSE_TYPES.has(selectedPropType)) {
+      required.push('prop-plot-area');
+    }
+    let anyError = false;
+    required.forEach(id => {
+      const el = document.getElementById(id);
+      const empty = !el.value.trim();
+      el.classList.toggle('error', empty);
+      if (empty) anyError = true;
     });
-    if (!address || !city) { shake(document.querySelector('#panel-2 .form-input.error')); return false; }
+    if (anyError) {
+      shake(document.querySelector('#panel-2 .form-input.error'));
+      return false;
+    }
   }
   if (step === 3) {
-    if (!selectedPackageId) {
-      document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
+    if (getSelectedServices().length === 0) {
+      alert('בחר לפחות שירות אחד לצילום');
       return false;
     }
     const dateEl = document.getElementById('shoot-date');
@@ -1355,17 +1192,6 @@ function clearLookup() {
 // ── REVIEW ─────────────────────────────────────────
 function buildReview() {
   if (!validateStep(3)) return;
-  // BUG #3 FIX: require package selection
-  if (!selectedPackageId) {
-    document.getElementById('packages-grid').scrollIntoView({ behavior:'smooth' });
-    const existing = document.getElementById('pkg-error');
-    if (!existing) {
-      document.getElementById('packages-grid').insertAdjacentHTML('beforebegin',
-        '<div id="pkg-error" style="color:#EF4444;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">⚠️ נא לבחור חבילה להמשך</div>');
-      setTimeout(() => document.getElementById('pkg-error')?.remove(), 4000);
-    }
-    return;
-  }
   // Require valid future date selection
   const shootDateEl = document.getElementById('shoot-date');
   const shootDateVal = shootDateEl.value;
@@ -1377,7 +1203,6 @@ function buildReview() {
     return;
   }
   shootDateEl.classList.remove('error');
-  const pkg = packages.find(p => p.id === selectedPackageId);
   const pt  = selectedPropType ? PROPERTY_TYPES.find(p => p.id === selectedPropType) : null;
   const isEx = document.getElementById('type-existing').checked;
   const name = isEx ? '(לקוח קיים)'
@@ -1388,21 +1213,18 @@ function buildReview() {
   const flex = document.getElementById('shoot-flexibility').value;
   const times = getSelectedTimeSlots();
 
-  const base  = pkg.price;
-  const vat   = Math.round(base * VAT_RATE);
-  const total = base + vat;
-  const priceStr = `₪${base.toLocaleString('he-IL')} + מע"מ ₪${vat.toLocaleString('he-IL')} = ₪${total.toLocaleString('he-IL')} סה"כ`;
-
   const dateDisplay = dateVal
     ? new Date(dateVal + 'T12:00').toLocaleDateString('he-IL', {day:'2-digit', month:'long', year:'numeric'})
     : dateFlex[flex] || flex;
+
+  const services = getSelectedServices();
+  const servicesLabel = services.map(s => SERVICE_NAMES_HE[s] || s).join(' · ');
 
   const rows = [
     ['לקוח', name],
     ['נכס', addr],
     ['סוג נכס', pt ? pt.name : 'לא נבחר'],
-    ['חבילה', pkg.name],
-    ['מחיר', priceStr],
+    ['מה לצלם', servicesLabel || '—'],
     ['תאריך', dateDisplay],
     ...(times.length ? [['שעות מועדפות', times.join(' · ')]] : []),
   ];
@@ -1423,10 +1245,6 @@ async function submitBooking() {
   btn.textContent = '⏳ שולח...';
 
   const isEx = document.getElementById('type-existing').checked;
-  const pkg  = packages.find(p => p.id === selectedPackageId);
-  if (!pkg) { alert('שגיאה: חבילה לא נמצאת. אנא בחר חבילה מחדש.'); btn.disabled = false; btn.textContent = '✅ שלח הזמנה'; return; }
-  const pt   = selectedPropType ? PROPERTY_TYPES.find(p => p.id === selectedPropType) : null;
-
   const clientData = isEx
     ? { id: foundClientId, isExisting: true }
     : {
@@ -1439,29 +1257,34 @@ async function submitBooking() {
         listings: 0
       };
 
-  const finalPrice = pt ? Math.round(pkg.price * pt.mult) : pkg.price;
+  const ptObj = PROPERTY_TYPES.find(p => p.id === selectedPropType) || null;
 
   const booking = {
-    id: 'B' + Date.now(),
+    id:        'B' + Date.now(),
     createdAt: new Date().toISOString(),
-    client: clientData,
+    status:    'pending',
+    client:    clientData,
     property: {
       address:      document.getElementById('prop-address').value.trim(),
       city:         document.getElementById('prop-city').value.trim(),
       neighborhood: document.getElementById('prop-neighborhood').value.trim(),
-      type:         pt ? pt.name : '',
-      rooms:  +document.getElementById('prop-rooms').value  || 0,
-      baths:  +document.getElementById('prop-baths').value  || 0,
-      floor:  +document.getElementById('prop-floor').value  || 0,
-      area:   +document.getElementById('prop-area').value   || 0,
-      year:   +document.getElementById('prop-year').value   || 0,
-      notes:  document.getElementById('prop-notes').value.trim(),
+      coords:       _bookingCoords || null,
+      type:         selectedPropType || '',
+      typeName:     ptObj ? ptObj.name : '',
+      rooms:    +document.getElementById('prop-rooms').value     || 0,
+      baths:    +document.getElementById('prop-baths').value     || 0,
+      floor:    +document.getElementById('prop-floor').value     || 0,
+      area:     +document.getElementById('prop-area').value      || 0,
+      plotArea: (+document.getElementById('prop-plot-area').value) || null,
+      year:     +document.getElementById('prop-year').value      || 0,
+      notes:        document.getElementById('prop-notes').value.trim()
     },
-    package: { id: selectedPackageId, name: pkg.name, price: finalPrice },
+    services:       getSelectedServices(),
     shootDate:      document.getElementById('shoot-date').value,
     flexibility:    document.getElementById('shoot-flexibility').value,
     preferredTimes: getSelectedTimeSlots(),
-    status: 'pending'
+    customerId: null,
+    listingId:  null
   };
 
   try {
@@ -1494,9 +1317,7 @@ async function submitBooking() {
         booking_id: booking.id,
         client: name,
         phone: clientData.phone || '',
-        package: pkg.name,
-        price: '₪' + finalPrice.toLocaleString('he-IL'),
-        property_type: pt ? pt.name : '—',
+        property_type: ptObj ? ptObj.name : '—',
         address: booking.property.address + ', ' + booking.property.city,
         shoot_date: booking.shootDate || booking.flexibility,
         preferred_times: booking.preferredTimes.length ? booking.preferredTimes.join(', ') : '—',
@@ -1523,7 +1344,6 @@ async function submitBooking() {
       `📸 הזמנה חדשה!\n` +
       `לקוח: ${clientName}\n` +
       `נכס: ${h(booking.property.address)}, ${h(booking.property.city)}\n` +
-      `חבילה: ${booking.package.name} · ₪${booking.package.price.toLocaleString('he-IL')}\n` +
       `תאריך: ${dateDisplay}${timesLine}\n` +
       `מס' הזמנה: ${booking.id}\n` +
       `🔗 ${crmLink}`
@@ -1545,26 +1365,20 @@ function getSelectedTimeSlots() {
     .map(b => b.dataset.val);
 }
 
-renderPackages();
+function getSelectedServices() {
+  return Array.from(document.querySelectorAll('input[name="bk-service"]:checked'))
+    .map(cb => cb.value);
+}
 
-// NH-5: Firestore fallback if localStorage had no packages
-(function() {
-  try {
-    const saved = localStorage.getItem('photoDesk_store');
-    const hasLocal = saved && JSON.parse(saved)?.packages?.length;
-    if (!hasLocal) {
-      db.collection('store').doc('data').get().then(doc => {
-        if (doc.exists) {
-          const data = doc.data();
-          if (data.packages && data.packages.length) {
-            packages = data.packages.filter(p => p.is_active !== false && p.is_visible !== false);
-            if (currentStep === 1) renderPackages();
-          }
-        }
-      }).catch(() => {});
-    }
-  } catch(e) {}
-})();
+const SERVICE_NAMES_HE = {
+  photo_signature: '📷 צילום סיגנצ\'ר',
+  video:           '🎬 וידאו סינמטי',
+  drone:           '🚁 צילום רחפן',
+  '3d_tour':       '🌐 סיור 3D',
+  floor_plan:      '📐 תוכנית קומה',
+  golden_hour:     '🌅 שעת הזהב'
+};
+
 </script>
 </body>
 </html>
