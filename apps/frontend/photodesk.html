@@ -2927,7 +2927,7 @@
         <div>
           <div class="section-title">📁 Google Drive</div>
           <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.6;">
-            יוצר תיקיות אוטומטית ב-Drive האישי שלך עבור כל נכס: <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">01_RAW / 02_EDIT / 03_AI / 04_WATERMARK / 05_MISC</code><br>
+            יוצר תיקיות אוטומטית ב-Drive האישי שלך עבור כל נכס: <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">01_RAW / 02_EDIT / 03_AI / 04_WATERMARK / 05_MISC / 06_VIDEO_PRE / 07_VIDEO_POST</code><br>
             הלקוח מקבל שני קישורי השוואה: <strong>02_EDIT</strong> (עריכה רגילה) + <strong>03_AI</strong> (אחרי Declutter+Enhancer)
           </div>
           <div class="form-group">
@@ -9298,6 +9298,8 @@ async function createDriveFolders() {
     l.driveAiUrl        = data.driveAiUrl;
     l.driveWatermarkUrl = data.driveWatermarkUrl;
     l.driveMiscUrl      = data.driveMiscUrl;
+    l.driveVideoPreUrl  = data.driveVideoPreUrl;
+    l.driveVideoPostUrl = data.driveVideoPostUrl;
     l.driveEditShareUrl = data.driveEditShareUrl;
     l.driveAiShareUrl   = data.driveAiShareUrl;
     l.driveShareUrl     = data.driveShareUrl;
@@ -9372,6 +9374,10 @@ function _renderDriveSection(l) {
     linksEl.appendChild(makeLink('🤖', '03 העלה אחרי AI', l.driveAiUrl, true));
   if (l.driveWatermarkUrl)
     linksEl.appendChild(makeLink('🖼️', '04 העלה עם לוגו', l.driveWatermarkUrl, true));
+  if (l.driveVideoPreUrl)
+    linksEl.appendChild(makeLink('🎥', '06 העלה וידאו לפני', l.driveVideoPreUrl, true));
+  if (l.driveVideoPostUrl)
+    linksEl.appendChild(makeLink('🎬', '07 העלה וידאו אחרי', l.driveVideoPostUrl, true));
 
   // Separator
   const sep = document.createElement('div');
