@@ -4605,10 +4605,21 @@ function bulkSetStatus(newStatus) {
   if (!ids.length) return;
   ids.forEach(id => {
     const l = store.listings.find(x => x.id === id);
-    if (l) l.status = newStatus;
+    if (!l) return;
+    l.status = newStatus;
+    if (ORDER_PIPELINE.includes(newStatus)) {
+      const o = _ensureOrder(l);
+      o.status = newStatus;
+    } else {
+      const o = store.orders && store.orders.find(x => x.id === id);
+      if (o) o.status = newStatus;
+    }
   });
   saveStore();
   bulkClearSelection();
+  renderListings();
+  renderOrders();
+  updateOrdersBadge();
   toast(`${ids.length} נכסים עודכנו ל: ${newStatus}`, 'success');
 }
 
@@ -5129,8 +5140,13 @@ function saveListing() {
 function deliverListing() {
   if (!currentListing) return;
   currentListing.status = 'נמסר';
+  // Sync to order so kanban reflects the change
+  const o = store.orders && store.orders.find(x => x.id === currentListing.id);
+  if (o) o.status = 'נמסר';
   document.getElementById('panel-status-badge').innerHTML = `<span class="badge badge-delivered">נמסר</span>`;
   renderListings();
+  renderOrders();
+  updateOrdersBadge();
   saveStore();
   toast('הנכס סומן כנמסר ✓', 'success');
 }
