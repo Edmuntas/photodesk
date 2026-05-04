@@ -1378,6 +1378,40 @@
   }
   .kanban-card-addr { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
   .kanban-card-meta { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+  /* Payment pipeline chips */
+  .payment-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    margin-inline-end: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .payment-chip:hover { filter: brightness(1.05); }
+  .payment-chip.active {
+    background: #DCFCE7;
+    color: #166534;
+    border-color: #86EFAC;
+  }
+  .kanban-card.overdue {
+    border-right: 3px solid #EF4444;
+  }
+  .overdue-badge {
+    display: inline-block;
+    background: #FEE2E2;
+    color: #991B1B;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
   .kanban-card-pkg { font-size: 10.5px; color: var(--accent); margin-top: 6px;
     background: var(--accent-light); border-radius: 4px; padding: 2px 7px; display: inline-block;
     font-weight: 600; }
@@ -3307,6 +3341,7 @@
               <label class="dchip"><input type="checkbox" id="panel-payreq-sent"> 📨 בקשת תשלום</label>
               <label class="dchip"><input type="checkbox" id="panel-invoice-sent"> 🧾 חשבונית</label>
             </div>
+            <div id="panel-payment-pipeline" style="margin-top:12px;"></div>
           </div>
           <div class="psidebar-section">
             <div class="psidebar-title">📁 Google Drive</div>
@@ -5077,6 +5112,7 @@ function openListing(id) {
   switchTab('info');
   document.getElementById('listing-panel').classList.add('open');
   document.getElementById('panel-overlay').classList.add('open');
+  renderPaymentSection(currentListing);
 }
 
 function closePanel() {
@@ -5290,6 +5326,11 @@ async function convertBookingToListing(booking) {
     mls:           '', photos: 0, desc: '',
     paymentStatus: 'unpaid', paymentAmount: 0,
     payReqSent:    false, invoiceSent: false,
+    payReqAt:        null,
+    paymentReceived: false,
+    paymentAt:       null,
+    receiptSent:     false,
+    receiptAt:       null,
     deliveredPhotos: false, deliveredVideo: false, deliveredFloorplan: false,
     created:       new Date().toLocaleDateString('he-IL', {day:'numeric', month:'long', year:'numeric'})
   };
@@ -7228,6 +7269,82 @@ function deletePromotion(id) {
 // ══════════════════════════════════════════════════
 const ORDER_PIPELINE = ['ממתין לאישור','מתוכנן','צולם','בעיבוד','ממתין למסירה'];
 
+// Payment pipeline (post-delivery tracking)
+const OVERDUE_DAYS_DEFAULT = 7;
+const PAYMENT_FIELDS = ['payReqSent','payReqAt','paymentReceived','paymentAt','receiptSent','receiptAt'];
+
+function _paymentChips(l) {
+  if (!l || !l.id) return '';
+  const make = (field, icon, label) => {
+    const active = !!(l[field]);
+    return `<span class="payment-chip${active ? ' active' : ''}" data-stop-propagation="1" onclick="togglePaymentChip('${h(l.id)}','${field}')">${icon} ${active ? '✓ ' : ''}${label}</span>`;
+  };
+  return `<div class="payment-chips" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
+    ${make('payReqSent',      '📨', 'בקשה')}
+    ${make('paymentReceived', '💰', 'שולם')}
+    ${make('receiptSent',     '📄', 'קבלה')}
+  </div>`;
+}
+
+function _isOverdue(l) {
+  if (!l || !l.payReqSent || !l.payReqAt || l.paymentReceived) return 0;
+  const elapsed = Date.now() - Number(l.payReqAt);
+  const days = Math.floor(elapsed / (86400 * 1000));
+  return days >= OVERDUE_DAYS_DEFAULT ? days : 0;
+}
+
+function togglePaymentChip(id, field) {
+  const l = store.listings.find(x => x.id === id);
+  if (!l) { console.warn('[togglePaymentChip] listing not found', id); return; }
+  const FIELD_TO_AT = { payReqSent: 'payReqAt', paymentReceived: 'paymentAt', receiptSent: 'receiptAt' };
+  const atField = FIELD_TO_AT[field];
+  if (!atField) { console.warn('[togglePaymentChip] unknown field', field); return; }
+
+  const newVal = !l[field];
+  l[field] = newVal;
+  l[atField] = newVal ? Date.now() : null;
+
+  // Auto-set paymentStatus to 'paid' when payment is received (one-way; manual reverse not handled)
+  if (field === 'paymentReceived' && newVal && l.paymentStatus !== 'paid') {
+    l.paymentStatus = 'paid';
+  }
+
+  _syncListingToOrder(l);
+  saveStore();
+  renderOrders();
+  updateOrdersBadge();
+  if (currentListing && currentListing.id === id) {
+    renderPaymentSection(l);
+  }
+
+  const labels = { payReqSent: 'בקשה', paymentReceived: 'תשלום', receiptSent: 'קבלה' };
+  toast(`${labels[field]} ${newVal ? 'סומן ✓' : 'בוטל'}`, 'success');
+}
+
+function renderPaymentSection(l) {
+  const el = document.getElementById('panel-payment-pipeline');
+  if (!el || !l) { if (el) el.textContent = ''; return; }
+  const fmt = (ts) => ts ? new Date(Number(ts)).toLocaleDateString('he-IL') : '—';
+  const overdueDays = _isOverdue(l);
+  const overdueLine = overdueDays > 0
+    ? `<div class="overdue-badge" style="margin-top:8px;">⚠ עיכוב ${overdueDays} ימים</div>`
+    : '';
+  // Content composed of safe constants + _paymentChips(l) which already escapes l.id via h().
+  // No user-controlled string is interpolated raw, so innerHTML here is safe.
+  const html = `
+    <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:10px;">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px;">פייפליין מסירה→תשלום</div>
+      ${_paymentChips(l)}
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.6;">
+        <div>📨 בקשה: ${fmt(l.payReqAt)}</div>
+        <div>💰 תשלום: ${fmt(l.paymentAt)}</div>
+        <div>📄 קבלה: ${fmt(l.receiptAt)}</div>
+      </div>
+      ${overdueLine}
+    </div>`;
+  el.innerHTML = html;
+}
+
 // Create/fetch order snapshot from listing. Orders survive listing deletion.
 function _ensureOrder(l) {
   if (!store.orders) store.orders = [];
@@ -7243,6 +7360,12 @@ function _ensureOrder(l) {
       deliveredPhotos:   !!(l.deliveredPhotos),
       deliveredVideo:    !!(l.deliveredVideo),
       deliveredFloorplan:!!(l.deliveredFloorplan),
+      payReqSent:      !!(l.payReqSent),
+      payReqAt:        l.payReqAt || null,
+      paymentReceived: !!(l.paymentReceived),
+      paymentAt:       l.paymentAt || null,
+      receiptSent:     !!(l.receiptSent),
+      receiptAt:       l.receiptAt || null,
     };
     store.orders.push(o);
   }
@@ -7263,6 +7386,12 @@ function _syncListingToOrder(l) {
   o.deliveredPhotos    = !!(l.deliveredPhotos);
   o.deliveredVideo     = !!(l.deliveredVideo);
   o.deliveredFloorplan = !!(l.deliveredFloorplan);
+  o.payReqSent      = !!(l.payReqSent);
+  o.payReqAt        = l.payReqAt || null;
+  o.paymentReceived = !!(l.paymentReceived);
+  o.paymentAt       = l.paymentAt || null;
+  o.receiptSent     = !!(l.receiptSent);
+  o.receiptAt       = l.receiptAt || null;
 }
 
 // ══════════════════════════════════════════════════
@@ -7793,6 +7922,8 @@ function _buildPendingCard(b) {
 }
 
 function _buildActiveOrderCard(l) {
+  const overdueDays = _isOverdue(l);
+  const overdueClass = overdueDays > 0 ? ' overdue' : '';
   const custObj = l.customer ? (store.customers.find(c => c.id === l.customer) || {first:'', last:''}) : null;
   const custLabel = custObj ? (custObj.first+' '+custObj.last).trim() : '';
   const next = _ORDER_NEXT_STATUS[l.status];
@@ -7801,7 +7932,8 @@ function _buildActiveOrderCard(l) {
   const payClass = 'pay-'+(l.paymentStatus||'unpaid');
   const shootStr = l.shootDate ? new Date(l.shootDate).toLocaleDateString('he-IL', {day:'numeric', month:'short'}) : '';
   return `
-    <div class="kanban-card js-open-listing" data-listing-id="${h(l.id)}">
+    <div class="kanban-card js-open-listing${overdueClass}" data-listing-id="${h(l.id)}">
+        ${overdueDays > 0 ? `<div class="overdue-badge">⚠ עיכוב ${overdueDays} ימים</div>` : ''}
       <div class="kanban-card-addr">${h(l.address)}${l.city?', '+h(l.city):''}</div>
       <div class="kanban-card-meta">
         ${custLabel ? '👤 '+h(custLabel) : ''}
@@ -7815,6 +7947,7 @@ function _buildActiveOrderCard(l) {
         <span class="deliver-chip ${l.deliveredFloorplan?'done':'undone'}" onclick="toggleOrderDelivery('${h(l.id)}','deliveredFloorplan')" title="תוכנית">📐</span>
       </div>
       ${next ? `<button class="btn btn-primary" style="width:100%;font-size:11px;padding:5px;margin-top:8px;" data-stop-propagation="1" onclick="advanceStatus('${h(l.id)}','${h(next)}')">${h(nextLbl)}</button>` : ''}
+        ${l.status === 'נמסר' ? _paymentChips(l) : ''}
     </div>`;
 }
 
@@ -8572,6 +8705,11 @@ function _listingFromBooking(b, customerId) {
     photos: 0, desc: '', notes, agent: '',
     shootDate: b.shootDate || '', paymentStatus: 'unpaid', paymentAmount: 0,
     payReqSent: false, invoiceSent: false,
+    payReqAt: null,
+    paymentReceived: false,
+    paymentAt: null,
+    receiptSent: false,
+    receiptAt: null,
     deliveredPhotos: false, deliveredVideo: false, deliveredFloorplan: false
   };
 }
