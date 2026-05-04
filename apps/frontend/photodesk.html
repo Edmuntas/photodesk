@@ -6579,6 +6579,8 @@ function setStatusInline(id, newStatus, menu) {
   }
   saveStore();
   renderListings();
+  renderOrders();
+  updateOrdersBadge();
   if (currentListing && currentListing.id === id) {
     document.getElementById('panel-status-badge').innerHTML = `<span class="badge ${badgeClass(newStatus)}">${h(newStatus)}</span>`;
     renderPipeline(l);
