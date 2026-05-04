@@ -8559,39 +8559,57 @@ function _listingFromBooking(b, customerId) {
 }
 
 function approveBooking(id) {
-  const pending = loadPendingBookings();
-  const b = pending.find(x => x.id === id);
-  if (!b) return;
+  console.log('[approveBooking] start', id);
+  try {
+    const pending = loadPendingBookings();
+    console.log('[approveBooking] pending count:', pending.length);
+    const b = pending.find(x => x.id === id);
+    if (!b) {
+      console.warn('[approveBooking] booking not found in pending list', { id, pendingIds: pending.map(p => p.id) });
+      toast('שגיאה: הזמנה לא נמצאה ברשימת ההמתנה', 'error');
+      return;
+    }
+    console.log('[approveBooking] booking found', { hasClient: !!b.client, hasProperty: !!b.property, hasServices: Array.isArray(b.services) });
 
-  const customerId = _findOrCreateCustomer(b.client);
-  store.listings.unshift(_listingFromBooking(b, customerId));
+    const customerId = _findOrCreateCustomer(b.client || {});
+    console.log('[approveBooking] customerId:', customerId);
 
-  // Also create an order entry (independent from listing)
-  _ensureOrder(store.listings[0]);
-  _syncListingToOrder(store.listings[0]);
+    store.listings.unshift(_listingFromBooking(b, customerId));
+    console.log('[approveBooking] listing created');
 
-  // Remove from pending
-  savePendingBookings(pending.filter(x => x.id !== id));
-  db.collection('bookings').doc(id).delete().catch(() => {});
-  saveStore();
-  renderOrders();
-  updateOrdersBadge();
+    _ensureOrder(store.listings[0]);
+    _syncListingToOrder(store.listings[0]);
+    console.log('[approveBooking] order synced');
 
-  // WhatsApp confirmation to client
-  const phone = b.client.phone || '';
-  if (phone && confirm(`שלח הודעת אישור ב-WhatsApp ל${b.client.first || phone}?`)) {
-    const bizName = store.settings?.businessName || 'Edmont RE media';
-    const clientName = b.client.first ? `${b.client.first}` : '';
-    const address = `${b.property.address}, ${b.property.city}`;
-    const msg = encodeURIComponent(
-      `שלום ${clientName} 👋\n` +
-      `הזמנתך לצילום הנכס ב${address} התקבלה ואושרה ✅\n` +
-      `ניצור איתך קשר בקרוב לתיאום הזמן המדויק של הצילום.\n` +
-      `${bizName}`
-    );
-    const digits = phone.replace(/[^0-9]/g, '');
-    const waPhone = digits.startsWith('972') ? digits : '972' + digits.replace(/^0/, '');
-    window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank');
+    savePendingBookings(pending.filter(x => x.id !== id));
+    db.collection('bookings').doc(id).delete().catch(err => console.warn('[approveBooking] firestore delete failed:', err));
+    saveStore();
+    renderOrders();
+    updateOrdersBadge();
+    console.log('[approveBooking] core flow complete — booking moved to active orders');
+
+    // WhatsApp confirmation (optional, after core flow has succeeded)
+    const client = b.client || {};
+    const property = b.property || {};
+    const phone = client.phone || '';
+    if (phone && confirm(`שלח הודעת אישור ב-WhatsApp ל${client.first || phone}?`)) {
+      const bizName = store.settings?.businessName || 'Edmont RE media';
+      const clientName = client.first || '';
+      const address = `${property.address || ''}${property.city ? ', ' + property.city : ''}`;
+      const msg = encodeURIComponent(
+        `שלום ${clientName} 👋\n` +
+        `הזמנתך לצילום הנכס ב${address} התקבלה ואושרה ✅\n` +
+        `ניצור איתך קשר בקרוב לתיאום הזמן המדויק של הצילום.\n` +
+        `${bizName}`
+      );
+      const digits = phone.replace(/[^0-9]/g, '');
+      const waPhone = digits.startsWith('972') ? digits : '972' + digits.replace(/^0/, '');
+      window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank');
+    }
+  } catch (err) {
+    console.error('[approveBooking] FAILED', err);
+    if (window.Sentry) Sentry.captureException(err, { extra: { bookingId: id } });
+    toast('שגיאה באישור: ' + (err.message || err), 'error');
   }
 }
 
