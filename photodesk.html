@@ -7267,7 +7267,7 @@ function deletePromotion(id) {
 // ══════════════════════════════════════════════════
 //  ORDERS — INDEPENDENT FROM LISTINGS
 // ══════════════════════════════════════════════════
-const ORDER_PIPELINE = ['ממתין לאישור','מתוכנן','צולם','בעיבוד','ממתין למסירה'];
+const ORDER_PIPELINE = ['ממתין לאישור','מתוכנן','צולם','בעיבוד','ממתין למסירה','נמסר'];
 
 // Payment pipeline (post-delivery tracking)
 const OVERDUE_DAYS_DEFAULT = 7;
@@ -8605,6 +8605,7 @@ function renderOrders() {
       { key:'צולם',         label:'📸 צולם',          color:'#2563EB', isPending:false, cards: filteredActive.filter(o=>o.status==='צולם') },
       { key:'בעיבוד',       label:'⚙️ בעיבוד',        color:'#3B82F6', isPending:false, cards: filteredActive.filter(o=>o.status==='בעיבוד') },
       { key:'ממתין למסירה', label:'🚀 ממתין למסירה', color:'#EF4444', isPending:false, cards: filteredActive.filter(o=>o.status==='ממתין למסירה') },
+      { key:'נמסר',         label:'✅ נמסר',          color:'#10B981', isPending:false, cards: filteredActive.filter(o=>o.status==='נמסר') },
     ];
     const colsHtml = columns.map(col => {
       const cardsHtml = col.cards.length
