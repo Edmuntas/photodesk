@@ -1412,6 +1412,68 @@
     border-radius: 8px;
     margin-bottom: 6px;
   }
+
+  /* Closed orders archive */
+  .closed-orders-aggregates {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .closed-orders-card {
+    flex: 1;
+    min-width: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+  }
+  .closed-orders-card .co-card-title { color: var(--text-muted); font-size: 12px; margin-bottom: 6px; }
+  .closed-orders-card .co-card-value { font-size: 22px; font-weight: 700; color: var(--text); }
+  .closed-orders-card .co-card-sub { color: var(--text-muted); font-size: 11px; margin-top: 4px; }
+
+  .closed-orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+  .closed-orders-table th {
+    text-align: start;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .closed-orders-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  .closed-orders-table .co-row-sub {
+    color: var(--text-muted);
+    font-size: 11px;
+    padding-top: 2px;
+  }
+  .closed-orders-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  .closed-orders-actions button {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .closed-orders-actions button:hover { filter: brightness(1.05); }
+
   .kanban-card-pkg { font-size: 10.5px; color: var(--accent); margin-top: 6px;
     background: var(--accent-light); border-radius: 4px; padding: 2px 7px; display: inline-block;
     font-weight: 600; }
@@ -2551,6 +2613,11 @@
     <div class="nav-item" onclick="navigate('settings')">
       <span class="icon">⚙️</span><span class="nav-text">הגדרות</span>
     </div>
+    <div class="nav-item" onclick="navigate('closed-orders')">
+      <span class="nav-icon">📦</span>
+      <span>הזמנות סגורות</span>
+      <span class="nav-badge" id="closed-orders-badge"></span>
+    </div>
     <div class="nav-item" onclick="navigate('archive')">
       <span class="icon">🗄️</span><span class="nav-text">ארכיון</span>
       <span class="nav-badge" id="archive-badge" style="display:none;background:var(--text-muted);">0</span>
@@ -2994,6 +3061,12 @@
       <div id="archive-panel-customers" class="archive-panel" style="display:none;"></div>
       <div id="archive-panel-companies" class="archive-panel" style="display:none;"></div>
     </div>
+
+    <section id="page-closed-orders" class="page" style="display:none">
+      <div id="closed-orders-header"></div>
+      <div id="closed-orders-aggregates"></div>
+      <div id="closed-orders-table-wrap"></div>
+    </section>
 
     <!-- ════════════════ DRONE NEW ORDER PAGE ════════════════ -->
     <div class="page" id="page-drone-new" style="overflow-y:auto;max-width:680px;">
@@ -4069,6 +4142,7 @@ function renderPage(page) {
   else if (page === 'availability') renderSchedule();
   else if (page === 'calendar') renderCalendar();
   else if (page === 'settings') renderSettings();
+  else if (page === 'closed-orders') renderClosedOrders();
   else if (page === 'archive')     renderArchive();
   else if (page === 'promotions')  renderPromotions();
   else if (page === 'drone-new')   dneResetForm();
@@ -4655,6 +4729,7 @@ function bulkSetStatus(newStatus) {
   renderListings();
   renderOrders();
   updateOrdersBadge();
+  updateClosedOrdersBadge();
   toast(`${ids.length} נכסים עודכנו ל: ${newStatus}`, 'success');
 }
 
@@ -5183,6 +5258,7 @@ function deliverListing() {
   renderListings();
   renderOrders();
   updateOrdersBadge();
+  updateClosedOrdersBadge();
   saveStore();
   toast('הנכס סומן כנמסר ✓', 'success');
 }
@@ -6638,6 +6714,7 @@ function setStatusInline(id, newStatus, menu) {
   renderListings();
   renderOrders();
   updateOrdersBadge();
+  updateClosedOrdersBadge();
   if (currentListing && currentListing.id === id) {
     document.getElementById('panel-status-badge').innerHTML = `<span class="badge ${badgeClass(newStatus)}">${h(newStatus)}</span>`;
     renderPipeline(l);
@@ -7313,8 +7390,12 @@ function togglePaymentChip(id, field) {
   saveStore();
   renderOrders();
   updateOrdersBadge();
+  updateClosedOrdersBadge();
   if (currentListing && currentListing.id === id) {
     renderPaymentSection(l);
+  }
+  if (typeof currentPage !== 'undefined' && currentPage === 'closed-orders') {
+    renderClosedOrders();
   }
 
   const labels = { payReqSent: 'בקשה', paymentReceived: 'תשלום', receiptSent: 'קבלה' };
@@ -7515,6 +7596,7 @@ function createOrderFromCRM() {
   navigate('orders');
   renderOrders();
   updateOrdersBadge();
+  updateClosedOrdersBadge();
   toast('ההזמנה נוצרה! אשר אותה כדי ליצור נכס', 'success');
 }
 
@@ -8558,9 +8640,11 @@ function renderDroneKanban(listEl) {
 function renderOrders() {
   const pending = loadPendingBookings();
   const active  = store.orders.filter(o => ORDER_PIPELINE.includes(o.status));
+  const visibleActive = active.filter(o => !(o.status === 'נמסר' && o.receiptSent));
   const listEl  = document.getElementById('orders-list');
 
   updateOrdersBadge();
+  updateClosedOrdersBadge();
   _updateOrderTabCounts(pending, active);
 
   // Drone-only view — skip real-estate logic entirely
@@ -8569,7 +8653,7 @@ function renderOrders() {
     return;
   }
 
-  const { filteredPending, filteredActive } = _applyOrdersFilter(pending, active);
+  const { filteredPending, filteredActive } = _applyOrdersFilter(pending, visibleActive);
   const total = filteredPending.length + filteredActive.length;
   const showDrone = (_ordersType === 'all');
 
@@ -8743,6 +8827,7 @@ function approveBooking(id) {
     saveStore();
     renderOrders();
     updateOrdersBadge();
+  updateClosedOrdersBadge();
     console.log('[approveBooking] core flow complete — booking moved to active orders');
 
     // WhatsApp confirmation (optional, after core flow has succeeded)
@@ -8776,6 +8861,7 @@ function rejectBooking(id) {
   db.collection('bookings').doc(id).delete().catch(() => {});
   renderOrders();
   updateOrdersBadge();
+  updateClosedOrdersBadge();
 }
 
 function viewBooking(id) {
@@ -9111,6 +9197,214 @@ function switchArchiveTab(tab, btn) {
   document.getElementById('archive-panel-companies').style.display = tab === 'companies' ? '' : 'none';
 }
 
+// ── Closed Orders Archive ────────────────────────────────────────────
+function renderClosedOrders() {
+  const closed = store.listings.filter(l => l.status === 'נמסר' && l.receiptSent);
+  const filters = _getClosedOrdersFilters();
+  _renderClosedOrdersHeader(closed);
+  _renderClosedOrdersCards(closed, filters.year);
+  _renderClosedOrdersTable(closed, filters);
+}
+
+function _closedOrdersDate(l) {
+  if (l.receiptAt) return new Date(Number(l.receiptAt));
+  if (l.paymentAt) return new Date(Number(l.paymentAt));
+  if (l.created) {
+    const d = new Date(l.created);
+    if (!isNaN(d)) return d;
+  }
+  return null;
+}
+
+function _closedOrdersAggregates(closed, year, month) {
+  const now = new Date();
+  const thisM = now.getMonth();
+  const thisY = now.getFullYear();
+  const acc = { thisMonth: { count: 0, sum: 0 }, thisYear: { count: 0, sum: 0 }, total: { count: 0, sum: 0 } };
+  for (const l of closed) {
+    const price = +l.price || +l.paymentAmount || 0;
+    const d = _closedOrdersDate(l);
+    acc.total.count++;
+    acc.total.sum += price;
+    if (!d) continue;
+    if (d.getFullYear() === thisY && d.getMonth() === thisM) {
+      acc.thisMonth.count++;
+      acc.thisMonth.sum += price;
+    }
+    const yearForCard2 = (year != null) ? Number(year) : thisY;
+    if (d.getFullYear() === yearForCard2) {
+      acc.thisYear.count++;
+      acc.thisYear.sum += price;
+    }
+  }
+  return acc;
+}
+
+function _renderClosedOrdersHeader(closed) {
+  const el = document.getElementById('closed-orders-header');
+  if (!el) return;
+  const f = _getClosedOrdersFilters();
+  const years = [...new Set(closed.map(_closedOrdersDate).filter(Boolean).map(d => d.getFullYear()))].sort((a,b) => b - a);
+  const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const monthOpts = `<option value="">הכל</option>` + months.map((m, i) => `<option value="${i}" ${String(f.month) === String(i) ? 'selected' : ''}>${m}</option>`).join('');
+  const yearOpts = `<option value="">הכל</option>` + years.map(y => `<option value="${y}" ${String(f.year) === String(y) ? 'selected' : ''}>${y}</option>`).join('');
+  const searchVal = f.search ? h(f.search) : '';
+  el.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:14px 0;">
+      <h2 style="margin:0;font-size:20px;font-weight:700;flex:1;">📦 הזמנות סגורות</h2>
+      <input type="text" id="co-search" placeholder="חפש לפי כתובת או לקוח" value="${searchVal}" style="padding:7px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);min-width:200px;">
+      <select id="co-month" style="padding:7px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">${monthOpts}</select>
+      <select id="co-year"  style="padding:7px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">${yearOpts}</select>
+      <button id="co-clear" style="padding:7px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;">✕ נקה</button>
+    </div>`;
+  document.getElementById('co-search').addEventListener('input', e => _setClosedOrdersFilter('search', e.target.value));
+  document.getElementById('co-month').addEventListener('change',  e => _setClosedOrdersFilter('month', e.target.value));
+  document.getElementById('co-year').addEventListener('change',   e => _setClosedOrdersFilter('year', e.target.value));
+  document.getElementById('co-clear').addEventListener('click',   () => { localStorage.removeItem('photoDesk_closed_filters'); renderClosedOrders(); });
+}
+function _renderClosedOrdersCards(closed, year) {
+  const el = document.getElementById('closed-orders-aggregates');
+  if (!el) return;
+  const agg = _closedOrdersAggregates(closed, year, null);
+  const card = (title, count, sum, sub) => `
+    <div class="closed-orders-card">
+      <div class="co-card-title">${title}</div>
+      <div class="co-card-value">${count} ${count === 1 ? 'הזמנה' : 'הזמנות'}</div>
+      <div class="co-card-sub">₪${sum.toLocaleString('he-IL')}${sub ? ' · ' + sub : ''}</div>
+    </div>`;
+  el.innerHTML = `
+    <div class="closed-orders-aggregates">
+      ${card('החודש',  agg.thisMonth.count, agg.thisMonth.sum, '')}
+      ${card('השנה',   agg.thisYear.count,  agg.thisYear.sum,  String(year || new Date().getFullYear()))}
+      ${card('סה"כ',  agg.total.count,     agg.total.sum,     '')}
+    </div>`;
+}
+function _renderClosedOrdersTable(closed, filters) {
+  const el = document.getElementById('closed-orders-table-wrap');
+  if (!el) return;
+  const term = (filters.search || '').toLowerCase().trim();
+  const month = filters.month != null && filters.month !== '' ? Number(filters.month) : null;
+  const year = filters.year != null && filters.year !== '' ? Number(filters.year) : null;
+
+  const filtered = closed.filter(l => {
+    if (year != null || month != null) {
+      const d = _closedOrdersDate(l);
+      if (!d) return false;
+      if (year != null && d.getFullYear() !== year) return false;
+      if (month != null && d.getMonth() !== month) return false;
+    }
+    if (term) {
+      const cust = store.customers.find(c => c.id === l.customer);
+      const custName = cust ? `${cust.first || ''} ${cust.last || ''}`.toLowerCase() : '';
+      const blob = `${(l.address || '').toLowerCase()} ${(l.city || '').toLowerCase()} ${custName} ${(l.customer || '').toLowerCase()}`;
+      if (!blob.includes(term)) return false;
+    }
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    const da = _closedOrdersDate(a) || new Date(0);
+    const db = _closedOrdersDate(b) || new Date(0);
+    return db - da;
+  });
+
+  if (filtered.length === 0) {
+    el.innerHTML = `
+      <div class="empty-state" style="padding:30px 20px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">📭</div>
+        <div style="color:var(--text-muted);">אין הזמנות סגורות בתקופה זו</div>
+        <button onclick="localStorage.removeItem('photoDesk_closed_filters');renderClosedOrders();" style="margin-top:14px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;">הצג הכל</button>
+      </div>`;
+    return;
+  }
+
+  const fmt = ts => ts ? new Date(Number(ts)).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' }) : '—';
+  const rows = filtered.map(l => {
+    const cust = store.customers.find(c => c.id === l.customer);
+    const custName = cust ? h(`${cust.first || ''} ${cust.last || ''}`.trim()) : '—';
+    const services = h(l.pkg || '—');
+    const shootDate = l.shootDate ? new Date(l.shootDate).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' }) : '—';
+    const price = (+l.price || +l.paymentAmount || 0).toLocaleString('he-IL');
+    return `
+      <tr>
+        <td>
+          <div>${h(l.address || '')}${l.city ? ', ' + h(l.city) : ''}</div>
+          <div class="co-row-sub">💰 שולם ${fmt(l.paymentAt)} · 📄 קבלה ${fmt(l.receiptAt)}</div>
+        </td>
+        <td>${custName}</td>
+        <td>${services}</td>
+        <td>${shootDate}</td>
+        <td>₪${price}</td>
+        <td>
+          <div class="closed-orders-actions">
+            <button onclick="unarchiveOrder('${h(l.id)}')" title="החזרה לפעיל">🔙</button>
+            <button onclick="openListing('${h(l.id)}')" title="פתח פרטים">פתח</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <table class="closed-orders-table">
+      <thead>
+        <tr>
+          <th>🏠 כתובת</th>
+          <th>👤 לקוח</th>
+          <th>🛠 שירותים</th>
+          <th>📅 צילום</th>
+          <th>₪ סכום</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function unarchiveOrder(id) {
+  const l = store.listings.find(x => x.id === id);
+  if (!l) { console.warn('[unarchiveOrder] listing not found', id); return; }
+  l.receiptSent = false;
+  l.receiptAt = null;
+  _syncListingToOrder(l);
+  saveStore();
+  renderOrders();
+  if (currentPage === 'closed-orders') renderClosedOrders();
+  updateClosedOrdersBadge();
+  toast('הזמנה הוחזרה לפעיל', 'success');
+}
+
+function updateClosedOrdersBadge() {
+  const badge = document.getElementById('closed-orders-badge');
+  if (!badge) return;
+  const closed = store.listings.filter(l => l.status === 'נמסר' && l.receiptSent);
+  const now = new Date();
+  const thisMonth = closed.filter(l => {
+    const d = _closedOrdersDate(l);
+    return d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+  if (thisMonth > 0) {
+    badge.textContent = thisMonth;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.textContent = '';
+    badge.style.display = 'none';
+  }
+}
+
+function _getClosedOrdersFilters() {
+  try {
+    return JSON.parse(localStorage.getItem('photoDesk_closed_filters') || '{}');
+  } catch { return {}; }
+}
+
+function _setClosedOrdersFilter(field, value) {
+  const f = _getClosedOrdersFilters();
+  if (value == null || value === '') delete f[field];
+  else f[field] = value;
+  localStorage.setItem('photoDesk_closed_filters', JSON.stringify(f));
+  renderClosedOrders();
+}
+
 function renderArchive() {
   const a = store.archive || {};
   _renderArchivePanel('listings',  a.listings  || []);
@@ -9404,6 +9698,7 @@ async function _initApp() {
   navigate('dashboard');
   renderCalendar();
   updateOrdersBadge();
+  updateClosedOrdersBadge();
 
   // Real-time listener: new bookings from agents appear instantly
   window._bookingsUnsub = db.collection('bookings').where('status', '==', 'pending')
@@ -9416,6 +9711,7 @@ async function _initApp() {
       window._pendingBookings = [...fsBookings, ...localOnly];
       if (currentPage === 'orders') renderOrders();
       updateOrdersBadge();
+  updateClosedOrdersBadge();
     }, err => console.warn('Firestore listener error:', err));
 
   window._droneUnsub = db.collection('drone_orders')
