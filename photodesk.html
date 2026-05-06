@@ -1403,6 +1403,12 @@
   .kanban-card.overdue {
     border-right: 3px solid #EF4444;
   }
+  /* Kanban drag-drop visual states */
+  .sortable-ghost { opacity: 0.4; background: var(--surface2); border: 2px dashed var(--accent); }
+  .sortable-drag  { opacity: 0.9; cursor: grabbing; }
+  .kanban-col[data-status] { min-height: 100px; }
+  .kanban-card[data-listing-id] { cursor: grab; }
+  .kanban-card[data-listing-id]:active { cursor: grabbing; }
   .overdue-badge {
     display: inline-block;
     background: #FEE2E2;
@@ -3415,6 +3421,7 @@
               <label class="dchip"><input type="checkbox" id="panel-invoice-sent"> 🧾 חשבונית</label>
             </div>
             <div id="panel-payment-pipeline" style="margin-top:12px;"></div>
+            <div id="panel-status-log" style="margin-top:12px;"></div>
           </div>
           <div class="psidebar-section">
             <div class="psidebar-title">📁 Google Drive</div>
@@ -4715,7 +4722,9 @@ function bulkSetStatus(newStatus) {
   ids.forEach(id => {
     const l = store.listings.find(x => x.id === id);
     if (!l) return;
+    const _oldStatus = l.status;
     l.status = newStatus;
+    _appendStatusLog(l, _oldStatus, newStatus, 'manual-button');
     if (ORDER_PIPELINE.includes(newStatus)) {
       const o = _ensureOrder(l);
       o.status = newStatus;
@@ -5188,6 +5197,8 @@ function openListing(id) {
   document.getElementById('listing-panel').classList.add('open');
   document.getElementById('panel-overlay').classList.add('open');
   renderPaymentSection(currentListing);
+  const _logEl = document.getElementById('panel-status-log');
+  if (_logEl) _logEl.innerHTML = _renderStatusLog(currentListing);
 }
 
 function closePanel() {
@@ -6631,7 +6642,7 @@ function closeSvcTagPopup() {
 }
 
 /* ── INLINE STATUS CHANGE ─────────── */
-const ALL_STATUSES = ['ממתין לאישור','מתוכנן','צולם','בעיבוד','ממתין למסירה','נמסר','בוטל'];
+const ALL_STATUSES = ['ממתין לאישור','מתוכנן','צולם','בעיבוד','ממתין למסירה','נמסר','בוטל','הוחזר ללקוח'];
 
 function showStatusMenu(id, el, event) {
   event.stopPropagation();
@@ -6702,6 +6713,7 @@ function setStatusInline(id, newStatus, menu) {
   const old = l.status;
   if (old === newStatus) { menu && menu.remove(); return; }
   l.status = newStatus;
+  _appendStatusLog(l, old, newStatus, 'manual-button');
   // Sync to orders: create order if entering pipeline, update status if already there
   if (ORDER_PIPELINE.includes(newStatus)) {
     const o = _ensureOrder(l);
@@ -7345,6 +7357,240 @@ function deletePromotion(id) {
 //  ORDERS — INDEPENDENT FROM LISTINGS
 // ══════════════════════════════════════════════════
 const ORDER_PIPELINE = ['ממתין לאישור','מתוכנן','צולם','בעיבוד','ממתין למסירה','נמסר'];
+
+// Kanban drag-drop + status management (spec: 2026-05-01-kanban-drag-drop-status-management-design.md)
+const ORDER_STATUSES = [
+  { id: 'ממתין לאישור',  label: '⏳ ממתין',       color: '#F59E0B', isTerminal: false, archive: false },
+  { id: 'מתוכנן',         label: '📅 מתוכנן',      color: '#3B82F6', isTerminal: false, archive: false },
+  { id: 'צולם',           label: '📷 צולם',         color: '#8B5CF6', isTerminal: false, archive: false },
+  { id: 'בעיבוד',         label: '⚙️ בעיבוד',       color: '#EC4899', isTerminal: false, archive: false },
+  { id: 'ממתין למסירה',   label: '📦 ממתין מסירה',  color: '#F97316', isTerminal: false, archive: false },
+  { id: 'נמסר',           label: '✅ נמסר',         color: '#10B981', isTerminal: true,  archive: false },
+  { id: 'בוטל',           label: '❌ בוטל',          color: '#6B7280', isTerminal: true,  archive: true  },
+  { id: 'הוחזר ללקוח',    label: '↩️ הוחזר',         color: '#EF4444', isTerminal: true,  archive: true  },
+];
+
+const RISKY_TRANSITIONS = {
+  'נמסר→מתוכנן':       'נמסר → מתוכנן יאפס סטטוס תשלום ותאריך מסירה. אישור?',
+  'נמסר→צולם':         'הזמנה נמסרה. החזרת סטטוס לצולם תאפס מסירה. אישור?',
+  'בוטל→מתוכנן':       'הזמנה בוטלה. שחזור יחזיר אותה לתהליך. אישור?',
+  'הוחזר ללקוח→מתוכנן': 'הזמנה הוחזרה ללקוח. שחזור יחזיר לתהליך. אישור?',
+};
+
+const WA_TEMPLATES = {
+  cancel: (clientName, address) =>
+    `שלום ${clientName} 👋\nההזמנה שלך לצילום ב${address} בוטלה.\nאם זו טעות — צור איתי קשר.\nתודה.`,
+  return: (clientName, address) =>
+    `שלום ${clientName} 👋\nלצערי לא אוכל לצלם את הנכס ב${address} בתאריך שתואם.\nאשמח לתאם תאריך אחר או להמליץ על צלם נוסף.\nתודה על ההבנה.`,
+};
+
+function _initOrderSortable(boardEl) {
+  if (!boardEl || typeof Sortable === 'undefined') {
+    if (typeof Sortable === 'undefined') console.warn('[Kanban] Sortable.js not loaded — drag disabled');
+    return;
+  }
+  const cols = boardEl.querySelectorAll('.kanban-col[data-status]');
+  cols.forEach(col => {
+    Sortable.create(col, {
+      group: 'orders',
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag',
+      filter: '.kanban-col-header, .kanban-empty',
+      preventOnFilter: false,
+      onEnd: (evt) => {
+        const item = evt.item;
+        const fromCol = evt.from.getAttribute('data-status');
+        const toCol = evt.to.getAttribute('data-status');
+        const listingId = item.getAttribute('data-listing-id');
+        if (!listingId || !fromCol || !toCol) return;
+        if (fromCol === toCol) return;
+        _handleStatusDrag(listingId, fromCol, toCol);
+      }
+    });
+  });
+}
+
+async function _handleStatusDrag(listingId, fromStatus, toStatus) {
+  if (fromStatus === toStatus) return;
+  const listing = store.listings.find(x => x.id === listingId);
+  if (!listing) {
+    console.warn('[_handleStatusDrag] listing not found', listingId);
+    renderOrders();
+    return;
+  }
+
+  const targetMeta = ORDER_STATUSES.find(s => s.id === toStatus);
+  const isTerminal = !!(targetMeta && targetMeta.isTerminal && targetMeta.archive);
+
+  // Risky transition warning (browser confirm)
+  const okRisky = await _confirmTransition(fromStatus, toStatus);
+  if (!okRisky) {
+    renderOrders();
+    return;
+  }
+
+  // Terminal modal for cancel/return
+  let waSend = false;
+  let reason = '';
+  if (isTerminal) {
+    const result = await _terminalActionModal(listingId, toStatus);
+    if (!result.confirmed) {
+      renderOrders();
+      return;
+    }
+    waSend = result.sendWA;
+    reason = result.reason || '';
+  }
+
+  // Apply mutation
+  listing.status = toStatus;
+  if (reason) listing.statusReason = reason;
+  _appendStatusLog(listing, fromStatus, toStatus, 'kanban-drag');
+
+  // Sync to order entry
+  if (typeof _syncListingToOrder === 'function') _syncListingToOrder(listing);
+
+  // Save + re-render
+  try {
+    saveStore();
+  } catch (err) {
+    console.error('[_handleStatusDrag] saveStore failed', err);
+    toast('שגיאה בשמירה — בדוק חיבור', 'error');
+  }
+
+  renderOrders();
+  updateOrdersBadge();
+  if (typeof updateClosedOrdersBadge === 'function') updateClosedOrdersBadge();
+
+  // Send WhatsApp if requested
+  if (isTerminal && waSend) {
+    const customer = listing.customer ? store.customers.find(c => c.id === listing.customer) : null;
+    const kind = toStatus === 'הוחזר ללקוח' ? 'return' : 'cancel';
+    _sendStatusWhatsApp(listing, customer, kind);
+  }
+
+  toast('סטטוס עודכן ✓', 'success');
+}
+
+function _confirmTransition(from, to) {
+  const key = `${from}→${to}`;
+  const warning = RISKY_TRANSITIONS[key];
+  if (!warning) return Promise.resolve(true);
+  return new Promise(resolve => {
+    if (window.confirm(warning)) resolve(true);
+    else resolve(false);
+  });
+}
+
+function _terminalActionModal(listingId, targetStatus) {
+  const listing = store.listings.find(x => x.id === listingId);
+  const customer = listing && listing.customer
+    ? store.customers.find(c => c.id === listing.customer)
+    : null;
+  const hasPhone = !!(customer && customer.phone);
+  const isReturn = targetStatus === 'הוחזר ללקוח';
+  const titleText = isReturn ? '↩️ החזרה ללקוח' : '❌ ביטול הזמנה';
+  const waDefault = isReturn;
+
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:var(--surface);color:var(--text);padding:20px;border-radius:12px;max-width:400px;width:90%;border:1px solid var(--border);';
+    modal.innerHTML = `
+      <h3 style="margin:0 0 12px 0;font-size:16px;font-weight:700;">${h(titleText)}</h3>
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">סיבה (אופציונלי)</label>
+      <textarea id="_term-reason" rows="3" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;margin-bottom:12px;resize:vertical;"></textarea>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;${hasPhone ? '' : 'opacity:0.5;'}">
+        <input type="checkbox" id="_term-wa" ${waDefault && hasPhone ? 'checked' : ''} ${hasPhone ? '' : 'disabled'}>
+        <span>שלח WhatsApp ללקוח${hasPhone ? '' : ' (אין טלפון)'}</span>
+      </label>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+        <button id="_term-cancel" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;">ביטול</button>
+        <button id="_term-confirm" style="padding:8px 16px;border-radius:8px;border:none;background:#EF4444;color:#fff;cursor:pointer;font-weight:600;">אשר</button>
+      </div>`;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    const close = (result) => {
+      document.body.removeChild(overlay);
+      resolve(result);
+    };
+    modal.querySelector('#_term-cancel').addEventListener('click', () => close({ confirmed: false }));
+    modal.querySelector('#_term-confirm').addEventListener('click', () => close({
+      confirmed: true,
+      sendWA: !!(modal.querySelector('#_term-wa').checked && hasPhone),
+      reason: modal.querySelector('#_term-reason').value.trim()
+    }));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close({ confirmed: false }); });
+  });
+}
+
+function _appendStatusLog(listing, from, to, by) {
+  if (!listing) return;
+  if (!Array.isArray(listing.statusLog)) listing.statusLog = [];
+  if (from === to) return;
+  listing.statusLog.push({
+    from: String(from || ''),
+    to: String(to || ''),
+    at: new Date().toISOString(),
+    by: by || 'system'
+  });
+}
+
+function _sendStatusWhatsApp(listing, customer, kind) {
+  if (!customer || !customer.phone) return false;
+  const tpl = WA_TEMPLATES[kind];
+  if (!tpl) return false;
+  const clientName = (customer.first || '') + (customer.last ? ' ' + customer.last : '');
+  const address = (listing.address || '') + (listing.city ? ', ' + listing.city : '');
+  const msg = tpl(clientName.trim() || 'לקוח', address.trim() || 'הנכס');
+  const digits = String(customer.phone).replace(/[^0-9]/g, '');
+  const waPhone = digits.startsWith('972') ? digits : '972' + digits.replace(/^0/, '');
+  const url = `https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+  return true;
+}
+
+function _renderStatusLog(listing) {
+  const log = (listing && Array.isArray(listing.statusLog)) ? listing.statusLog : [];
+  if (log.length === 0) {
+    return `<div style="color:var(--text-muted);font-size:12px;padding:8px 0;">אין היסטוריית סטטוסים</div>`;
+  }
+  const reversed = [...log].reverse();
+  const fmt = (iso) => {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' })
+           + ' ' + d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+    } catch { return iso; }
+  };
+  const byLabel = (by) => ({
+    'kanban-drag':   '🖐 גרירה',
+    'manual-button': '🖱 לחיצה',
+    'system':        '⚙️ מערכת',
+  })[by] || by;
+  const items = reversed.map(e => `
+    <div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <div><strong>${h(e.from || '—')}</strong> → <strong>${h(e.to || '—')}</strong></div>
+      <div style="color:var(--text-muted);font-size:11px;">${fmt(e.at)} · ${byLabel(e.by)}</div>
+    </div>`).join('');
+  return `
+    <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px;">📋 היסטוריית סטטוסים</div>
+      ${items}
+    </div>`;
+}
+
+function _toggleArchiveColumns() {
+  if (!store.settings) store.settings = {};
+  store.settings.showArchive = !store.settings.showArchive;
+  saveStore();
+  renderOrders();
+  toast(store.settings.showArchive ? 'ארכיון מוצג ✓' : 'ארכיון מוסתר ✓', 'success');
+}
 
 // Payment pipeline (post-delivery tracking)
 const OVERDUE_DAYS_DEFAULT = 7;
@@ -8683,21 +8929,44 @@ function renderOrders() {
     }
     listEl.innerHTML = '';
   } else {
-    const columns = [
-      { key:'ממתין לאישור', label:'⏳ ממתין לאישור', color:'#F59E0B', isPending:true,  cards: filteredPending },
-      { key:'מתוכנן',       label:'📅 מתוכנן',       color:'#8B5CF6', isPending:false, cards: filteredActive.filter(o=>o.status==='מתוכנן') },
-      { key:'צולם',         label:'📸 צולם',          color:'#2563EB', isPending:false, cards: filteredActive.filter(o=>o.status==='צולם') },
-      { key:'בעיבוד',       label:'⚙️ בעיבוד',        color:'#3B82F6', isPending:false, cards: filteredActive.filter(o=>o.status==='בעיבוד') },
-      { key:'ממתין למסירה', label:'🚀 ממתין למסירה', color:'#EF4444', isPending:false, cards: filteredActive.filter(o=>o.status==='ממתין למסירה') },
-      { key:'נמסר',         label:'✅ נמסר',          color:'#10B981', isPending:false, cards: filteredActive.filter(o=>o.status==='נמסר') },
-    ];
+    const showArchive = !!(store.settings && store.settings.showArchive);
+    const visibleStatuses = ORDER_STATUSES.filter(s => showArchive || !s.archive);
+    const columns = visibleStatuses.map(s => ({
+      key:       s.id,
+      label:     s.label,
+      color:     s.color,
+      isPending: s.id === 'ממתין לאישור',
+      cards:     s.id === 'ממתין לאישור'
+                   ? filteredPending
+                   : filteredActive.filter(o => o.status === s.id),
+    }));
     const colsHtml = columns.map(col => {
       const cardsHtml = col.cards.length
         ? col.cards.map(c => col.isPending ? _buildPendingCard(c) : _buildActiveOrderCard(c)).join('')
         : '<div class="kanban-empty">אין הזמנות</div>';
-      return `<div class="kanban-col"><div class="kanban-col-header" style="border-color:${col.color};color:${col.color};">${col.label}<span class="kanban-col-count" style="background:${col.color};">${col.cards.length}</span></div>${cardsHtml}</div>`;
+      return `<div class="kanban-col" data-status="${h(col.key)}"><div class="kanban-col-header" style="border-color:${col.color};color:${col.color};">${col.label}<span class="kanban-col-count" style="background:${col.color};">${col.cards.length}</span></div>${cardsHtml}</div>`;
     }).join('');
     listEl.innerHTML = `<div class="kanban-board" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">${colsHtml}</div>`;
+    const boardEl = listEl.querySelector('.kanban-board');
+
+    // Archive toggle button — inject into orders toolbar (idempotent)
+    const _archiveBtnExisting = document.getElementById('btn-toggle-archive');
+    const _archiveBtnLabel = (store.settings && store.settings.showArchive) ? '🗄️ ארכיון מוצג' : '🗄️ הצג ארכיון';
+    if (_archiveBtnExisting) {
+      _archiveBtnExisting.textContent = _archiveBtnLabel;
+    } else {
+      const toolbarEl = document.querySelector('.orders-tabs') || (listEl && listEl.parentElement);
+      if (toolbarEl) {
+        const btn = document.createElement('button');
+        btn.id = 'btn-toggle-archive';
+        btn.onclick = _toggleArchiveColumns;
+        btn.style.cssText = 'padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:12px;margin-inline-start:8px;';
+        btn.textContent = _archiveBtnLabel;
+        toolbarEl.appendChild(btn);
+      }
+    }
+
+    if (boardEl) _initOrderSortable(boardEl);
   }
 
   // In 'all' mode append drone kanban below real-estate kanban
@@ -8994,11 +9263,16 @@ function toggleOrderDelivery(id, field) {
 }
 
 function advanceStatus(listingId, newStatus) {
+  const _existingListing = store.listings.find(x => x.id === listingId);
+  const _oldStatusOnListing = _existingListing ? _existingListing.status : null;
   const o = store.orders.find(x => x.id === listingId);
   if (o) o.status = newStatus;
   _syncOrderToListing(o || { id: listingId, status: newStatus });
   const l = store.listings.find(x => x.id === listingId);
-  if (l) l.status = newStatus;
+  if (l) {
+    l.status = newStatus;
+    _appendStatusLog(l, _oldStatusOnListing, newStatus, 'manual-button');
+  }
   saveStore();
   renderOrders();
   renderListings();
@@ -9888,6 +10162,7 @@ function _renderDriveSection(l) {
 </script>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <!-- COMMAND PALETTE -->
 <div id="cmd-overlay" class="cmd-overlay" style="display:none;" onclick="if(event.target===this)closeCmdPalette()">
