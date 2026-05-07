@@ -134,24 +134,40 @@
   <div id="map"></div>
 </div>
 
-<script>
-// Decode data from URL hash (#d=<base64-url-safe>). Хранит шаблон чистым — данные клиентов только в URL пользователя.
-function loadFromHash() {
-  if (!location.hash) return null;
-  const m = location.hash.match(/[#&]d=([^&]+)/);
-  if (!m) return null;
-  try {
-    const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
-    const decoded = decodeURIComponent(escape(atob(padded)));
-    return JSON.parse(decoded);
-  } catch (e) {
-    console.error('Hash decode error:', e);
-    return null;
-  }
+<script type="module">
+// Decode data from URL hash. Поддерживает #z= (gzipped+base64-url) и #d= (raw base64-url).
+function b64UrlToBytes(b64url) {
+  const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
+  const bin = atob(padded);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
 }
 
-const _payload = loadFromHash();
+async function loadFromHash() {
+  if (!location.hash) return null;
+  const mz = location.hash.match(/[#&]z=([^&]+)/);
+  if (mz && typeof DecompressionStream !== 'undefined') {
+    try {
+      const bytes = b64UrlToBytes(mz[1]);
+      const stream = new Response(bytes).body.pipeThrough(new DecompressionStream('gzip'));
+      const text = await new Response(stream).text();
+      return JSON.parse(text);
+    } catch (e) { console.error('z hash decode error:', e); }
+  }
+  const md = location.hash.match(/[#&]d=([^&]+)/);
+  if (md) {
+    try {
+      const bytes = b64UrlToBytes(md[1]);
+      const text = new TextDecoder('utf-8').decode(bytes);
+      return JSON.parse(text);
+    } catch (e) { console.error('d hash decode error:', e); }
+  }
+  return null;
+}
+
+const _payload = await loadFromHash();
 if (!_payload) {
   const wrap = document.createElement('div');
   wrap.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#1a1a1a;color:#eee;font-family:sans-serif;text-align:center;padding:24px;direction:rtl';
