@@ -2,8 +2,15 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0">
-<title>מפת צילומים — 8.5.2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, viewport-fit=cover">
+<title>מפת צילומים — Road Planner</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1976d2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Road Planner">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231976d2'/%3E%3Ctext y='.9em' x='12' font-size='80'%3E📷%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -37,13 +44,31 @@
   .task .actions a.govmap { background: #d32f2f; }
   .task .notes { font-size: 11px; color: #ffb74d; background: rgba(255,183,77,0.1); padding: 6px 8px; border-radius: 4px; margin: 8px 0 0 36px; }
   .task.no-coord .num { background: #9c27b0; }
+  .task.done { opacity: 0.45; }
+  .task.done .name { text-decoration: line-through; }
+  .task.done .num { background: #4caf50; }
+  .task .check {
+    margin-right: auto; background: transparent; border: 2px solid #555; color: #aaa;
+    width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .task .check:hover { border-color: #4caf50; color: #4caf50; }
+  .task.done .check { background: #4caf50; border-color: #4caf50; color: white; }
+  .task.current { border-color: #1976d2; box-shadow: 0 0 0 2px rgba(25,118,210,0.3); }
   .task.home { background: #ff5722; border-color: #ff5722; cursor: default; }
   .task.home .num { background: white; color: #ff5722; }
   .task.home .name { color: white; }
   #map { flex: 1; height: 100%; }
-  .num-marker { background: #1976d2; color: white; border: 3px solid white; border-radius: 50%; width: 36px !important; height: 36px !important; line-height: 30px; text-align: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+  .num-marker { background: #1976d2; color: white; border: 3px solid white; border-radius: 50%; width: 36px !important; height: 36px !important; line-height: 30px; text-align: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.6); transition: transform 0.2s; }
   .num-marker.home { background: #ff5722; }
   .num-marker.no-coord { background: #9c27b0; font-size: 11px; }
+  .num-marker.done { background: #4caf50; opacity: 0.6; }
+  .num-marker.current { background: #ff9800; transform: scale(1.2); animation: rp-pulse 1.6s infinite; }
+  @keyframes rp-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255,152,0,0.6), 0 2px 6px rgba(0,0,0,0.6); }
+    70%  { box-shadow: 0 0 0 16px rgba(255,152,0,0), 0 2px 6px rgba(0,0,0,0.6); }
+    100% { box-shadow: 0 0 0 0 rgba(255,152,0,0), 0 2px 6px rgba(0,0,0,0.6); }
+  }
   .leaflet-popup-content { font-size: 13px; min-width: 220px; direction: rtl; text-align: right; color: #222; }
   .leaflet-popup-content h3 { margin: 0 0 6px; font-size: 14px; color: #1976d2; }
   .popup-actions { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
@@ -143,6 +168,26 @@ if (!_payload) {
 const HOME = _payload.home || { lat: 32.5714, lng: 34.9536, name: 'בית' };
 const TASKS = _payload.tasks || [];
 
+// === Persistence (localStorage, keyed by date) ===
+const TODAY = new Date().toISOString().slice(0, 10);
+const STATE_KEY = 'rp_state_' + TODAY;
+let savedState = {};
+try { savedState = JSON.parse(localStorage.getItem(STATE_KEY) || '{}'); } catch(e) {}
+const doneSet = new Set(Array.isArray(savedState.done) ? savedState.done : []);
+function saveState() {
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify({
+      order: order.map(t => t.id),
+      done: Array.from(doneSet),
+      ts: Date.now()
+    }));
+  } catch(e) { console.warn('saveState failed', e); }
+}
+function clearTodayState() {
+  localStorage.removeItem(STATE_KEY);
+  doneSet.clear();
+}
+
 function dist(a, b) { const dy = a.lat - b.lat, dx = a.lng - b.lng; return Math.sqrt(dy*dy + dx*dx); }
 // WGS84 → ITM (Israel Transverse Mercator, EPSG:2039), линейная аппроксимация для региона ИЛ
 function wgsToItm(lat, lng) {
@@ -163,7 +208,16 @@ function defaultOrder() {
   return [...TASKS].sort((a, b) => dist(HOME, b) - dist(HOME, a));
 }
 
-let order = defaultOrder();
+function restoreOrder() {
+  // Восстановить порядок из localStorage если есть, иначе defaultOrder
+  if (Array.isArray(savedState.order) && savedState.order.length === TASKS.length) {
+    const restored = savedState.order.map(id => TASKS.find(t => t.id === id)).filter(Boolean);
+    if (restored.length === TASKS.length) return restored;
+  }
+  return defaultOrder();
+}
+
+let order = restoreOrder();
 
 const googleHybrid = L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&hl=iw', { attribution: '© Google', subdomains: ['0','1','2','3'], maxZoom: 21, maxNativeZoom: 20 });
 const googleSat = L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { attribution: '© Google', subdomains: ['0','1','2','3'], maxZoom: 21, maxNativeZoom: 20 });
@@ -241,18 +295,38 @@ TASKS.forEach(t => {
 let routeLine;
 let routeReqId = 0;
 
+function activeOrder() {
+  // Только не-выполненные, в текущем порядке
+  return order.filter(t => !doneSet.has(t.id));
+}
+
 function renumberMarkers() {
-  order.forEach((t, i) => {
-    const cls = t.polygon ? 'num-marker no-coord' : 'num-marker';
-    markers[t.id].setIcon(L.divIcon({ className: cls, html: String(i + 1), iconSize: [36, 36] }));
+  const active = activeOrder();
+  // Build position lookup: 1..N для активных, "✓" для выполненных
+  const posOf = {};
+  active.forEach((t, i) => { posOf[t.id] = String(i + 1); });
+  order.forEach(t => {
+    let cls = t.polygon ? 'num-marker no-coord' : 'num-marker';
+    let html;
+    if (doneSet.has(t.id)) { cls += ' done'; html = '✓'; }
+    else if (active[0] && t.id === active[0].id) { cls += ' current'; html = posOf[t.id]; }
+    else { html = posOf[t.id]; }
+    markers[t.id].setIcon(L.divIcon({ className: cls, html, iconSize: [36, 36] }));
   });
 }
 
 async function drawRoute() {
   renumberMarkers();
   if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
-  const waypoints = [HOME, ...order, HOME];
+  const active = activeOrder();
+  const waypoints = [HOME, ...active, HOME];
   const stats = document.getElementById('route-stats');
+
+  if (active.length === 0) {
+    stats.textContent = 'כל המשימות הושלמו ✓';
+    stats.style.color = '#8bc34a';
+    return;
+  }
 
   // Show straight dashed lines while loading (так удобно если OSRM упадёт)
   const straightPts = waypoints.map(p => [p.lat, p.lng]);
@@ -288,21 +362,40 @@ async function drawRoute() {
   }
 }
 
-function makeTaskLi(t, num) {
+function toggleDone(taskId) {
+  if (doneSet.has(taskId)) doneSet.delete(taskId);
+  else doneSet.add(taskId);
+  saveState();
+  renderList();
+  drawRoute();
+  updateNextBanner();
+}
+
+function makeTaskLi(t, num, isCurrent) {
   const li = document.createElement('li');
-  li.className = 'task' + (t.polygon ? ' no-coord' : '');
+  let cls = 'task';
+  if (t.polygon) cls += ' no-coord';
+  if (doneSet.has(t.id)) cls += ' done';
+  else if (isCurrent) cls += ' current';
+  li.className = cls;
   li.dataset.id = t.id;
 
   const top = document.createElement('div');
   top.className = 'top';
   const numEl = document.createElement('div');
   numEl.className = 'num';
-  numEl.textContent = String(num);
+  numEl.textContent = doneSet.has(t.id) ? '✓' : String(num);
   const nameEl = document.createElement('div');
   nameEl.className = 'name';
   nameEl.textContent = t.name;
+  const checkBtn = document.createElement('button');
+  checkBtn.className = 'check';
+  checkBtn.textContent = doneSet.has(t.id) ? '✓' : '○';
+  checkBtn.title = 'סמן כבוצע';
+  checkBtn.addEventListener('click', e => { e.stopPropagation(); toggleDone(t.id); });
   top.appendChild(numEl);
   top.appendChild(nameEl);
+  top.appendChild(checkBtn);
   li.appendChild(top);
 
   const meta = document.createElement('div');
@@ -360,7 +453,20 @@ function renderList() {
   homeTop.appendChild(homeName);
   homeLi.appendChild(homeTop);
   list.appendChild(homeLi);
-  order.forEach((t, i) => list.appendChild(makeTaskLi(t, i + 1)));
+
+  // Активные сверху (с нумерацией 1..N), выполненные внизу
+  const active = order.filter(t => !doneSet.has(t.id));
+  const done = order.filter(t => doneSet.has(t.id));
+  active.forEach((t, i) => list.appendChild(makeTaskLi(t, i + 1, i === 0)));
+  done.forEach(t => list.appendChild(makeTaskLi(t, 0, false)));
+
+  // Прогресс-индикатор
+  const stats0 = document.querySelector('#header .stats');
+  if (stats0) {
+    const total = TASKS.length;
+    const doneCount = doneSet.size;
+    stats0.textContent = `✓ ${doneCount}/${total} · נותרו ${total - doneCount} · גרור לשינוי סדר`;
+  }
 }
 
 function initSortable() {
@@ -374,7 +480,8 @@ function initSortable() {
     onMove: evt => evt.related.className.indexOf('home') === -1,
     onEnd: () => {
       const ids = Array.from(list.querySelectorAll('.task:not(.home)')).map(el => el.dataset.id);
-      order = ids.map(id => TASKS.find(t => t.id === id));
+      order = ids.map(id => TASKS.find(t => t.id === id)).filter(Boolean);
+      saveState();
       renderList();
       drawRoute();
       updateNextBanner();
@@ -383,11 +490,20 @@ function initSortable() {
 }
 
 function updateNextBanner() {
-  const next = order[0];
-  if (!next) return;
+  const active = order.filter(t => !doneSet.has(t.id));
+  const next = active[0];
+  const banner = document.getElementById('next-banner');
+  if (!next) {
+    document.getElementById('next-num').textContent = '✓';
+    document.getElementById('next-name').textContent = 'כל המשימות הושלמו';
+    document.getElementById('next-waze').style.display = 'none';
+    return;
+  }
   document.getElementById('next-num').textContent = '1';
   document.getElementById('next-name').textContent = next.name;
-  document.getElementById('next-waze').href = wazeUrl(next);
+  const wz = document.getElementById('next-waze');
+  wz.href = wazeUrl(next);
+  wz.style.display = '';
 }
 
 // Bottom sheet toggle on mobile
@@ -412,7 +528,10 @@ handle.addEventListener('touchmove', e => {
 });
 
 document.getElementById('btn-reset').addEventListener('click', () => {
+  if (doneSet.size > 0 && !confirm('לאפס סדר ולמחוק סימוני בוצע?')) return;
+  doneSet.clear();
   order = defaultOrder();
+  saveState();
   renderList();
   drawRoute();
   updateNextBanner();
@@ -430,6 +549,15 @@ initSortable();
 updateNextBanner();
 const all = [HOME, ...TASKS];
 map.fitBounds(L.latLngBounds(all.map(p => [p.lat, p.lng])), { padding: [40, 40] });
+
+// Service Worker registration (PWA / offline)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log('[SW] registered', reg.scope))
+      .catch(err => console.warn('[SW] register failed', err));
+  });
+}
 </script>
 </body>
 </html>
