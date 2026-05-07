@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0">
+<title>מפת צילומים — 8.5.2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: -apple-system, "Heebo", sans-serif; background: #1a1a1a; color: #eee; }
+  #app { display: flex; height: 100vh; }
+  #sidebar { width: 360px; background: #222; border-left: 1px solid #444; display: flex; flex-direction: column; }
+  #header { padding: 12px 16px; background: #2a2a2a; border-bottom: 1px solid #444; }
+  #header h1 { margin: 0 0 6px; font-size: 16px; }
+  #header .stats { font-size: 12px; color: #aaa; }
+  .controls { padding: 10px 16px; background: #2a2a2a; border-bottom: 1px solid #444; display: flex; gap: 8px; flex-wrap: wrap; }
+  .controls button { background: #1976d2; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+  .controls button.secondary { background: #555; }
+  #task-list { list-style: none; padding: 8px; margin: 0; overflow-y: auto; flex: 1; }
+  .task { background: #2e2e2e; border: 1px solid #3a3a3a; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; cursor: grab; user-select: none; }
+  .task:hover { background: #353535; border-color: #1976d2; }
+  .task.sortable-ghost { opacity: 0.4; }
+  .task.sortable-chosen { cursor: grabbing; box-shadow: 0 4px 12px rgba(25,118,210,0.4); }
+  .task .top { display: flex; align-items: center; gap: 8px; }
+  .task .num { background: #1976d2; color: white; min-width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; flex-shrink: 0; }
+  .task .name { font-weight: 600; flex: 1; font-size: 14px; }
+  .task .meta { font-size: 12px; color: #aaa; margin: 4px 0 0 36px; }
+  .task .actions { display: flex; gap: 6px; margin: 8px 0 0 36px; flex-wrap: wrap; }
+  .task .actions a { color: white !important; padding: 4px 8px; border-radius: 4px; font-size: 11px; text-decoration: none; }
+  .task .actions a.waze { background: #19c0c8; }
+  .task .actions a.drive { background: #4caf50; }
+  .task .actions a.phone { background: #ff9800; }
+  .task .actions a.monday { background: #6c42f5; }
+  .task .actions a.maps { background: #4285f4; }
+  .task .actions a.govmap { background: #d32f2f; }
+  .task .notes { font-size: 11px; color: #ffb74d; background: rgba(255,183,77,0.1); padding: 6px 8px; border-radius: 4px; margin: 8px 0 0 36px; }
+  .task.no-coord .num { background: #9c27b0; }
+  .task.home { background: #ff5722; border-color: #ff5722; cursor: default; }
+  .task.home .num { background: white; color: #ff5722; }
+  .task.home .name { color: white; }
+  #map { flex: 1; height: 100%; }
+  .num-marker { background: #1976d2; color: white; border: 3px solid white; border-radius: 50%; width: 36px !important; height: 36px !important; line-height: 30px; text-align: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+  .num-marker.home { background: #ff5722; }
+  .num-marker.no-coord { background: #9c27b0; font-size: 11px; }
+  .leaflet-popup-content { font-size: 13px; min-width: 220px; direction: rtl; text-align: right; color: #222; }
+  .leaflet-popup-content h3 { margin: 0 0 6px; font-size: 14px; color: #1976d2; }
+  .popup-actions { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .popup-actions a { color: white !important; padding: 4px 8px; border-radius: 4px; font-size: 11px; text-decoration: none; }
+  @media (max-width: 768px) {
+    #app { display: block; position: relative; }
+    #map { width: 100%; height: 100vh; }
+    #sidebar {
+      position: fixed; left: 0; right: 0; bottom: 0; width: 100%;
+      height: 92px; max-height: 92px;
+      transition: max-height 0.3s ease, height 0.3s ease;
+      z-index: 1000; border-left: none; border-top: 1px solid #444;
+      box-shadow: 0 -6px 20px rgba(0,0,0,0.6);
+    }
+    #sidebar.expanded { height: 78vh; max-height: 78vh; }
+    #sidebar-handle { display: flex; }
+    #header { padding: 8px 16px 6px; cursor: pointer; }
+    #header h1 { font-size: 14px; }
+    .controls { padding: 8px 12px; }
+    .controls button { padding: 10px 14px; font-size: 13px; }
+    .task { padding: 12px 14px; }
+    .task .actions a { padding: 8px 14px; font-size: 13px; }
+    .task .num { min-width: 32px; height: 32px; }
+    .task .name { font-size: 15px; }
+    .leaflet-popup-content { min-width: 240px; }
+    .leaflet-popup-content a { padding: 8px 12px !important; font-size: 13px !important; }
+    .leaflet-control-layers { font-size: 14px !important; }
+    .leaflet-touch .leaflet-bar a { width: 36px; height: 36px; line-height: 36px; }
+    #next-banner { display: flex !important; }
+  }
+  #sidebar-handle { display: none; height: 28px; align-items: center; justify-content: center; background: #2a2a2a; border-bottom: 1px solid #333; cursor: pointer; }
+  #sidebar-handle::before { content: ''; width: 44px; height: 5px; background: #666; border-radius: 3px; }
+  #next-banner { display: none; position: fixed; top: 8px; left: 8px; right: 8px; background: rgba(34,34,34,0.95); border: 1px solid #1976d2; border-radius: 10px; padding: 10px 14px; z-index: 999; align-items: center; gap: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+  #next-banner .label { font-size: 11px; color: #1976d2; font-weight: 600; }
+  #next-banner .name { font-size: 13px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #next-banner .num { background: #1976d2; color: white; min-width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; flex-shrink: 0; }
+  #next-banner a { background: #19c0c8; color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; text-decoration: none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="next-banner">
+    <div class="num" id="next-num">1</div>
+    <div style="flex:1;min-width:0">
+      <div class="label">היעד הבא</div>
+      <div class="name" id="next-name">—</div>
+    </div>
+    <a id="next-waze" href="#" target="_blank">🚗 Waze</a>
+  </div>
+  <div id="sidebar">
+    <div id="sidebar-handle"></div>
+    <div id="header">
+      <h1>📷 מפת צילומים — 8.5.2026</h1>
+      <div class="stats">9 משימות · גרור לשינוי סדר · קליק להתמקדות</div>
+      <div class="stats" id="route-stats" style="margin-top:4px;color:#ffeb3b">מחשב מסלול נסיעה...</div>
+    </div>
+    <div class="controls">
+      <button class="secondary" id="btn-reset">↺ סדר מקורי</button>
+      <button class="secondary" id="btn-copy">📋 העתק מסלול</button>
+    </div>
+    <ul id="task-list"></ul>
+  </div>
+  <div id="map"></div>
+</div>
+
+<script>
+// Decode data from URL hash (#d=<base64-url-safe>). Хранит шаблон чистым — данные клиентов только в URL пользователя.
+function loadFromHash() {
+  if (!location.hash) return null;
+  const m = location.hash.match(/[#&]d=([^&]+)/);
+  if (!m) return null;
+  try {
+    const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
+    const decoded = decodeURIComponent(escape(atob(padded)));
+    return JSON.parse(decoded);
+  } catch (e) {
+    console.error('Hash decode error:', e);
+    return null;
+  }
+}
+
+const _payload = loadFromHash();
+if (!_payload) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#1a1a1a;color:#eee;font-family:sans-serif;text-align:center;padding:24px;direction:rtl';
+  const card = document.createElement('div');
+  card.style.cssText = 'max-width:420px';
+  const h = document.createElement('h2'); h.style.color = '#1976d2'; h.textContent = '📷 מפת צילומים'; card.appendChild(h);
+  const p1 = document.createElement('p'); p1.style.color = '#ccc'; p1.textContent = 'נדרש קישור עם נתונים. הוסף #d=... ל-URL.'; card.appendChild(p1);
+  const p2 = document.createElement('p'); p2.style.color = '#888'; p2.style.fontSize = '13px'; p2.textContent = 'הנתונים מוצפנים בתוך הקישור — שמור את הסימניה שקיבלת.'; card.appendChild(p2);
+  wrap.appendChild(card);
+  document.body.appendChild(wrap);
+  throw new Error('No payload');
+}
+
+const HOME = _payload.home || { lat: 32.5714, lng: 34.9536, name: 'בית' };
+const TASKS = _payload.tasks || [];
+
+function dist(a, b) { const dy = a.lat - b.lat, dx = a.lng - b.lng; return Math.sqrt(dy*dy + dx*dx); }
+// WGS84 → ITM (Israel Transverse Mercator, EPSG:2039), линейная аппроксимация для региона ИЛ
+function wgsToItm(lat, lng) {
+  const x = Math.round(219529 + (lng - 35.2045) * 94400);
+  const y = Math.round(626907 + (lat - 31.7344) * 110540);
+  return { x, y };
+}
+function govmapUrl(lat, lng, z = 8) {
+  const { x, y } = wgsToItm(lat, lng);
+  return `https://www.govmap.gov.il/?c=${x},${y}&z=${z}`;
+}
+function wazeUrl(t) {
+  const q = t.settlement ? '&q=' + encodeURIComponent(t.settlement) : '';
+  return `https://waze.com/ul?ll=${t.lat},${t.lng}${q}&navigate=yes`;
+}
+function defaultOrder() {
+  // Сначала к самой дальней, потом по убыванию — возвращаемся постепенно ближе к дому
+  return [...TASKS].sort((a, b) => dist(HOME, b) - dist(HOME, a));
+}
+
+let order = defaultOrder();
+
+const googleHybrid = L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&hl=iw', { attribution: '© Google', subdomains: ['0','1','2','3'], maxZoom: 21, maxNativeZoom: 20 });
+const googleSat = L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { attribution: '© Google', subdomains: ['0','1','2','3'], maxZoom: 21, maxNativeZoom: 20 });
+const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri', maxZoom: 19, maxNativeZoom: 18 });
+const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 });
+const map = L.map('map', { layers: [googleHybrid], zoomControl: true });
+map.setView([32.0, 35.25], 10);
+
+L.control.layers({
+  '🛰 אורתופוטו + שמות (Google)': googleHybrid,
+  '🛰 אורתופוטו טהור (Google)': googleSat,
+  '🛰 Esri World Imagery': esriSat,
+  '🗺 רחובות (OSM)': streets
+}, null, { position: 'topleft', collapsed: false }).addTo(map);
+
+const homeIcon = L.divIcon({ className: 'num-marker home', html: '🏠', iconSize: [36, 36] });
+const homeMarker = L.marker([HOME.lat, HOME.lng], { icon: homeIcon }).addTo(map);
+const homePopup = document.createElement('div');
+const homeTitle = document.createElement('h3');
+homeTitle.textContent = HOME.name;
+homePopup.appendChild(homeTitle);
+const homeNote = document.createElement('div');
+homeNote.textContent = 'נקודת התחלה / סיום';
+homePopup.appendChild(homeNote);
+homeMarker.bindPopup(homePopup);
+
+function buildPopup(t) {
+  const root = document.createElement('div');
+  const h = document.createElement('h3');
+  h.textContent = t.name;
+  root.appendChild(h);
+  [['חברה', t.company], ['איש קשר', t.contact], ['סוג', t.jobType]].forEach(([k, v]) => {
+    const row = document.createElement('div');
+    row.textContent = k + ': ' + v;
+    root.appendChild(row);
+  });
+  if (t.notes) {
+    const n = document.createElement('div');
+    n.textContent = t.notes;
+    n.style.cssText = 'background:#fff3e0;padding:4px;margin-top:4px;border-radius:4px';
+    root.appendChild(n);
+  }
+  const acts = document.createElement('div');
+  acts.className = 'popup-actions';
+  function addLink(text, href, color) {
+    const a = document.createElement('a');
+    a.textContent = text;
+    a.href = href;
+    a.target = '_blank';
+    a.style.background = color;
+    acts.appendChild(a);
+  }
+  addLink('🚗 Waze', wazeUrl(t), '#19c0c8');
+  addLink('🗺 Maps', `https://www.google.com/maps/dir/?api=1&destination=${t.lat},${t.lng}`, '#4285f4');
+  addLink('🇮🇱 Govmap', govmapUrl(t.lat, t.lng), '#d32f2f');
+  if (t.phone) addLink('📞 ' + t.phone, 'tel:' + t.phone, '#ff9800');
+  if (t.drive) addLink('📂 Drive', 'https://drive.google.com/drive/folders/' + t.drive, '#4caf50');
+  addLink('📋 Monday', 'https://arbel-aerial-p.monday.com/boards/18284737333/pulses/' + t.mondayId, '#6c42f5');
+  root.appendChild(acts);
+  return root;
+}
+
+const markers = {};
+TASKS.forEach(t => {
+  const cls = t.polygon ? 'num-marker no-coord' : 'num-marker';
+  const icon = L.divIcon({ className: cls, html: '?', iconSize: [36, 36] });
+  const m = L.marker([t.lat, t.lng], { icon }).addTo(map);
+  m.bindPopup(buildPopup(t));
+  markers[t.id] = m;
+  if (t.polygon) {
+    L.polygon(t.polygon, { color: '#9c27b0', weight: 2, fillOpacity: 0.25 }).addTo(map);
+  }
+});
+
+let routeLine;
+let routeReqId = 0;
+
+function renumberMarkers() {
+  order.forEach((t, i) => {
+    const cls = t.polygon ? 'num-marker no-coord' : 'num-marker';
+    markers[t.id].setIcon(L.divIcon({ className: cls, html: String(i + 1), iconSize: [36, 36] }));
+  });
+}
+
+async function drawRoute() {
+  renumberMarkers();
+  if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+  const waypoints = [HOME, ...order, HOME];
+  const stats = document.getElementById('route-stats');
+
+  // Show straight dashed lines while loading (так удобно если OSRM упадёт)
+  const straightPts = waypoints.map(p => [p.lat, p.lng]);
+  routeLine = L.polyline(straightPts, { color: '#ffeb3b', weight: 2, opacity: 0.4, dashArray: '4, 6' }).addTo(map);
+  stats.textContent = 'מחשב מסלול נסיעה...';
+  stats.style.color = '#ffeb3b';
+
+  const reqId = ++routeReqId;
+  const coords = waypoints.map(p => `${p.lng},${p.lat}`).join(';');
+  const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (reqId !== routeReqId) return; // более новый запрос вытеснил
+    if (data.code === 'Ok' && data.routes && data.routes[0]) {
+      const r = data.routes[0];
+      if (routeLine) map.removeLayer(routeLine);
+      routeLine = L.geoJSON(r.geometry, { style: { color: '#ffeb3b', weight: 4, opacity: 0.9 } }).addTo(map);
+      const km = (r.distance / 1000).toFixed(1);
+      const h = Math.floor(r.duration / 3600);
+      const m = Math.round((r.duration % 3600) / 60);
+      const time = h > 0 ? `${h}שע' ${m}ד'` : `${m}ד'`;
+      stats.textContent = `מסלול נסיעה: ${km} ק"מ · נסיעה ${time}`;
+      stats.style.color = '#8bc34a';
+    } else {
+      throw new Error(data.code || 'no route');
+    }
+  } catch (e) {
+    if (reqId !== routeReqId) return;
+    stats.textContent = 'לא ניתן לחשב מסלול נסיעה (קו ישר במקום)';
+    stats.style.color = '#ff9800';
+  }
+}
+
+function makeTaskLi(t, num) {
+  const li = document.createElement('li');
+  li.className = 'task' + (t.polygon ? ' no-coord' : '');
+  li.dataset.id = t.id;
+
+  const top = document.createElement('div');
+  top.className = 'top';
+  const numEl = document.createElement('div');
+  numEl.className = 'num';
+  numEl.textContent = String(num);
+  const nameEl = document.createElement('div');
+  nameEl.className = 'name';
+  nameEl.textContent = t.name;
+  top.appendChild(numEl);
+  top.appendChild(nameEl);
+  li.appendChild(top);
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.textContent = t.company + ' · ' + t.contact;
+  li.appendChild(meta);
+
+  const acts = document.createElement('div');
+  acts.className = 'actions';
+  function addAction(text, href, klass) {
+    const a = document.createElement('a');
+    a.textContent = text;
+    a.href = href;
+    a.target = '_blank';
+    a.className = klass;
+    a.addEventListener('click', e => e.stopPropagation());
+    acts.appendChild(a);
+  }
+  addAction('Waze', wazeUrl(t), 'waze');
+  addAction('Govmap', govmapUrl(t.lat, t.lng), 'govmap');
+  if (t.phone) addAction('📞', 'tel:' + t.phone, 'phone');
+  if (t.drive) addAction('Drive', 'https://drive.google.com/drive/folders/' + t.drive, 'drive');
+  addAction('Monday', 'https://arbel-aerial-p.monday.com/boards/18284737333/pulses/' + t.mondayId, 'monday');
+  li.appendChild(acts);
+
+  if (t.notes) {
+    const n = document.createElement('div');
+    n.className = 'notes';
+    n.textContent = t.notes;
+    li.appendChild(n);
+  }
+
+  li.addEventListener('click', e => {
+    if (e.target.tagName === 'A') return;
+    map.setView([t.lat, t.lng], 16);
+    markers[t.id].openPopup();
+  });
+  return li;
+}
+
+function renderList() {
+  const list = document.getElementById('task-list');
+  list.replaceChildren();
+  const homeLi = document.createElement('li');
+  homeLi.className = 'task home';
+  const homeTop = document.createElement('div');
+  homeTop.className = 'top';
+  const homeNum = document.createElement('div');
+  homeNum.className = 'num';
+  homeNum.textContent = '🏠';
+  const homeName = document.createElement('div');
+  homeName.className = 'name';
+  homeName.textContent = HOME.name;
+  homeTop.appendChild(homeNum);
+  homeTop.appendChild(homeName);
+  homeLi.appendChild(homeTop);
+  list.appendChild(homeLi);
+  order.forEach((t, i) => list.appendChild(makeTaskLi(t, i + 1)));
+}
+
+function initSortable() {
+  const list = document.getElementById('task-list');
+  Sortable.create(list, {
+    animation: 150,
+    filter: '.home',
+    delay: 200,             // long-press для мобильного
+    delayOnTouchOnly: true,
+    touchStartThreshold: 5,
+    onMove: evt => evt.related.className.indexOf('home') === -1,
+    onEnd: () => {
+      const ids = Array.from(list.querySelectorAll('.task:not(.home)')).map(el => el.dataset.id);
+      order = ids.map(id => TASKS.find(t => t.id === id));
+      renderList();
+      drawRoute();
+      updateNextBanner();
+    }
+  });
+}
+
+function updateNextBanner() {
+  const next = order[0];
+  if (!next) return;
+  document.getElementById('next-num').textContent = '1';
+  document.getElementById('next-name').textContent = next.name;
+  document.getElementById('next-waze').href = wazeUrl(next);
+}
+
+// Bottom sheet toggle on mobile
+const sidebar = document.getElementById('sidebar');
+const handle = document.getElementById('sidebar-handle');
+const headerEl = document.getElementById('header');
+function toggleSheet(forceOpen) {
+  const willExpand = forceOpen !== undefined ? forceOpen : !sidebar.classList.contains('expanded');
+  sidebar.classList.toggle('expanded', willExpand);
+  setTimeout(() => map.invalidateSize(), 320);
+}
+handle.addEventListener('click', () => toggleSheet());
+headerEl.addEventListener('click', () => toggleSheet());
+// Свайп вверх по handle
+let touchStartY = null;
+handle.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; });
+handle.addEventListener('touchmove', e => {
+  if (touchStartY === null) return;
+  const dy = touchStartY - e.touches[0].clientY;
+  if (dy > 30) { toggleSheet(true); touchStartY = null; }
+  if (dy < -30) { toggleSheet(false); touchStartY = null; }
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  order = defaultOrder();
+  renderList();
+  drawRoute();
+  updateNextBanner();
+});
+
+document.getElementById('btn-copy').addEventListener('click', () => {
+  const lines = order.map((t, i) => `${i + 1}. ${t.name} — ${t.lat.toFixed(5)}, ${t.lng.toFixed(5)}`);
+  const text = `מסלול 8.5.2026\nבית: ${HOME.name}\n\n${lines.join('\n')}\n\nחזרה: ${HOME.name}`;
+  navigator.clipboard.writeText(text).then(() => alert('המסלול הועתק'));
+});
+
+renderList();
+drawRoute();
+initSortable();
+updateNextBanner();
+const all = [HOME, ...TASKS];
+map.fitBounds(L.latLngBounds(all.map(p => [p.lat, p.lng])), { padding: [40, 40] });
+</script>
+</body>
+</html>
