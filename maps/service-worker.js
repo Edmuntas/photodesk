@@ -1,9 +1,9 @@
 // Road Planner — Service Worker (offline support)
-const STATIC_CACHE = 'rp-static-v3';
+const STATIC_CACHE = 'rp-static-v4';
 const TILES_CACHE = 'rp-tiles-v1';
 const STATIC_URLS = [
   './route.html',
-  './manifest.json',
+  
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
   'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js'
