@@ -1,5 +1,5 @@
 // Road Planner — Service Worker (offline support)
-const STATIC_CACHE = 'rp-static-v2';
+const STATIC_CACHE = 'rp-static-v3';
 const TILES_CACHE = 'rp-tiles-v1';
 const STATIC_URLS = [
   './route.html',

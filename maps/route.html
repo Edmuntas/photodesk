@@ -145,6 +145,8 @@ function b64UrlToBytes(b64url) {
   return bytes;
 }
 
+const PAYLOAD_CACHE_KEY = 'rp_payload_v1';
+
 async function loadFromHash() {
   if (!location.hash) return null;
   const mz = location.hash.match(/[#&]z=([^&]+)/);
@@ -167,7 +169,27 @@ async function loadFromHash() {
   return null;
 }
 
-const _payload = await loadFromHash();
+async function loadPayload() {
+  // 1. Try URL hash (fresh data — sharing/QR/AirDrop)
+  const hashData = await loadFromHash();
+  if (hashData) {
+    // Cache so next launch (e.g. PWA from home screen без hash) тоже работает
+    try { localStorage.setItem(PAYLOAD_CACHE_KEY, JSON.stringify({ data: hashData, ts: Date.now() })); }
+    catch (e) { console.warn('payload cache failed', e); }
+    return hashData;
+  }
+  // 2. Fall back to last-known payload from localStorage (PWA launch / refresh)
+  try {
+    const raw = localStorage.getItem(PAYLOAD_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.data) return parsed.data;
+    }
+  } catch (e) { console.warn('payload cache read failed', e); }
+  return null;
+}
+
+const _payload = await loadPayload();
 if (!_payload) {
   const wrap = document.createElement('div');
   wrap.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#1a1a1a;color:#eee;font-family:sans-serif;text-align:center;padding:24px;direction:rtl';
