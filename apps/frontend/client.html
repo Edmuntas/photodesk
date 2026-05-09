@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ההזמנה שלי · Sisa Aero</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #F5F6FA;
+      --surface:  #FFFFFF;
+      --text:     #111827;
+      --muted:    #6B7280;
+      --accent:   #F97316;
+      --green:    #10B981;
+      --amber:    #F59E0B;
+      --red:      #EF4444;
+      --border:   #E5E7EB;
+      --radius:   14px;
+      --shadow:   0 4px 18px rgba(0,0,0,0.07);
+    }
+
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    /* ── HEADER ─────────────────────── */
+    .page-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .brand-name  { font-weight: 700; font-size: 15px; color: var(--text); }
+    .brand-sub   { font-size: 11px; color: var(--muted); }
+
+    /* ── CONTAINER ─────────────────── */
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+    }
+
+    /* ── CARD ──────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── INFO ROWS ─────────────────── */
+    .info-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .info-value {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* ── STAGE LIST ────────────────── */
+    .stage-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .stage-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      background: transparent;
+    }
+    .stage-item.done {
+      color: var(--green);
+      background: #F0FDF4;
+    }
+    .stage-item.current {
+      color: #1D4ED8;
+      background: #EFF6FF;
+      font-weight: 700;
+    }
+    .stage-item.pending {
+      color: var(--muted);
+    }
+    .stage-icon { font-size: 18px; flex-shrink: 0; min-width: 24px; text-align: center; }
+    .stage-label { flex: 1; }
+    .stage-here {
+      font-size: 11px;
+      font-weight: 700;
+      background: #1D4ED8;
+      color: #fff;
+      border-radius: 6px;
+      padding: 2px 8px;
+      white-space: nowrap;
+    }
+
+    /* ── DELIVERABLES ──────────────── */
+    .deliverable-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      color: #1D4ED8;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      transition: background .15s;
+    }
+    .deliverable-link:last-child { margin-bottom: 0; }
+    .deliverable-link:hover { background: #EFF6FF; }
+    .deliverable-icon { font-size: 20px; flex-shrink: 0; }
+    .deliverable-added {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    /* ── ERROR / LOADING ───────────── */
+    .state-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px 20px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .state-icon { font-size: 40px; margin-bottom: 12px; }
+    .state-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .state-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── HELP LINE ─────────────────── */
+    .help-line {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 0 8px;
+      line-height: 1.6;
+    }
+
+    /* ── SPINNER ───────────────────── */
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="brand-icon">✈️</div>
+    <div>
+      <div class="brand-name">Sisa Aero</div>
+      <div class="brand-sub">פורטל לקוח</div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="root">
+      <div class="state-card">
+        <div class="spinner"></div>
+        <div class="state-title">טוען...</div>
+        <div class="state-sub">אנא המתן</div>
+      </div>
+    </div>
+    <p class="help-line">💬 בעיה עם הצפיה? צור קשר ב-WhatsApp עם הצוות.</p>
+  </div>
+
+  <script src="./partner-network-config.js"></script>
+  <script>
+    'use strict';
+
+    /* ── Stage definitions ─────────────────────────────────────── */
+    const PUBLIC_STAGES = [
+      { key: 'received',    icon: '📥', label: 'ההזמנה התקבלה' },
+      { key: 'scheduled',   icon: '📅', label: 'מתוכנן'        },
+      { key: 'in_progress', icon: '🛠️', label: 'העבודה בתהליך' },
+      { key: 'delivered',   icon: '✅', label: 'הושלם'         }
+    ];
+
+    /* ── Drive type → label mapping ────────────────────────────── */
+    const TYPE_META = {
+      photos:    { icon: '📁', label: 'תמונות' },
+      video:     { icon: '🎥', label: 'סרטון'  },
+      floorplan: { icon: '📐', label: 'תכנית'  }
+    };
+
+    /* ── API base ───────────────────────────────────────────────── */
+    const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://localhost:3001'
+      : '';
+
+    /* ── Helpers ────────────────────────────────────────────────── */
+    function el(tag, cls) {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      return e;
+    }
+
+    function clearRoot() {
+      const root = document.getElementById('root');
+      while (root.firstChild) root.removeChild(root.firstChild);
+      return root;
+    }
+
+    /* ── Error state renderer ───────────────────────────────────── */
+    function renderError(icon, title, sub) {
+      const root = clearRoot();
+      const card = el('div', 'state-card');
+
+      const ic = el('div', 'state-icon');
+      ic.textContent = icon;
+
+      const t = el('div', 'state-title');
+      t.textContent = title;
+
+      const s = el('div', 'state-sub');
+      s.textContent = sub;
+
+      card.appendChild(ic);
+      card.appendChild(t);
+      card.appendChild(s);
+      root.appendChild(card);
+    }
+
+    /* ── Format date string ─────────────────────────────────────── */
+    function formatDate(val) {
+      if (!val) return '—';
+      try {
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return String(val);
+        return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
+      } catch (_) {
+        return String(val);
+      }
+    }
+
+    /* ── Main render ────────────────────────────────────────────── */
+    function render(payload) {
+      const root = clearRoot();
+
+      /* ── Card 1: Order info ─────────────────────────────────── */
+      const infoCard = el('div', 'card');
+
+      const infoTitle = el('div', 'card-title');
+      infoTitle.textContent = '🏠 ההזמנה שלך';
+      infoCard.appendChild(infoTitle);
+
+      const addrRow = el('div', 'info-row');
+      const addrLabel = el('div', 'info-label');
+      addrLabel.textContent = 'כתובת:';
+      const addrValue = el('div', 'info-value');
+      addrValue.textContent = payload.address || '—';
+      addrRow.appendChild(addrLabel);
+      addrRow.appendChild(addrValue);
+      infoCard.appendChild(addrRow);
+
+      const dateRow = el('div', 'info-row');
+      const dateLabel = el('div', 'info-label');
+      dateLabel.textContent = 'תאריך הצילום:';
+      const dateValue = el('div', 'info-value');
+      dateValue.textContent = formatDate(payload.scheduledDate);
+      dateRow.appendChild(dateLabel);
+      dateRow.appendChild(dateValue);
+      infoCard.appendChild(dateRow);
+
+      root.appendChild(infoCard);
+
+      /* ── Card 2: Status ─────────────────────────────────────── */
+      const statusCard = el('div', 'card');
+
+      const statusTitle = el('div', 'card-title');
+      statusTitle.textContent = '📊 סטטוס';
+      statusCard.appendChild(statusTitle);
+
+      const currentStage = payload.publicStatus || 'received';
+      const currentIdx = PUBLIC_STAGES.findIndex(s => s.key === currentStage);
+
+      const stageList = el('ul', 'stage-list');
+
+      PUBLIC_STAGES.forEach((stage, idx) => {
+        const li = el('li', 'stage-item');
+
+        let stateClass = 'pending';
+        let stateIcon = '⬜';
+
+        if (idx < currentIdx) {
+          stateClass = 'done';
+          stateIcon = '✅';
+        } else if (idx === currentIdx) {
+          stateClass = 'current';
+          stateIcon = stage.icon;
+        }
+
+        li.classList.add(stateClass);
+
+        const iconEl = el('span', 'stage-icon');
+        iconEl.textContent = stateIcon;
+
+        const labelEl = el('span', 'stage-label');
+        labelEl.textContent = stage.label;
+
+        li.appendChild(iconEl);
+        li.appendChild(labelEl);
+
+        if (idx === currentIdx) {
+          const hereTag = el('span', 'stage-here');
+          hereTag.textContent = '← אתה כאן';
+          li.appendChild(hereTag);
+        }
+
+        stageList.appendChild(li);
+      });
+
+      statusCard.appendChild(stageList);
+      root.appendChild(statusCard);
+
+      /* ── Card 3: Deliverables (conditional) ────────────────── */
+      const deliverables = Array.isArray(payload.deliverables)
+        ? payload.deliverables.filter(d => d && d.driveUrl)
+        : [];
+
+      if (deliverables.length > 0) {
+        const delCard = el('div', 'card');
+
+        const delTitle = el('div', 'card-title');
+        delTitle.textContent = '📁 התוצרים שלך';
+        delCard.appendChild(delTitle);
+
+        deliverables.forEach(d => {
+          const meta = TYPE_META[d.type] || { icon: '📄', label: String(d.type || 'קובץ') };
+
+          const link = document.createElement('a');
+          link.className = 'deliverable-link';
+          link.href = String(d.driveUrl);
+          link.target = '_blank';
+          link.rel = 'noopener';
+
+          const iconEl = el('span', 'deliverable-icon');
+          iconEl.textContent = meta.icon;
+
+          const textWrap = el('div');
+
+          const labelEl = el('div');
+          labelEl.textContent = meta.label;
+
+          textWrap.appendChild(labelEl);
+
+          if (d.addedAt) {
+            const addedEl = el('div', 'deliverable-added');
+            addedEl.textContent = 'נוסף: ' + formatDate(d.addedAt);
+            textWrap.appendChild(addedEl);
+          }
+
+          link.appendChild(iconEl);
+          link.appendChild(textWrap);
+          delCard.appendChild(link);
+        });
+
+        root.appendChild(delCard);
+      }
+    }
+
+    /* ── fetchStatus ────────────────────────────────────────────── */
+    async function fetchStatus() {
+      const params = new URLSearchParams(location.search);
+      const token = params.get('t');
+
+      if (!token) {
+        renderError('🔒', 'קישור לא תקין', 'לא נמצא קוד גישה. צור קשר עם הצוות.');
+        return;
+      }
+
+      try {
+        const resp = await fetch(
+          apiBase + '/api/client-portal/' + encodeURIComponent(token),
+          { cache: 'no-store' }
+        );
+
+        if (resp.status === 410) {
+          renderError('🚫', 'קישור לא פעיל', 'הקישור כבר אינו פעיל. פנה לצוות.');
+          return;
+        }
+        if (resp.status === 404) {
+          renderError('🔍', 'קישור לא נמצא', 'הקישור לא נמצא.');
+          return;
+        }
+        if (!resp.ok) {
+          renderError('⚠️', 'שגיאה זמנית', 'שגיאה זמנית. נסה שוב בעוד רגע.');
+          return;
+        }
+
+        const data = await resp.json();
+        render(data);
+
+      } catch (err) {
+        renderError('⚠️', 'שגיאה זמנית', 'שגיאה זמנית. נסה שוב בעוד רגע.');
+      }
+    }
+
+    /* ── Boot ───────────────────────────────────────────────────── */
+    fetchStatus();
+    setInterval(fetchStatus, 30000);
+  </script>
+</body>
+</html>
