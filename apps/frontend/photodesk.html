@@ -2500,12 +2500,18 @@
 #page-drone-new .dne-btn-submit:disabled{background:var(--border);color:var(--text-muted);box-shadow:none;cursor:not-allowed;}
 #page-drone-new .dne-hint{font-size:11px;color:var(--text-muted);margin-top:4px;}
 #page-drone-new .dne-success{text-align:center;padding:60px 20px;}
+/* ── Partner Network role-based visibility ── */
+body.role-pilot .admin-only { display: none !important; }
+body.role-pilot .partner-only { display: initial; }
+body.role-admin .partner-only { display: none; }
+.partner-only { display: none; }
 </style>
 <!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="./partner-network-config.js"></script>
 </head>
 <body>
 
@@ -2611,6 +2617,12 @@
     </div>
   </div>
 
+  <div class="nav-group admin-only">
+    <div class="nav-item draggable-nav admin-only" draggable="true" data-page="team" onclick="navigate('team')">
+      <span class="icon">👥</span><span class="nav-text">צוות</span>
+    </div>
+  </div>
+
   <div class="nav-group">
     <div class="nav-label">הגדרות</div>
     <div class="nav-item" onclick="navigate('availability')">
@@ -2633,6 +2645,7 @@
   <div class="sidebar-footer">
     <div class="user-pill" style="cursor:default;">
       <div class="avatar" id="auth-avatar">SA</div>
+      <button id="transfer-inbox-btn" onclick="openInboxModal()" style="display:none;background:transparent;border:none;cursor:pointer;font-size:18px;position:relative;margin:0 8px;" title="הצעות העברה">📨<span id="transfer-inbox-count" style="position:absolute;top:-4px;right:-6px;background:var(--red);color:white;border-radius:8px;font-size:10px;padding:1px 5px;font-weight:700;">0</span></button>
       <div style="flex:1;overflow:hidden;">
         <div class="user-name" id="auth-user-name">Sisa Aero</div>
         <div class="user-role" id="auth-user-email" style="font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;">צלם נדל&quot;ן</div>
@@ -2972,6 +2985,11 @@
       </div>
     </div>
 
+    <!-- ════════════════ TEAM PAGE ════════════════ -->
+    <div class="page" id="page-team">
+      <div id="team-content"></div>
+    </div>
+
     <!-- ════════════════ SETTINGS PAGE ════════════════ -->
     <div class="page" id="page-settings">
       <div style="max-width:580px; display:flex; flex-direction:column; gap:24px;">
@@ -3048,6 +3066,25 @@
             <button class="btn" onclick="testDriveConnection()" id="drive-test-btn" style="font-size:13px; padding:7px 16px;">🔗 בדוק חיבור</button>
             <span id="drive-connect-status" style="font-size:12px; color:var(--text-muted);"></span>
           </div>
+        </div>
+
+        <!-- Partner Network — admin only -->
+        <div class="admin-only" style="border:1px solid var(--border);border-radius:10px;padding:20px;">
+          <h4 style="margin:0 0 14px;font-size:14px;font-weight:700;">🤝 רשת שותפים (Partner Network)</h4>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="setting-partner-network-enabled">
+            <span style="font-size:13px;">הפעל את מודול השותפים — רק לאחר ביצוע מיגרציה</span>
+          </label>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-muted);">
+            סטטוס נוכחי:
+            <b id="pn-status-indicator" style="color:var(--text-dim);">לא פעיל</b>
+          </div>
+        </div>
+
+        <!-- Client Links revoke list — admin only -->
+        <div class="admin-only" style="border:1px solid var(--border);border-radius:10px;padding:20px;margin-top:20px;">
+          <h4 style="margin:0 0 14px;">🔗 קישורים פעילים ללקוחות</h4>
+          <div id="client-links-list">טוען...</div>
         </div>
 
         <button class="btn btn-primary" onclick="saveSettings()" id="settings-save-btn" style="width:fit-content;padding:10px 28px;">שמור הגדרות</button>
@@ -3429,6 +3466,14 @@
             <button class="btn" id="create-drive-btn" onclick="createDriveFolders()" style="width:100%; font-size:12px; padding:8px; text-align:center;">
               📁 צור תיקיות
             </button>
+          </div>
+          <div id="deliverables-section" style="border:1px solid var(--border);border-radius:8px;padding:12px;margin:12px 0;">
+            <h4 style="margin:0 0 10px;font-size:13px;">📁 תוצרים סופיים</h4>
+            <button class="btn btn-ghost" style="margin-bottom:10px;font-size:12px;" onclick="openAddDeliverableModal()">+ הוסף קישור Drive</button>
+            <div id="deliverables-list">—</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">ודא שהקישור פתוח לצפייה ב-Drive (Anyone with link).</div>
+            <button class="btn btn-primary" onclick="generateClientLink()" id="btn-generate-client-link" style="margin-top:10px;font-size:12px;width:100%;">🔗 שלח קישור ללקוח</button>
+            <div id="client-link-display" style="display:none;margin-top:8px;padding:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;word-break:break-all;font-size:12px;"></div>
           </div>
         </div>
       </div>
@@ -3928,6 +3973,31 @@ const db      = firebase.firestore();
 const storage = firebase.storage();
 const auth    = firebase.auth();
 
+// Returns Firestore query filtered by pilot capabilities.
+// Admin sees all. Pilot sees only assignedPilotId == self.
+// Falls back to unfiltered when feature flag disabled (legacy single-user mode).
+function buildOrdersQuery(collectionName) {
+  const base = db.collection(collectionName);
+  if (!window.currentUser || window.currentUser.role === 'admin') return base;
+  // Pilot path: always filter, regardless of feature-flag load state.
+  // Защищает от cold-start race где store.data ещё не подтянулся из Firestore
+  // и pilot мог бы на долю секунды получить bare collection до filter применится.
+  return base.where('assignedPilotId', '==', window.currentUser.uid);
+}
+
+// ── Pilots cache ──────────────────────────────────
+window._pilotsCache = {};
+async function refreshPilotsCache() {
+  const snap = await db.collection('users').get();
+  window._pilotsCache = {};
+  snap.forEach(d => {
+    const data = d.data();
+    if (data && (data.role === 'pilot' || data.role === 'admin')) {
+      window._pilotsCache[d.id] = data;
+    }
+  });
+}
+
 // Auth-aware fetch helper — attaches Authorization: Bearer <idToken> if user logged in.
 // Backend middleware verifies token for protected /api/* routes.
 async function authFetch(url, opts = {}) {
@@ -4056,6 +4126,7 @@ const pageConfig = {
   services:     { title:'שירותים',  btn:'+ שירות חדש' },
   availability: { title:'זמינות',   btn:'שמור שעות' },
   promotions:   { title:'מבצעים',   btn:'+ מבצע חדש' },
+  team:         { title:'צוות',     btn:null },
   settings:     { title:'הגדרות',   btn:null },
   archive:      { title:'ארכיון',   btn:null },
   'drone-new':  { title:'הזמנת שירותי רחפן', btn:null },
@@ -4148,6 +4219,7 @@ function renderPage(page) {
   else if (page === 'services') renderServices();
   else if (page === 'availability') renderSchedule();
   else if (page === 'calendar') renderCalendar();
+  else if (page === 'team')     renderTeam();
   else if (page === 'settings') renderSettings();
   else if (page === 'closed-orders') renderClosedOrders();
   else if (page === 'archive')     renderArchive();
@@ -5139,6 +5211,7 @@ function renderPipeline(l) {
 }
 
 function openListing(id) {
+  window._currentDetailOrderRef = 'listings/' + id;
   const l = store.listings.find(x => x.id === id);
   if (!l) return;
   currentListing = l;
@@ -5199,6 +5272,9 @@ function openListing(id) {
   renderPaymentSection(currentListing);
   const _logEl = document.getElementById('panel-status-log');
   if (_logEl) _logEl.innerHTML = _renderStatusLog(currentListing);
+  if (window.PartnerNetwork && window.PartnerNetwork.partnerNetworkEnabled(store)) {
+    renderDeliverablesList(window._currentDetailOrderRef);
+  }
 }
 
 function closePanel() {
@@ -7007,6 +7083,7 @@ const saveStore = (() => {
         orders:      store.orders      || [],
         promotions:  store.promotions  || [],
         archive:     store.archive,
+        data:        store.data        || {},
       };
       const ops = [];
       ops.push({ ref: db.collection('store').doc('data'), data: small });
@@ -7045,6 +7122,7 @@ function _applySmall(parsed) {
   if (Array.isArray(parsed.promotions))  store.promotions  = parsed.promotions;
   if (parsed.settings) store.settings = Object.assign({}, store.settings, parsed.settings);
   if (parsed.archive)  store.archive  = Object.assign({ listings:[], customers:[], companies:[] }, parsed.archive);
+  if (parsed.data)     store.data     = Object.assign({}, store.data, parsed.data);
 }
 
 // Apply full store snapshot (used for localStorage fallback)
@@ -7069,7 +7147,7 @@ async function loadStore() {
   try {
     const [smallSnap, lSnap, cSnap, coSnap] = await Promise.all([
       db.collection('store').doc('data').get(),
-      db.collection('listings').get(),
+      buildOrdersQuery('listings').get(),
       db.collection('customers').get(),
       db.collection('companies').get(),
     ]);
@@ -7463,6 +7541,11 @@ async function _handleStatusDrag(listingId, fromStatus, toStatus) {
   updateOrdersBadge();
   if (typeof updateClosedOrdersBadge === 'function') updateClosedOrdersBadge();
 
+  // Auto-cancel any pending transfer when listing reaches a terminal archive status
+  if (isTerminal) {
+    _autoCancelPendingTransfer('listings/' + listingId);
+  }
+
   // Send WhatsApp if requested
   if (isTerminal && waSend) {
     const customer = listing.customer ? store.customers.find(c => c.id === listing.customer) : null;
@@ -7642,6 +7725,11 @@ function togglePaymentChip(id, field) {
   }
   if (typeof currentPage !== 'undefined' && currentPage === 'closed-orders') {
     renderClosedOrders();
+  }
+
+  // Auto-cancel any pending transfer when receipt is confirmed (order reaches final state)
+  if (field === 'receiptSent' && newVal) {
+    _autoCancelPendingTransfer('listings/' + id);
   }
 
   const labels = { payReqSent: 'בקשה', paymentReceived: 'תשלום', receiptSent: 'קבלה' };
@@ -7830,6 +7918,8 @@ function createOrderFromCRM() {
     shootDate:   document.getElementById('no-shoot-date').value,
     flexibility: 'exact',
     timeSlots:   [],
+    createdByPilotId: (window.currentUser && window.currentUser.uid) || null,
+    assignedPilotId:  (window.currentUser && window.currentUser.uid) || null,
   };
 
   // Save locally + to Firestore
@@ -8137,6 +8227,8 @@ async function dneSubmit() {
     status:       'pending',
     source:       'crm',
     createdAt:    Date.now(),
+    createdByPilotId: (window.currentUser && window.currentUser.uid) || null,
+    assignedPilotId:  (window.currentUser && window.currentUser.uid) || null,
   };
   try {
     await db.collection('drone_orders').add(order);
@@ -8221,6 +8313,16 @@ function _applyOrdersFilter(pending, active) {
   return { filteredPending: pending, filteredActive: active };
 }
 
+function _pilotBadgeHtml(uid) {
+  if (!window.PartnerNetwork || !window.PartnerNetwork.partnerNetworkEnabled(store)) return '';
+  if (!uid) return '';
+  if (window.currentUser && uid === window.currentUser.uid) return '';
+  const pilot = (window._pilotsCache || {})[uid];
+  if (!pilot) return '';
+  const name = (pilot.displayName || 'pilot').replace(/[<>&"]/g, '');
+  return '<span class="admin-only" style="background:#f59e0b;color:white;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;margin-right:4px;">🎯 ' + name + '</span>';
+}
+
 function _buildPendingCard(b) {
   const p = b.property || {}, bc = b.client || {};
   const cl = bc.isExisting ? (store.customers.find(c => c.id === bc.id) || {first:'?', last:''}) : bc;
@@ -8234,7 +8336,7 @@ function _buildPendingCard(b) {
   const pkgLine = pkg.name ? h(pkg.name) : svcLabel;
   return `
     <div class="kanban-card" data-stop-propagation="1" style="cursor:default;">
-      <div class="kanban-card-addr">${h(p.address)||'בקשת הזמנה'}${p.city?', '+h(p.city):''}</div>
+      <div class="kanban-card-addr">${_pilotBadgeHtml(b.assignedPilotId)}${h(p.address)||'בקשת הזמנה'}${p.city?', '+h(p.city):''}</div>
       <div class="kanban-card-meta">
         ${name ? '👤 '+h(name) : ''}
         ${shootStr ? (name?'<br>':'')+'📅 '+shootStr+(shootTime?' '+shootTime:'') : ''}
@@ -8262,7 +8364,7 @@ function _buildActiveOrderCard(l) {
   return `
     <div class="kanban-card js-open-listing${overdueClass}" data-listing-id="${h(l.id)}">
         ${overdueDays > 0 ? `<div class="overdue-badge">⚠ עיכוב ${overdueDays} ימים</div>` : ''}
-      <div class="kanban-card-addr">${h(l.address)}${l.city?', '+h(l.city):''}</div>
+      <div class="kanban-card-addr">${_pilotBadgeHtml(l.assignedPilotId)}${h(l.address)}${l.city?', '+h(l.city):''}</div>
       <div class="kanban-card-meta">
         ${custLabel ? '👤 '+h(custLabel) : ''}
         ${shootStr ? (custLabel?'<br>':'')+'📅 '+shootStr : ''}
@@ -8276,6 +8378,9 @@ function _buildActiveOrderCard(l) {
       </div>
       ${next ? `<button class="btn btn-primary" style="width:100%;font-size:11px;padding:5px;margin-top:8px;" data-stop-propagation="1" onclick="advanceStatus('${h(l.id)}','${h(next)}')">${h(nextLbl)}</button>` : ''}
         ${l.status === 'נמסר' ? _paymentChips(l) : ''}
+        ${window.PartnerNetwork && window.PartnerNetwork.partnerNetworkEnabled(store) && !window.PartnerNetwork.isFinalStatus(l) && !l.transferPendingTo
+          ? `<button class="btn btn-ghost" style="font-size:10px;padding:2px 8px;margin-top:4px;" data-stop-propagation="1" onclick="event.stopPropagation();openTransferModal('listings/${h(l.id)}')">📤 העבר</button>`
+          : ''}
     </div>`;
 }
 
@@ -8303,7 +8408,7 @@ function _buildDroneCard(d) {
   card.dataset.droneId = d.id;
   const addr = document.createElement('div');
   addr.className = 'kanban-card-addr';
-  addr.textContent = (d.siteName || d.siteAddress || 'הזמנת דרון');
+  addr.innerHTML = _pilotBadgeHtml(d.assignedPilotId) + h(d.siteName || d.siteAddress || 'הזמנת דרון');
   card.appendChild(addr);
   const meta = document.createElement('div');
   meta.className = 'kanban-card-meta';
@@ -8334,6 +8439,14 @@ function _buildDroneCard(d) {
     }
     card.appendChild(btnRow);
   }
+  if (window.PartnerNetwork && window.PartnerNetwork.partnerNetworkEnabled(store) && !window.PartnerNetwork.isFinalStatus(d) && !d.transferPendingTo) {
+    const transferBtn = document.createElement('button');
+    transferBtn.className = 'btn btn-ghost';
+    transferBtn.style.cssText = 'font-size:10px;padding:2px 8px;margin-top:4px;';
+    transferBtn.textContent = '📤 העבר';
+    transferBtn.addEventListener('click', (e) => { e.stopPropagation(); openTransferModal('drone_orders/' + d.id); });
+    card.appendChild(transferBtn);
+  }
   return card;
 }
 
@@ -8344,6 +8457,7 @@ function advanceDroneStatus(droneId, newStatus) {
 
 function rejectDroneOrder(droneId) {
   db.collection('drone_orders').doc(droneId).update({ status: 'rejected' })
+    .then(() => _autoCancelPendingTransfer('drone_orders/' + droneId))
     .catch(err => console.error('rejectDroneOrder:', err));
 }
 
@@ -8442,6 +8556,7 @@ let _currentDroneJob = null;
 let _dronePanelMap   = null;
 
 function openDronePanel(droneId) {
+  window._currentDetailOrderRef = 'drone_orders/' + droneId;
   const d = (window._droneOrders || []).find(function(o) { return o.id === droneId; });
   if (!d) return;
   if (_dronePanelMap) { _dronePanelMap.remove(); _dronePanelMap = null; }
@@ -8475,6 +8590,9 @@ function openDronePanel(droneId) {
 
   document.getElementById('drone-panel').classList.add('open');
   document.getElementById('drone-panel-overlay').classList.add('open');
+  if (window.PartnerNetwork && window.PartnerNetwork.partnerNetworkEnabled(store)) {
+    renderDeliverablesList(window._currentDetailOrderRef);
+  }
 }
 
 function closeDronePanel() {
@@ -8694,6 +8812,42 @@ function _buildDpInfoTab(d) {
   grid2.appendChild(w8); grid2.appendChild(fWrap);
   grid2.appendChild(fpWrap);
   frag.appendChild(grid2);
+
+  // Deliverables section (Partner Network)
+  const dlSection = document.createElement('div');
+  dlSection.id = 'deliverables-section';
+  dlSection.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:12px;margin:14px 0 4px;';
+  const dlTitle = document.createElement('h4');
+  dlTitle.style.cssText = 'margin:0 0 10px;font-size:13px;';
+  dlTitle.textContent = '\u{1F4C1} תוצרים סופיים';
+  const dlAddBtn = document.createElement('button');
+  dlAddBtn.className = 'btn btn-ghost';
+  dlAddBtn.style.cssText = 'margin-bottom:10px;font-size:12px;display:block;';
+  dlAddBtn.textContent = '+ הוסף קישור Drive';
+  dlAddBtn.onclick = function() { openAddDeliverableModal(); };
+  const dlList = document.createElement('div');
+  dlList.id = 'deliverables-list';
+  dlList.textContent = '—';
+  const dlNote = document.createElement('div');
+  dlNote.style.cssText = 'font-size:11px;color:var(--text-muted);margin-top:6px;';
+  dlNote.textContent = 'ודא שהקישור פתוח לצפייה ב-Drive (Anyone with link).';
+  const dlClientBtn = document.createElement('button');
+  dlClientBtn.className = 'btn btn-primary';
+  dlClientBtn.id = 'btn-generate-client-link';
+  dlClientBtn.style.cssText = 'margin-top:10px;font-size:12px;width:100%;';
+  dlClientBtn.textContent = '🔗 שלח קישור ללקוח';
+  dlClientBtn.onclick = function() { generateClientLink(); };
+  const dlClientDisp = document.createElement('div');
+  dlClientDisp.id = 'client-link-display';
+  dlClientDisp.style.cssText = 'display:none;margin-top:8px;padding:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;word-break:break-all;font-size:12px;';
+  dlSection.appendChild(dlTitle);
+  dlSection.appendChild(dlAddBtn);
+  dlSection.appendChild(dlList);
+  dlSection.appendChild(dlNote);
+  dlSection.appendChild(dlClientBtn);
+  dlSection.appendChild(dlClientDisp);
+  frag.appendChild(dlSection);
+
   tab.appendChild(frag);
 
   // Set values via DOM (safe — no user data in HTML)
@@ -9064,7 +9218,9 @@ function _listingFromBooking(b, customerId) {
     paymentAt: null,
     receiptSent: false,
     receiptAt: null,
-    deliveredPhotos: false, deliveredVideo: false, deliveredFloorplan: false
+    deliveredPhotos: false, deliveredVideo: false, deliveredFloorplan: false,
+    createdByPilotId: b.createdByPilotId || (window.currentUser && window.currentUser.uid) || null,
+    assignedPilotId:  b.assignedPilotId  || (window.currentUser && window.currentUser.uid) || null,
   };
 }
 
@@ -9298,6 +9454,567 @@ function updateOrdersBadge() {
 }
 
 // ══════════════════════════════════════════════════
+//  TEAM
+// ══════════════════════════════════════════════════
+async function renderTeam() {
+  const root = document.getElementById('team-content');
+  if (!root) return;
+  root.textContent = 'טוען...';
+
+  root.innerHTML = `
+    <div style="max-width:860px;margin:0 auto;padding:20px;">
+
+      <!-- Section A: Add pilot form (static markup — safe innerHTML) -->
+      <div style="border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;max-width:420px;">
+        <h3 style="margin:0 0 16px;font-size:16px;">הוסף צלם חדש</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input id="np-uid"   class="form-input" type="text"  placeholder="UID (העתק מ-Firebase Console)" style="font-family:monospace;font-size:13px;" />
+          <input id="np-name"  class="form-input" type="text"  placeholder="שם (e.g. Nati)" />
+          <input id="np-email" class="form-input" type="email" placeholder="אימייל" />
+          <input id="np-phone" class="form-input" type="tel"   placeholder="טלפון (+972...)" />
+
+          <div style="display:flex;flex-direction:column;gap:6px;padding:8px 0;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="np-svc-photo" /> <span>נדל"ן</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="np-svc-drone" checked /> <span>רחפן</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="np-svc-eng" /> <span>הנדסי</span>
+            </label>
+          </div>
+
+          <button class="btn btn-primary" onclick="createPilotProfile()">שמור</button>
+          <p style="font-size:11px;color:var(--text-muted);margin:4px 0 0;">
+            קודם צור משתמש ב-Firebase Console (Authentication → Users → Add user) והעתק את ה-UID לכאן.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section B: Pilots list -->
+      <div style="border:1px solid var(--border);border-radius:10px;padding:20px;">
+        <h3 style="margin:0 0 16px;font-size:16px;">צלמים רשומים</h3>
+        <div id="pilots-list">טוען...</div>
+      </div>
+
+    </div>
+  `;
+
+  await loadPilotsList();
+}
+
+async function loadPilotsList() {
+  const list = document.getElementById('pilots-list');
+  if (!list) return;
+  try {
+    await refreshPilotsCache();
+  } catch (e) {
+    console.warn('[loadPilotsList] cache refresh failed', e.message);
+  }
+  const ids = Object.keys(window._pilotsCache || {});
+  if (!ids.length) { list.textContent = 'אין צלמים רשומים.'; return; }
+
+  list.replaceChildren();
+  ids.forEach(uid => {
+    const u = window._pilotsCache[uid];
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:auto 1fr auto auto auto;gap:12px;padding:8px 4px;border-bottom:1px solid var(--border);align-items:center;';
+
+    const roleSpan = document.createElement('span');
+    roleSpan.textContent = u.role === 'admin' ? '👑 מנהל' : '🤝 צלם';
+
+    const nameWrap = document.createElement('span');
+    const nameB = document.createElement('b');
+    nameB.textContent = u.displayName || '';
+    const emailSm = document.createElement('small');
+    emailSm.style.cssText = 'color:var(--text-muted);display:block;';
+    emailSm.textContent = u.email || '';
+    nameWrap.append(nameB, emailSm);
+
+    const svcSpan = document.createElement('span');
+    svcSpan.style.cssText = 'font-size:11px;color:var(--text-muted);';
+    svcSpan.textContent = (u.serviceTypes || []).join(', ');
+
+    const statusSpan = document.createElement('span');
+    statusSpan.textContent = u.isActive === false ? 'מושבת' : 'פעיל';
+    statusSpan.style.color = u.isActive === false ? 'var(--red)' : 'var(--green)';
+
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost';
+    btn.style.cssText = 'padding:4px 10px;';
+    btn.textContent = u.isActive === false ? 'הפעל' : 'השבת';
+    btn.onclick = () => togglePilotActive(uid);
+
+    row.append(roleSpan, nameWrap, svcSpan, statusSpan, btn);
+    list.appendChild(row);
+  });
+}
+
+async function createPilotProfile() {
+  const uid   = (document.getElementById('np-uid').value   || '').trim();
+  const name  = (document.getElementById('np-name').value  || '').trim();
+  const email = (document.getElementById('np-email').value || '').trim();
+  const phone = (document.getElementById('np-phone').value || '').trim();
+  if (!uid || !name || !email) { toast('UID, שם, אימייל — חובה', 'error'); return; }
+  if (uid.length < 20)         { toast('UID נראה קצר מדי', 'error'); return; }
+
+  const services = [];
+  if (document.getElementById('np-svc-photo').checked) services.push('photo_realestate');
+  if (document.getElementById('np-svc-drone').checked) services.push('drone');
+  if (document.getElementById('np-svc-eng').checked)   services.push('engineering');
+  if (!services.length) { toast('בחר לפחות סוג שירות אחד', 'error'); return; }
+
+  try {
+    await db.collection('users').doc(uid).set({
+      role: 'pilot',
+      displayName: name, email, phone,
+      serviceTypes: services,
+      isActive: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('הצלם נוסף ✓', 'success');
+    ['np-uid','np-name','np-email','np-phone'].forEach(id => document.getElementById(id).value = '');
+    await loadPilotsList();
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+
+async function togglePilotActive(uid) {
+  if (!confirm('להחליף סטטוס הצלם?')) return;
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    const isActive = doc.data().isActive !== false;
+    await db.collection('users').doc(uid).update({ isActive: !isActive });
+    toast(isActive ? 'הושבת' : 'הופעל', 'success');
+    await loadPilotsList();
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+
+// ── DELIVERABLES (Task 5.1) ───────────────────────────────────────────────
+window._currentDetailOrderRef = null;
+
+function openAddDeliverableModal() {
+  if (!window._currentDetailOrderRef) { toast('נסה שוב — לא נמצאה הזמנה', 'error'); return; }
+  document.getElementById('dl-type').value = 'photos';
+  document.getElementById('dl-url').value = '';
+  openModal('modal-add-deliverable');
+}
+
+async function submitAddDeliverable() {
+  const orderRef = window._currentDetailOrderRef;
+  if (!orderRef) return;
+  const type = document.getElementById('dl-type').value;
+  const url  = document.getElementById('dl-url').value.trim();
+  if (!url || !/^https?:\/\//.test(url)) { toast('קישור לא תקין', 'error'); return; }
+
+  const [coll, id] = orderRef.split('/');
+  const ref = db.collection(coll).doc(id);
+  const entry = {
+    type, driveUrl: url,
+    addedAt: Date.now(),
+    byPilotUid: window.currentUser && window.currentUser.uid
+  };
+  try {
+    const update = { deliverables: firebase.firestore.FieldValue.arrayUnion(entry) };
+    if (coll === 'listings') {
+      if (type === 'photos')    update.deliveredPhotos    = url;
+      if (type === 'video')     update.deliveredVideo     = url;
+      if (type === 'floorplan') update.deliveredFloorplan = url;
+    }
+    await ref.update(update);
+    toast('הקישור נוסף ✓', 'success');
+    closeModal('modal-add-deliverable');
+    await renderDeliverablesList(orderRef);
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+
+async function renderDeliverablesList(orderRef) {
+  const root = document.getElementById('deliverables-list');
+  if (!root) return;
+  const [coll, id] = orderRef.split('/');
+  const snap = await db.collection(coll).doc(id).get();
+  const items = ((snap.data() || {}).deliverables) || [];
+  if (!items.length) { root.textContent = 'עדיין לא נוספו קישורים'; return; }
+
+  const ICON = { photos:'📁', video:'🎥', floorplan:'📐', kml:'🗺️', report:'📄' };
+  root.replaceChildren();
+  items.forEach(function(it, idx) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:10px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--border);';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = ICON[it.type] || '📎';
+
+    const mid = document.createElement('div'); mid.style.flex = '1';
+    const link = document.createElement('a');
+    link.href = it.driveUrl; link.target = '_blank'; link.rel = 'noopener';
+    link.style.color = 'var(--accent)';
+    link.textContent = it.type;
+    const meta = document.createElement('div');
+    meta.style.cssText = 'font-size:11px;color:var(--text-muted);';
+    const dt = new Date(it.addedAt).toLocaleDateString('he-IL');
+    const by = (window._pilotsCache[it.byPilotUid] && window._pilotsCache[it.byPilotUid].displayName) || '—';
+    meta.textContent = dt + ' · ' + by;
+    mid.appendChild(link); mid.appendChild(meta);
+
+    const copyBtn = document.createElement('button'); copyBtn.className = 'btn btn-ghost';
+    copyBtn.style.cssText = 'font-size:11px;padding:2px 8px;'; copyBtn.textContent = '📋';
+    copyBtn.onclick = function() { navigator.clipboard.writeText(it.driveUrl).then(function() { toast('הועתק', 'success'); }); };
+
+    const delBtn = document.createElement('button'); delBtn.className = 'btn btn-ghost';
+    delBtn.style.cssText = 'font-size:11px;padding:2px 8px;color:var(--red);'; delBtn.textContent = '🗑️';
+    delBtn.onclick = function() { removeDeliverable(orderRef, idx); };
+
+    row.appendChild(iconSpan); row.appendChild(mid); row.appendChild(copyBtn); row.appendChild(delBtn);
+    root.appendChild(row);
+  });
+}
+
+async function removeDeliverable(orderRef, idx) {
+  if (!confirm('למחוק את הקישור?')) return;
+  const [coll, id] = orderRef.split('/');
+  const ref = db.collection(coll).doc(id);
+  // Atomic read-modify-write: tx гарантирует что concurrent submitAddDeliverable
+  // не потеряет добавление между read и write этой функции.
+  try {
+    await db.runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      const items = (snap.data() || {}).deliverables || [];
+      const next = items.slice();
+      const removed = next.splice(idx, 1)[0];
+      const update = { deliverables: next };
+      if (coll === 'listings' && removed) {
+        if (removed.type === 'photos')    update.deliveredPhotos    = firebase.firestore.FieldValue.delete();
+        if (removed.type === 'video')     update.deliveredVideo     = firebase.firestore.FieldValue.delete();
+        if (removed.type === 'floorplan') update.deliveredFloorplan = firebase.firestore.FieldValue.delete();
+      }
+      tx.update(ref, update);
+    });
+    await renderDeliverablesList(orderRef);
+    toast('נמחק', 'success');
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+// ── END DELIVERABLES ──────────────────────────────────────────────────────
+
+async function generateClientLink() {
+  const orderRef = window._currentDetailOrderRef;
+  if (!orderRef) { toast('פתח הזמנה תחילה', 'error'); return; }
+  const [coll, id] = orderRef.split('/');
+  try {
+    const docSnap = await db.collection(coll).doc(id).get();
+    let token = (docSnap.data() || {}).clientLinkToken;
+
+    if (!token) {
+      token = window.PartnerNetwork.randomToken();
+      const ts = firebase.firestore.FieldValue.serverTimestamp();
+      const batch = db.batch();
+      batch.set(db.collection('clientLinks').doc(token), {
+        token, orderRef,
+        createdByPilotUid: window.currentUser.uid,
+        createdAt: ts, lastViewedAt: null, revoked: false
+      });
+      batch.update(db.collection(coll).doc(id), {
+        clientLinkToken: token,
+        statusLog: firebase.firestore.FieldValue.arrayUnion({
+          ts: Date.now(), type: 'client_link_generated',
+          by: window.currentUser.uid
+        })
+      });
+      await batch.commit();
+    }
+
+    const base = location.hostname === 'edmuntas.github.io'
+      ? 'https://edmuntas.github.io/photodesk/client.html'
+      : (location.origin + location.pathname.replace(/photodesk\.html$/, 'client.html'));
+    const url = base + '?t=' + encodeURIComponent(token);
+
+    const disp = document.getElementById('client-link-display');
+    disp.textContent = url;
+    disp.style.display = 'block';
+    try {
+      await navigator.clipboard.writeText(url);
+      toast('הקישור הועתק ✓', 'success');
+    } catch {
+      toast('הקישור מוכן (העתק ידנית)', 'info');
+    }
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+
+async function loadClientLinksList() {
+  const root = document.getElementById('client-links-list');
+  if (!root) return;
+  try {
+    const snap = await db.collection('clientLinks').where('revoked', '==', false).get();
+    if (snap.empty) { root.textContent = 'אין קישורים פעילים'; return; }
+    root.replaceChildren();
+    snap.docs.forEach(d => {
+      const c = d.data();
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);';
+
+      const tokenCode = document.createElement('code');
+      tokenCode.style.cssText = 'flex:1;font-size:11px;'; tokenCode.textContent = d.id.slice(0, 12) + '…';
+
+      const refSpan = document.createElement('span');
+      refSpan.style.cssText = 'font-size:11px;color:var(--text-muted);'; refSpan.textContent = c.orderRef;
+
+      const dtSpan = document.createElement('span');
+      dtSpan.style.cssText = 'font-size:11px;color:var(--text-muted);';
+      dtSpan.textContent = c.createdAt && c.createdAt.toDate ? c.createdAt.toDate().toLocaleDateString('he-IL') : '—';
+
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-ghost'; btn.style.cssText = 'font-size:11px;padding:2px 8px;color:var(--red);';
+      btn.textContent = '🚫 בטל';
+      btn.onclick = () => revokeClientLink(d.id);
+
+      row.append(tokenCode, refSpan, dtSpan, btn);
+      root.appendChild(row);
+    });
+  } catch (e) {
+    root.textContent = 'שגיאה: ' + e.message;
+  }
+}
+
+async function revokeClientLink(token) {
+  if (!confirm('לבטל את הקישור?')) return;
+  try {
+    const linkRef = db.collection('clientLinks').doc(token);
+    const linkSnap = await linkRef.get();
+    if (!linkSnap.exists) return;
+    const orderRef = linkSnap.data().orderRef;
+    const [coll, id] = orderRef.split('/');
+    const batch = db.batch();
+    batch.update(linkRef, { revoked: true });
+    batch.update(db.collection(coll).doc(id), {
+      statusLog: firebase.firestore.FieldValue.arrayUnion({
+        ts: Date.now(), type: 'client_link_revoked',
+        by: window.currentUser.uid
+      })
+    });
+    await batch.commit();
+    toast('הקישור בוטל', 'success');
+    await loadClientLinksList();
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+
+async function openTransferModal(orderRef) {
+  await refreshPilotsCache();
+  const select = document.getElementById('transfer-target-pilot');
+  select.replaceChildren();
+  const myUid = window.currentUser && window.currentUser.uid;
+  Object.entries(window._pilotsCache).forEach(([uid, u]) => {
+    if (uid === myUid) return;
+    if (u.isActive === false) return;
+    const opt = document.createElement('option');
+    opt.value = uid;
+    opt.textContent = (u.displayName || u.email || uid) + (u.role === 'admin' ? ' (מנהל)' : '');
+    select.appendChild(opt);
+  });
+  document.getElementById('transfer-order-ref').value = orderRef;
+  document.getElementById('transfer-note').value = '';
+  openModal('modal-transfer-order');
+}
+
+async function submitTransfer() {
+  const orderRef = document.getElementById('transfer-order-ref').value;
+  const toUid    = document.getElementById('transfer-target-pilot').value;
+  const note     = document.getElementById('transfer-note').value.trim();
+  if (!orderRef || !toUid) { toast('בחר צלם', 'error'); return; }
+  const fromUid = window.currentUser.uid;
+  const ts = firebase.firestore.FieldValue.serverTimestamp();
+  try {
+    // Atomic batch: либо обе записи проходят, либо ни одна.
+    // Раньше последовательные add+update могли оставить orphan transfer doc
+    // если update провалится (network drop, rule reject и т.д.).
+    const [coll, id] = orderRef.split('/');
+    const tRef = db.collection('transfers').doc();
+    const batch = db.batch();
+    batch.set(tRef, {
+      orderRef, fromPilotUid: fromUid, toPilotUid: toUid,
+      status: 'pending', note, createdAt: ts, respondedAt: null
+    });
+    batch.update(db.collection(coll).doc(id), {
+      transferPendingTo: toUid,
+      transferHistory: firebase.firestore.FieldValue.arrayUnion(tRef.id),
+      statusLog: firebase.firestore.FieldValue.arrayUnion({
+        ts: Date.now(), type: 'transfer_proposed',
+        from: fromUid, to: toUid, note: note
+      })
+    });
+    await batch.commit();
+    closeModal('modal-transfer-order');
+    toast('ההצעה נשלחה ✓', 'success');
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+
+let _inboxUnsub = null;
+function startInboxListener() {
+  if (_inboxUnsub) { _inboxUnsub(); _inboxUnsub = null; }
+  const btn = document.getElementById('transfer-inbox-btn');
+  if (!btn) return;
+  if (!window.currentUser || !window.PartnerNetwork.partnerNetworkEnabled(store)) {
+    btn.style.display = 'none';
+    return;
+  }
+  _inboxUnsub = db.collection('transfers')
+    .where('toPilotUid', '==', window.currentUser.uid)
+    .where('status', '==', 'pending')
+    .onSnapshot(snap => {
+      document.getElementById('transfer-inbox-count').textContent = String(snap.size);
+      btn.style.display = snap.size > 0 ? 'inline-block' : 'none';
+    }, err => console.warn('[inbox] listen failed', err));
+}
+
+async function openInboxModal() {
+  const body = document.getElementById('transfer-inbox-body');
+  body.textContent = 'טוען...';
+  openModal('modal-transfer-inbox');
+  await refreshPilotsCache();
+  try {
+    const snap = await db.collection('transfers')
+      .where('toPilotUid', '==', window.currentUser.uid)
+      .where('status', '==', 'pending')
+      .get();
+    if (snap.empty) { body.textContent = 'אין הצעות חדשות'; return; }
+
+    body.replaceChildren();
+    snap.docs.forEach(d => {
+      const t = d.data();
+      const fromName = (window._pilotsCache[t.fromPilotUid] && window._pilotsCache[t.fromPilotUid].displayName) || 'pilot';
+
+      const card = document.createElement('div');
+      card.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px;';
+
+      const header = document.createElement('div');
+      const headerB = document.createElement('b'); headerB.textContent = 'מ-' + fromName;
+      const headerSm = document.createElement('small'); headerSm.style.cssText = 'color:var(--text-muted);margin-right:6px;'; headerSm.textContent = ' · ' + t.orderRef;
+      header.append(headerB, headerSm);
+      card.appendChild(header);
+
+      if (t.note) {
+        const noteDiv = document.createElement('div');
+        noteDiv.style.cssText = 'margin:6px 0;padding:6px;background:var(--surface2);border-radius:4px;font-size:13px;';
+        noteDiv.textContent = t.note;
+        card.appendChild(noteDiv);
+      }
+
+      const actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
+      const accept = document.createElement('button'); accept.className='btn btn-primary'; accept.textContent='✅ קבל';
+      accept.onclick = () => acceptTransfer(d.id);
+      const reject = document.createElement('button'); reject.className='btn btn-ghost'; reject.textContent='❌ דחה';
+      reject.onclick = () => rejectTransfer(d.id);
+      actions.append(accept, reject);
+      card.appendChild(actions);
+
+      body.appendChild(card);
+    });
+  } catch (e) {
+    body.textContent = 'שגיאה: ' + e.message;
+  }
+}
+
+async function acceptTransfer(transferId) {
+  if (!confirm('לקבל את ההזמנה?')) return;
+  const tRef = db.collection('transfers').doc(transferId);
+  try {
+    const t = (await tRef.get()).data();
+    if (!t || t.status !== 'pending') { toast('הצעה כבר טופלה', 'error'); return; }
+    if (t.toPilotUid !== window.currentUser.uid) { toast('אין הרשאה', 'error'); return; }
+    const [coll, id] = t.orderRef.split('/');
+    const ts = firebase.firestore.FieldValue.serverTimestamp();
+    const batch = db.batch();
+    batch.update(tRef, { status: 'accepted', respondedAt: ts });
+    batch.update(db.collection(coll).doc(id), {
+      assignedPilotId: window.currentUser.uid,
+      transferPendingTo: null,
+      statusLog: firebase.firestore.FieldValue.arrayUnion({
+        ts: Date.now(), type: 'transfer_accepted',
+        by: window.currentUser.uid, transferId
+      })
+    });
+    await batch.commit();
+    closeModal('modal-transfer-inbox');
+    toast('הועברה אליך ✓', 'success');
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+
+async function rejectTransfer(transferId) {
+  if (!confirm('לדחות את ההצעה?')) return;
+  const tRef = db.collection('transfers').doc(transferId);
+  try {
+    const t = (await tRef.get()).data();
+    if (!t || t.status !== 'pending') { toast('הצעה כבר טופלה', 'error'); return; }
+    if (t.toPilotUid !== window.currentUser.uid) { toast('אין הרשאה', 'error'); return; }
+    const [coll, id] = t.orderRef.split('/');
+    const ts = firebase.firestore.FieldValue.serverTimestamp();
+    const batch = db.batch();
+    batch.update(tRef, { status: 'rejected', respondedAt: ts });
+    batch.update(db.collection(coll).doc(id), {
+      transferPendingTo: null,
+      statusLog: firebase.firestore.FieldValue.arrayUnion({
+        ts: Date.now(), type: 'transfer_rejected',
+        by: window.currentUser.uid, transferId
+      })
+    });
+    await batch.commit();
+    closeModal('modal-transfer-inbox');
+    toast('ההצעה נדחתה', 'success');
+  } catch (e) {
+    toast('שגיאה: ' + e.message, 'error');
+  }
+}
+
+async function _autoCancelPendingTransfer(orderRef) {
+  if (!orderRef) return;
+  try {
+    const [coll, id] = orderRef.split('/');
+    const docSnap = await db.collection(coll).doc(id).get();
+    if (!docSnap.exists) return;
+    const data = docSnap.data();
+    if (!data.transferPendingTo) return;
+
+    const tSnap = await db.collection('transfers')
+      .where('orderRef', '==', orderRef)
+      .where('status', '==', 'pending')
+      .get();
+    const ts = firebase.firestore.FieldValue.serverTimestamp();
+    const batch = db.batch();
+    tSnap.forEach(d => batch.update(d.ref, {
+      status: 'rejected', respondedAt: ts,
+      autoCancelled: true, autoCancelReason: 'final_status_reached'
+    }));
+    batch.update(db.collection(coll).doc(id), {
+      transferPendingTo: null,
+      statusLog: firebase.firestore.FieldValue.arrayUnion({
+        ts: Date.now(), type: 'transfer_auto_cancelled',
+        reason: 'final_status_reached'
+      })
+    });
+    await batch.commit();
+    console.log('[auto-cancel] cleared pending transfers for', orderRef);
+  } catch (e) {
+    console.warn('[auto-cancel] failed', e);
+  }
+}
+
+// ══════════════════════════════════════════════════
 //  SETTINGS
 // ══════════════════════════════════════════════════
 function renderSettings() {
@@ -9321,6 +10038,17 @@ function renderSettings() {
   } else {
     preview.textContent = '📷';
   }
+  const pnCb = document.getElementById('setting-partner-network-enabled');
+  if (pnCb) {
+    const pnOn = window.PartnerNetwork && window.PartnerNetwork.partnerNetworkEnabled(store);
+    pnCb.checked = !!pnOn;
+    const pnInd = document.getElementById('pn-status-indicator');
+    if (pnInd) {
+      pnInd.textContent = pnOn ? 'פעיל' : 'לא פעיל';
+      pnInd.style.color  = pnOn ? 'var(--green)' : 'var(--text-dim)';
+    }
+  }
+  loadClientLinksList();
 }
 
 function saveSettings() {
@@ -9334,8 +10062,14 @@ function saveSettings() {
   if (gcEl) store.settings.driveScriptUrl = gcEl.value.trim();
   const aiEl = document.getElementById('settings-ai-cleaner-url');
   if (aiEl) store.settings.aiCleanerUrl = aiEl.value.trim();
+  const pnFlag = document.getElementById('setting-partner-network-enabled');
+  if (pnFlag) {
+    store.data = store.data || {};
+    store.data.partnerNetworkEnabled = !!pnFlag.checked;
+  }
   saveStore();
   applySidebarSettings();
+  if (typeof startInboxListener === 'function') startInboxListener();
   const btn = document.getElementById('settings-save-btn');
   const orig = btn.textContent;
   btn.textContent = '✓ נשמר';
@@ -9770,6 +10504,69 @@ function renderSkeletonListings() {
 // ══════════════════════════════════════════════════
 let _appInited = false;
 
+async function loadUserRole(user) {
+  try {
+    // 5s timeout guard — медленные сети (slow 3G на полевой съёмке) могут зависнуть
+    // на Firestore reads без timeout. Race с rejection триггерит catch-all fallback ниже.
+    const userDoc = await Promise.race([
+      db.collection('users').doc(user.uid).get(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('loadUserRole timeout')), 5000))
+    ]);
+    if (userDoc.exists) {
+      const data = userDoc.data();
+      if (data.isActive === false) {
+        alert('חשבונך הושבת. פנה למנהל.');
+        await auth.signOut();
+        return null;
+      }
+      return { uid: user.uid, isLegacy: false, ...data };
+    }
+    if (window.PartnerNetwork.isLegacyAdmin(user.uid)) {
+      console.log('[loadUserRole] legacy admin fallback', user.uid);
+      return { uid: user.uid, role: 'admin', isLegacy: true,
+               displayName: 'Edmont',
+               serviceTypes: ['photo_realestate', 'drone', 'engineering'] };
+    }
+    if (window.PartnerNetwork.partnerNetworkEnabled(store)) {
+      alert('חשבונך לא מוגדר במערכת. פנה למנהל.');
+      await auth.signOut();
+      return null;
+    }
+    return { uid: user.uid, role: 'admin', isLegacy: true, displayName: 'Edmont' };
+  } catch (err) {
+    console.error('[loadUserRole]', err);
+    return { uid: user.uid, role: 'admin', isLegacy: true, displayName: 'Edmont' };
+  }
+}
+
+function applyRoleUI() {
+  const role = (window.currentUser && window.currentUser.role) || 'admin';
+  document.body.classList.toggle('role-admin', role === 'admin');
+  document.body.classList.toggle('role-pilot', role === 'pilot');
+
+  const services = (window.currentUser && window.currentUser.serviceTypes) || [];
+  ['photo_realestate', 'drone', 'engineering'].forEach(s => {
+    document.body.classList.toggle('has-service-' + s.replace(/_/g, '-'), services.includes(s));
+  });
+
+  let badge = document.getElementById('pilot-header-badge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.id = 'pilot-header-badge';
+    badge.style.cssText = 'background:#f59e0b;color:white;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;margin-right:8px;display:none;';
+    const userInfo = document.getElementById('auth-user-name');
+    if (userInfo && userInfo.parentElement) userInfo.parentElement.insertBefore(badge, userInfo);
+  }
+  if (role === 'pilot') {
+    badge.textContent = '🤝 ' + ((window.currentUser && window.currentUser.displayName) || 'Pilot');
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  if (typeof startInboxListener === 'function') startInboxListener();
+}
+
 // SEC-3: Event delegation — replaces inline onclick="openListing/openCustomer"
 document.addEventListener('click', e => {
   const listingEl  = e.target.closest('[data-listing-id]');
@@ -9791,7 +10588,12 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('auth-avatar').textContent    = initials;
     document.getElementById('auth-user-name').textContent = store.settings?.photographerName || user.email.split('@')[0];
     document.getElementById('auth-user-email').textContent = user.email;
+
+    window.currentUser = await loadUserRole(user);
+    if (!window.currentUser) return;
+
     if (!_appInited) { _appInited = true; await _initApp(); }
+    applyRoleUI();
   } else {
     document.getElementById('login-overlay').style.display = 'flex';
     document.getElementById('app-root').style.display = 'none';
@@ -9955,6 +10757,7 @@ function applyNavOrder() {
 async function _initApp() {
   renderSkeletonListings();
   await loadStore();
+  try { await refreshPilotsCache(); } catch (e) { console.warn('[refreshPilotsCache]', e.message); }
   applySidebarSettings();
   applyNavOrder();
   initNavDrag();
@@ -9988,7 +10791,7 @@ async function _initApp() {
   updateClosedOrdersBadge();
     }, err => console.warn('Firestore listener error:', err));
 
-  window._droneUnsub = db.collection('drone_orders')
+  window._droneUnsub = buildOrdersQuery('drone_orders')
     .onSnapshot(snapshot => {
       window._droneOrders = snapshot.docs.map(d => Object.assign({ id: d.id }, d.data()));
       if (currentPage === 'orders') renderOrders();
@@ -10477,6 +11280,59 @@ function _renderDriveSection(l) {
     </div>
     <div id="drone-detail-body" style="padding-top:4px;"></div>
     <div class="modal-footer" id="drone-detail-footer"></div>
+  </div>
+</div>
+
+<!-- ADD DELIVERABLE MODAL -->
+<div class="modal-bg" id="modal-add-deliverable">
+  <div class="modal" style="width:480px;max-width:95vw;">
+    <div class="modal-title">הוסף קישור Drive<span class="modal-close" onclick="closeModal('modal-add-deliverable')">✕</span></div>
+    <div class="form-group">
+      <label class="form-label">סוג:</label>
+      <select id="dl-type" style="width:100%;padding:8px;margin:6px 0 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);">
+        <option value="photos">📁 תמונות</option>
+        <option value="video">🎥 סרטון</option>
+        <option value="floorplan">📐 תוכנית</option>
+        <option value="kml">🗺️ KML</option>
+        <option value="report">📄 דוח</option>
+      </select>
+      <label class="form-label">קישור Drive:</label>
+      <input id="dl-url" type="url" placeholder="https://drive.google.com/..." class="form-input" style="width:100%;padding:8px;margin:6px 0;" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-deliverable')">ביטול</button>
+      <button class="btn btn-primary" onclick="submitAddDeliverable()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFER ORDER MODAL -->
+<div class="modal-bg" id="modal-transfer-order">
+  <div class="modal" style="width:420px;">
+    <div class="modal-title">📤 העבר עבודה<span class="modal-close" onclick="closeModal('modal-transfer-order')">✕</span></div>
+    <input type="hidden" id="transfer-order-ref" />
+    <div class="form-group">
+      <label class="form-label">בחר צלם:</label>
+      <select id="transfer-target-pilot" style="width:100%;padding:8px;margin:6px 0 14px;border:1px solid var(--border);border-radius:6px;"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">הערה (אופציונלי):</label>
+      <textarea id="transfer-note" rows="3" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-transfer-order')">ביטול</button>
+      <button class="btn btn-primary" onclick="submitTransfer()">שלח הצעה</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-transfer-inbox">
+  <div class="modal" style="width:560px;">
+    <div class="modal-title">📨 הצעות העברה ממתינות<span class="modal-close" onclick="closeModal('modal-transfer-inbox')">✕</span></div>
+    <div id="transfer-inbox-body">טוען...</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-transfer-inbox')">סגור</button>
+    </div>
   </div>
 </div>
 
